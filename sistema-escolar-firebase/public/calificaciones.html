@@ -87,8 +87,104 @@
 
 
 
+    
+<div class="controls-card">
+    <div class="controls-row">
+        <div class="control-group">
+            <label><i class="bi bi-book-fill"></i> Materia</label>
+            <select id="SelectMateria">
+                <option value="">Selecciona una materia</option>
+                <option value="Matemáticas">Matemáticas</option>
+                <option value="Ciencias">Ciencias</option>
+                <option value="Lenguaje">Lenguaje</option>
+                <option value="Sociales">Sociales</option>
+                <option value="Inglés">Inglés</option>
+                <option value="Sistema Modular">Sistema Modular</option>
+                <option value="MUCI">MUCI</option>
+                <option value="OPV">OPV</option>
+                <option value="Servicio Social">Servicio Social</option>
+            </select>
+        </div>
+        <div class="control-group" style="flex: 0 0 auto;">
+            <label>&nbsp;</label>
+            <button class="btn-action btn-primary-custom" id=btnNuevaActividad" disabled>
+                <i class="bi bi-plus-circle-fill"></i> Nueva Actividad
+            </button>
+        </div>
+        <div class="control-group" style="flex: 0 0 auto;">
+            <label>&nbsp;</label>
+            <button class="btn-action btn-success-custom" id="btnGuardarTodo" disabled>
+                <i class="bi bi-cloud-arrow-up-fill"></i> Guardar Todo
+            </button>
+        </div>
+    </div>
+</div>
+<div class="periods-tab" id="periodsTabs">
+    <div class="period-tab active" data-periodo="1">
+        <span class="period-label">Período</span>
+        <span class="period-number">1</span>
+    </div>
+    <div class="period-tab" data-periodo="2">
+        <span class="period-label">Período</span>
+        <span class="period-number">2</span>
+    </div>
+    <div class="period-tab" data-periodo="3">
+        <span class="period-label">Período</span>
+        <span class="period-number">3</span>
+    </div>
+    <div class="period-tab" data-periodo="4">
+        <span class="period-label">Período</span>
+        <span class="period-number">4</span>
+    </div>
+</div>
+<div class="table-card">
+    <div id="tablaContainer">
+        <div class=empty-state">
+            <i class="bi bi-journal-x"></i>
+            <h4>Selecciona una materia para comenzar</h4>
+            <p>Elige una materia del selector superior para gestionar las calificaciones</p>
+        </div>
+    </div>
+    <div class="stats-bar" id="statsBar" style"display: none;">
+        <div class="stat-badge total"><i class="bi bi-people-fill"></i> Total: <span id="statTotal">0</span></div>
+        <div class="stat-badge aprobados"><i class="bi bi-check-circle-fill"></i> Aprobados (≥7): <span id="statAprobados">0</span></div>
+        <div class="stat-badge reprobados"><i class="bi bi-x-circle-fill"></i> Reprobados (&lt7): <span id="statReprobados">0</span></div>
+    </div>
+  </div>
+</div>
+<div class="modal fade modal-custom" id="modalActividad" tabindex="-1>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-plus-circle-fill"></i> Nueva Actividad</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Nombre de la actividad</label>
+                    <input type="text" class="form-control" id="inputNombreActividad" placeholder="Ej: Examen Parcial, Tarea #1, Proyecto..."</label>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Valor máximo (nota máxima)</label>
+                    <input type="number" class="form-control" id="inputValorMaximo" value="10" min="1" max="100">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="btutton" class="btn btn-primary-custom btn-action" id="btnCrearActividad">
+                    <i class="bi bi-check-circle-fill"></i> Crear Actividad
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+                    
 
+    
+        
+            
 
 
 
