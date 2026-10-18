@@ -22,6 +22,17 @@
             --border: rgba(255, 255, 255, 0.1);
         }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-dark);
@@ -31,19 +42,26 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            padding: 20px;
+            overflow-y: auto;
         }
 
         /* Efecto de fondo sutil */
         .bg-pattern {
-            position: absolute;
+            position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('img/fondos/fondo-login.jpg'); /* Tu imagen de fondo */
+            background-image: url('img/fondos/fondo-login.jpg');
             background-size: cover;
             background-position: center;
-            opacity: 0.1;
+            opacity: 0.08;
             z-index: -1;
-            filter: blur(2px);
+            filter: blur(3px);
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 0.08; }
         }
 
         .login-container {
@@ -51,6 +69,18 @@
             max-width: 420px;
             padding: 20px;
             z-index: 10;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0; 
+                transform: translateY(40px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
         }
 
         .login-card {
@@ -61,43 +91,96 @@
             border-radius: 24px;
             padding: 40px 30px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .logo-area {
             text-align: center;
             margin-bottom: 30px;
+            animation: bounceIn 1s ease-out 0.2s both;
+        }
+
+        @keyframes bounceIn {
+            0% { 
+                opacity: 0; 
+                transform: scale(0.3); 
+            }
+            50% { 
+                opacity: 1;
+                transform: scale(1.05); 
+            }
+            70% { 
+                transform: scale(0.9); 
+            }
+            100% { 
+                transform: scale(1); 
+            }
         }
 
         .logo-img {
-            width: 80px;
-            height: 80px;
+            width: 90px;
+            height: 90px;
             object-fit: contain;
             margin-bottom: 15px;
             filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+            animation: rotateIn 0.8s ease-out 0.4s both;
+        }
+
+        @keyframes rotateIn {
+            from {
+                opacity: 0;
+                transform: rotate(-180deg) scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: rotate(0) scale(1);
+            }
         }
 
         .school-name {
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-size: 1.2rem;
+            font-weight: 700;
             color: var(--text-main);
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            animation: fadeInDown 0.6s ease-out 0.6s both;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .system-name {
             font-size: 0.85rem;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            animation: fadeIn 0.6s ease-out 0.8s both;
         }
 
         .form-floating {
             margin-bottom: 15px;
+            animation: slideInLeft 0.5s ease-out both;
+        }
+
+        .form-floating:nth-child(1) { animation-delay: 0.3s; }
+        .form-floating:nth-child(2) { animation-delay: 0.4s; }
+        .form-floating:nth-child(3) { animation-delay: 0.5s; }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .form-control {
@@ -107,13 +190,15 @@
             border-radius: 12px;
             padding: 16px;
             height: auto;
+            transition: all 0.3s ease;
         }
 
         .form-control:focus {
             background: rgba(15, 23, 42, 0.8);
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
             color: white;
+            transform: translateY(-2px);
         }
 
         .form-control::placeholder { color: #64748b; }
@@ -121,6 +206,21 @@
         .form-floating label {
             color: #64748b;
             padding-left: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-floating label i {
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus + label,
+        .form-control:not(:placeholder-shown) + label {
+            color: var(--primary);
+        }
+
+        .form-control:focus + label i {
+            color: var(--primary);
+            transform: scale(1.1);
         }
 
         .btn-login {
@@ -134,47 +234,121 @@
             color: white;
             transition: all 0.3s ease;
             margin-top: 10px;
+            animation: pulse 2s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+            }
         }
 
         .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.5);
+            animation: none;
+        }
+
+        .btn-login:active {
+            transform: translateY(-1px);
         }
 
         .btn-login:disabled {
             opacity: 0.7;
             transform: none;
+            animation: none;
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-login:active::before {
+            width: 300px;
+            height: 300px;
         }
 
         .divider {
             display: flex;
             align-items: center;
             text-align: center;
-            margin: 20px 0;
+            margin: 25px 0;
             color: var(--text-muted);
             font-size: 0.8rem;
+            animation: fadeIn 0.6s ease-out 0.7s both;
         }
         .divider::before, .divider::after {
             content: '';
             flex: 1;
             border-bottom: 1px solid var(--border);
         }
-        .divider span { padding: 0 10px; }
+        .divider span { padding: 0 15px; }
+
+        .btn-google {
+            border-color: var(--border);
+            color: var(--text-muted);
+            border-radius: 12px;
+            padding: 12px;
+            transition: all 0.3s ease;
+            animation: slideInRight 0.5s ease-out 0.8s both;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .btn-google:hover {
+            border-color: var(--primary);
+            color: var(--text-main);
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateY(-2px);
+        }
 
         .footer-links {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 25px;
             font-size: 0.85rem;
+            animation: fadeIn 0.6s ease-out 0.9s both;
         }
         .footer-links a {
             color: var(--primary);
             text-decoration: none;
             font-weight: 500;
+            transition: all 0.3s ease;
         }
-        .footer-links a:hover { text-decoration: underline; }
+        .footer-links a:hover { 
+            text-decoration: underline;
+            color: var(--primary-hover);
+        }
 
         /* Toast Notifications */
-        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+        .toast-container { 
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            z-index: 9999; 
+        }
         .custom-toast {
             background: rgba(30, 41, 59, 0.95);
             border-left: 4px solid var(--primary);
@@ -186,19 +360,111 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            animation: slideInRight 0.3s ease;
+            animation: slideInRight 0.4s ease, fadeOut 0.5s ease-in 3.5s forwards;
             backdrop-filter: blur(5px);
+            min-width: 280px;
         }
         .custom-toast.error { border-left-color: #ef4444; }
         .custom-toast.success { border-left-color: #10b981; }
         
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(100%); }
-            to { opacity: 1; transform: translateX(0); }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-wave {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .loading-bar {
+            width: 8px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            border-radius: 4px;
+            animation: loadingWave 1s ease-in-out infinite;
+        }
+
+        .loading-bar:nth-child(2) { animation-delay: 0.1s; }
+        .loading-bar:nth-child(3) { animation-delay: 0.2s; }
+        .loading-bar:nth-child(4) { animation-delay: 0.3s; }
+
+        @keyframes loadingWave {
+            0%, 100% { height: 10px; }
+            50% { height: 60px; }
+        }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            body {
+                padding: 10px;
+                align-items: flex-start;
+                padding-top: 40px;
+            }
+
+            .login-container {
+                padding: 10px;
+            }
+
+            .login-card {
+                padding: 30px 20px;
+            }
+
+            .logo-img {
+                width: 70px;
+                height: 70px;
+            }
+
+            .school-name {
+                font-size: 1rem;
+            }
+
+            .form-control {
+                padding: 14px;
+            }
+        }
+
+        @media (max-height: 700px) {
+            body {
+                align-items: flex-start;
+                padding-top: 20px;
+            }
         }
     </style>
 </head>
 <body>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-wave">
+            <div class="loading-bar"></div>
+            <div class="loading-bar"></div>
+            <div class="loading-bar"></div>
+            <div class="loading-bar"></div>
+        </div>
+        <p style="color: var(--text-muted); margin-top: 20px; font-size: 14px; animation: fadeIn 0.5s ease-out;">
+            Cargando sistema...
+        </p>
+    </div>
 
     <div class="bg-pattern"></div>
 
@@ -206,7 +472,7 @@
         <div class="login-card">
             <div class="logo-area">
                 <!-- LOGO INSTITUCIONAL -->
-                <img src="img/fondos/logo.png" alt="Logo Escuela" class="logo-img" onerror="this.src='https://via.placeholder.com/80?text=LOGO'">
+                <img src="img/fondos/logo.png" alt="Logo Escuela" class="logo-img" onerror="this.src='https://via.placeholder.com/90?text=LOGO'">
                 <h1 class="school-name">Complejo Educativo<br>Thomas Jefferson</h1>
                 <p class="system-name">Sistema de Gestión Académica</p>
             </div>
@@ -240,7 +506,7 @@
 
             <div class="divider"><span>O ACCESO RÁPIDO</span></div>
 
-            <button class="btn btn-outline-light w-100 rounded-3 py-2 mb-2" style="border-color: var(--border); color: var(--text-muted);" onclick="alert('Próximamente: Acceso con Google para Docentes')">
+            <button class="btn btn-outline-light w-100 btn-google" onclick="alert('Próximamente: Acceso con Google para Docentes')">
                 <i class="bi bi-google me-2"></i> Continuar con Google
             </button>
 
@@ -261,7 +527,7 @@
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Configuración Firebase (NUEVA)
+        // Configuración Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC1VnkczVVRwNDj6G1kPPdHNZXWNPy_JXA",
             authDomain: "sistema-escolar-8fcee.firebaseapp.com",
@@ -276,6 +542,17 @@
         const db = getFirestore(app);
 
         const CODIGO_SEGURIDAD = "CLASES26$COED";
+
+        // Ocultar loading screen
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loadingScreen');
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+            }, 1500);
+        });
 
         // Función para mostrar notificaciones
         function showToast(msg, type = 'info') {
@@ -310,7 +587,6 @@
 
             try {
                 // 2. Lógica "Usuario o Correo"
-                // Si no tiene '@', asumimos que es un usuario (admin1, jperez) y le agregamos el dominio
                 let email = rawUser;
                 if (!rawUser.includes('@')) {
                     email = `${rawUser}@clases.edu.sv`;
@@ -320,7 +596,7 @@
                 const userCredential = await signInWithEmailAndPassword(auth, email, pass);
                 const user = userCredential.user;
 
-                // 4. Obtener datos de Firestore para verificar Rol
+                // 4. Obtener datos de Firestore
                 const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
                 
                 if (userDoc.exists()) {
@@ -348,7 +624,6 @@
                     }, 1000);
 
                 } else {
-                    // Si existe en Auth pero no en Firestore (caso raro)
                     showToast('Error: Usuario no registrado en la base de datos', 'error');
                     btn.disabled = false;
                     btnText.classList.remove('d-none');
