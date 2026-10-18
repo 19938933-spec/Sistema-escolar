@@ -611,16 +611,19 @@
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const loadingScreen = document.getElementById('loadingScreen');
-                loadingScreen.style.opacity = '0';
-                setTimeout(() => {
-                    loadingScreen.style.display = 'none';
-                }, 500);
+                if (loadingScreen) {
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 500);
+                }
             }, 1500);
         });
 
         // Función para mostrar notificaciones
         function showToast(msg, type = 'info') {
             const container = document.getElementById('toastContainer');
+            if (!container) return;
             const toast = document.createElement('div');
             toast.className = `custom-toast ${type}`;
             const icon = type === 'error' ? 'x-circle-fill' : (type === 'success' ? 'check-circle-fill' : 'info-circle-fill');
@@ -629,7 +632,9 @@
             setTimeout(() => toast.remove(), 4000);
         }
 
-        // LOGIN CON USUARIO/CORREO
+        // ==========================================
+        // LOGIN CON USUARIO O CORREO
+        // ==========================================
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -637,7 +642,7 @@
             const pass = document.getElementById('inputPass').value;
             const code = document.getElementById('inputCode').value.trim();
 
-            // Validar Código de Seguridad
+            // 1. Validar Código de Seguridad
             if (code !== CODIGO_SEGURIDAD) {
                 showToast('Código de seguridad incorrecto', 'error');
                 return;
@@ -652,17 +657,17 @@
             btnLoader.classList.remove('d-none');
 
             try {
-                // Lógica "Usuario o Correo"
+                // 2. Lógica "Usuario o Correo"
                 let email = rawUser;
                 if (!rawUser.includes('@')) {
                     email = `${rawUser}@clases.edu.sv`;
                 }
 
-                // Autenticar en Firebase
+                // 3. Autenticar en Firebase
                 const userCredential = await signInWithEmailAndPassword(auth, email, pass);
                 const user = userCredential.user;
 
-                // Obtener datos de Firestore
+                // 4. Obtener datos de Firestore
                 const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
                 
                 if (userDoc.exists()) {
@@ -675,17 +680,24 @@
                         correo: data.correo,
                         rol: data.rol,
                         grado: data.gradoEncargado || data.grado || '',
-                        usuario: data.usuario || rawUser
+                        usuario: data.usuario || rawUser,
+                        perfilConfigurado: data.perfilConfigurado
                     }));
 
                     showToast(`Bienvenido, ${data.nombre || data.usuario}`, 'success');
 
-                    // Redirección según Rol
+                    // 5. Redirección Inteligente según Rol y Configuración
                     setTimeout(() => {
                         if (data.rol === 'admin') {
                             window.location.href = 'admin.html';
+                        } else if (data.rol === 'docente') {
+                            if (data.perfilConfigurado === false) {
+                                window.location.href = 'configurar-perfil.html';
+                            } else {
+                                window.location.href = 'dashboard.html';
+                            }
                         } else {
-                            window.location.href = 'dashboard.html';
+                            window.location.href = 'index.html'; // Fallback por seguridad
                         }
                     }, 1000);
 
@@ -697,13 +709,15 @@
                 }
 
             } catch (error) {
-                console.error(error);
+                console.error("Error de login:", error);
                 let msg = "Error al iniciar sesión";
+                
                 if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
                     msg = "Usuario o contraseña incorrectos";
                 } else if (error.code === 'auth/too-many-requests') {
                     msg = "Demasiados intentos. Intenta más tarde";
                 }
+                
                 showToast(msg, 'error');
                 btn.disabled = false;
                 btnText.classList.remove('d-none');
@@ -711,43 +725,54 @@
             }
         });
 
+        // ==========================================
         // LOGIN CON GOOGLE
+        // ==========================================
         document.getElementById('btnGoogle').addEventListener('click', async () => {
             try {
                 const result = await signInWithPopup(auth, googleProvider);
                 const user = result.user;
 
-                // Validar que el correo sea @clases.edu.sv
+                // 1. Validar que el correo sea institucional
                 if (!user.email.endsWith('@clases.edu.sv')) {
                     await signOut(auth);
                     showToast('Solo se permiten correos institucionales (@clases.edu.sv)', 'error');
                     return;
                 }
 
-                // Verificar si existe en Firestore
+                // 2. Verificar si existe en Firestore
                 const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
                 
                 if (userDoc.exists()) {
                     const data = userDoc.data();
                     
+                    // Seguridad: Los admins deben usar el formulario normal
                     if (data.rol !== 'docente') {
                         await signOut(auth);
                         showToast('Las cuentas de administrador deben usar el formulario normal', 'error');
                         return;
                     }
 
+                    // Guardar sesión local
                     localStorage.setItem('usuario', JSON.stringify({
                         uid: user.uid,
                         nombre: data.nombre || data.nombreCompleto,
                         correo: data.correo,
                         rol: data.rol,
                         grado: data.gradoEncargado || data.grado || '',
-                        usuario: data.usuario || user.email.split('@')[0]
+                        usuario: data.usuario || user.email.split('@')[0],
+                        perfilConfigurado: data.perfilConfigurado
                     }));
 
                     showToast(`Bienvenido, ${data.nombre}`, 'success');
+                    
+                    // Redirección Inteligente
                     setTimeout(() => {
-                        window.location.href = 'dashboard.html';
+                        if (data.perfilConfigurado === false) {
+                            window.location.href = 'configurar-perfil.html';
+                        } else {
+                            window.location.href = 'dashboard.html';
+                        }
                     }, 1000);
 
                 } else {
@@ -756,7 +781,7 @@
                 }
 
             } catch (error) {
-                console.error(error);
+                console.error("Error de Google Login:", error);
                 if (error.code === 'auth/popup-closed-by-user') {
                     showToast('Ventana de Google cerrada', 'info');
                 } else if (error.code === 'auth/popup-blocked') {
