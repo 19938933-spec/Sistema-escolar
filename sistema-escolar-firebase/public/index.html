@@ -5,272 +5,263 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión - Sistema Escolar Thomas Jefferson</title>
     
-    <!-- Bootstrap 5 -->
+    <!-- Bootstrap 5 & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
     <style>
         :root {
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --bg-card: rgba(30, 41, 59, 0.95);
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --accent-primary: #6366f1;
-            --accent-hover: #4f46e5;
-            --border: #334155;
+            --bg-dark: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 70%);
+            color: var(--text-main);
             min-height: 100vh;
-            overflow-x: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
 
-        /* --- Fondo Animado --- */
-        .pattern-bg-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-        }
-        .pattern-bg {
-            width: 100%; height: 100%;
-            background: repeating-linear-gradient(135deg, #232526 0px, #232526 60px, #23252699 70px, #414345 130px);
-            position: relative; overflow: hidden;
-        }
-        .pattern-bg .cube-svg {
-            position: absolute; width: 200%; height: 200%; left: -30%; top: -20%;
-            opacity: 0.1; animation: cubeMove 18s linear infinite alternate;
-        }
-        @keyframes cubeMove {
-            from { transform: translateY(0) scale(1); }
-            to { transform: translateY(-20%) scale(1.02) rotate(1deg); }
+        /* Efecto de fondo sutil */
+        .bg-pattern {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('img/fondos/fondo-login.jpg'); /* Tu imagen de fondo */
+            background-size: cover;
+            background-position: center;
+            opacity: 0.1;
+            z-index: -1;
+            filter: blur(2px);
         }
 
-        /* --- Loading Screen --- */
-        .loading-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-primary); display: flex; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 9999;
-            transition: opacity 0.5s ease;
-        }
-        .loading-wave { display: flex; align-items: center; gap: 8px; }
-        .loading-bar {
-            width: 8px; height: 40px;
-            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
-            border-radius: 4px; animation: loading-wave-animation 1s ease-in-out infinite;
-        }
-        .loading-bar:nth-child(2) { animation-delay: 0.1s; }
-        .loading-bar:nth-child(3) { animation-delay: 0.2s; }
-        .loading-bar:nth-child(4) { animation-delay: 0.3s; }
-        @keyframes loading-wave-animation {
-            0%, 100% { height: 10px; }
-            50% { height: 60px; }
-        }
-
-        /* --- Login Card --- */
         .login-container {
-            min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            z-index: 10;
         }
+
         .login-card {
             background: var(--bg-card);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border);
-            border-radius: 20px;
+            border-radius: 24px;
+            padding: 40px 30px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            max-width: 480px; width: 100%;
-            animation: slideUp 0.6s ease-out;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .login-header { text-align: center; padding: 30px 20px 20px; }
-        .login-logo {
-            width: 80px; height: 80px; margin: 0 auto 15px;
-            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 40px; color: white; animation: bounceIn 0.8s ease-out;
+        .logo-area {
+            text-align: center;
+            margin-bottom: 30px;
         }
-        @keyframes bounceIn {
-            0% { opacity: 0; transform: scale(0.3); }
-            50% { transform: scale(1.05); }
-            70% { transform: scale(0.9); }
-            100% { transform: scale(1); }
-        }
-        .login-title { font-size: 28px; font-weight: 700; margin-bottom: 5px; }
-        .login-subtitle { color: var(--text-secondary); font-size: 14px; }
 
-        .login-body { padding: 30px; }
+        .logo-img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        }
 
-        /* --- Inputs --- */
-        .input-group-custom { position: relative; margin-bottom: 20px; }
-        .input-group-custom i {
-            position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
-            color: var(--text-secondary); font-size: 18px; transition: color 0.3s;
+        .school-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 5px;
         }
-        .input-group-custom input {
-            background: rgba(15, 23, 42, 0.6); border: 2px solid var(--border);
-            border-radius: 12px; padding: 14px 15px 14px 50px;
-            color: var(--text-primary); width: 100%; font-size: 15px; transition: all 0.3s;
-        }
-        .input-group-custom input:focus {
-            outline: none; border-color: var(--accent-primary);
-            background: rgba(15, 23, 42, 0.9); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-        }
-        .input-group-custom input:focus + i { color: var(--accent-primary); }
-        .input-group-custom input::placeholder { color: #64748b; }
 
-        /* --- Botones --- */
-        .btn-login {
-            width: 100%; padding: 14px;
-            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
-            border: none; border-radius: 12px; color: white; font-size: 16px;
-            font-weight: 600; cursor: pointer; transition: all 0.3s; margin-top: 10px;
+        .system-name {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5); }
-        .btn-login:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-        .divider { display: flex; align-items: center; margin: 25px 0; }
-        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-        .divider span { padding: 0 15px; color: var(--text-secondary); font-size: 13px; }
-
-        .btn-google {
-            width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border); border-radius: 12px; color: var(--text-primary);
-            font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.3s;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
+        .form-floating {
+            margin-bottom: 15px;
         }
-        .btn-google:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--accent-primary); }
 
-        /* --- Footer & Alertas --- */
-        .login-footer { text-align: center; padding: 0 30px 30px; }
-        .forgot-password {
-            color: var(--accent-primary); text-decoration: none; font-size: 14px;
-            display: inline-block; margin-bottom: 15px; transition: all 0.3s;
+        .form-control {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            color: white;
+            border-radius: 12px;
+            padding: 16px;
+            height: auto;
         }
-        .forgot-password:hover { color: #8b5cf6; text-decoration: underline; }
-        .register-link { color: var(--text-secondary); font-size: 14px; }
-        .register-link a { color: var(--accent-primary); text-decoration: none; font-weight: 600; }
-        .register-link a:hover { text-decoration: underline; }
 
-        .alert-custom {
-            padding: 12px 15px; border-radius: 10px; font-size: 14px; margin-bottom: 20px;
-            display: none; animation: shake 0.5s;
+        .form-control:focus {
+            background: rgba(15, 23, 42, 0.8);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            color: white;
         }
-        .alert-custom.show { display: block; }
-        .alert-custom.error { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; }
-        .alert-custom.success { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #6ee7b7; }
+
+        .form-control::placeholder { color: #64748b; }
         
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+        .form-floating label {
+            color: #64748b;
+            padding-left: 16px;
         }
 
-        @media (max-width: 576px) {
-            .login-card { border-radius: 15px; }
-            .login-header { padding: 20px 15px 15px; }
-            .login-body { padding: 20px; }
-            .login-title { font-size: 24px; }
+        .btn-login {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-weight: 600;
+            font-size: 1rem;
+            width: 100%;
+            color: white;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.7;
+            transform: none;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border);
+        }
+        .divider span { padding: 0 10px; }
+
+        .footer-links {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.85rem;
+        }
+        .footer-links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .footer-links a:hover { text-decoration: underline; }
+
+        /* Toast Notifications */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+        .custom-toast {
+            background: rgba(30, 41, 59, 0.95);
+            border-left: 4px solid var(--primary);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        .custom-toast.error { border-left-color: #ef4444; }
+        .custom-toast.success { border-left-color: #10b981; }
+        
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
         }
     </style>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loadingScreen" class="loading-screen">
-        <div class="loading-wave">
-            <div class="loading-bar"></div><div class="loading-bar"></div>
-            <div class="loading-bar"></div><div class="loading-bar"></div>
-        </div>
-        <p style="color: var(--text-secondary); margin-top: 20px; font-size: 14px;">Cargando sistema...</p>
-    </div>
 
-    <!-- Fondo Animado -->
-    <div class="pattern-bg-container">
-        <div class="pattern-bg">
-            <svg preserveAspectRatio="xMidYMid slice" height="100%" width="100%" viewBox="0 0 120 104">
-                <defs>
-                    <linearGradient y2="100%" x2="100%" y1="0%" x1="0%" id="cube-dark">
-                        <stop stop-color="#232526" offset="0%"></stop><stop stop-color="#414345" offset="100%"></stop>
-                    </linearGradient>
-                </defs>
-            </svg>
-        </div>
-    </div>
+    <div class="bg-pattern"></div>
 
-    <!-- Contenedor Principal -->
     <div class="login-container">
         <div class="login-card">
-            <div class="login-header">
-                <div class="login-logo"><i class="bi bi-mortarboard-fill"></i></div>
-                <h1 class="login-title">Sistema Escolar</h1>
-                <p class="login-subtitle">Complejo Educativo Thomas Jefferson</p>
+            <div class="logo-area">
+                <!-- LOGO INSTITUCIONAL -->
+                <img src="img/fondos/logo.png" alt="Logo Escuela" class="logo-img" onerror="this.src='https://via.placeholder.com/80?text=LOGO'">
+                <h1 class="school-name">Complejo Educativo<br>Thomas Jefferson</h1>
+                <p class="system-name">Sistema de Gestión Académica</p>
             </div>
 
-            <div class="login-body">
-                <div id="alerta" class="alert-custom" role="alert"></div>
+            <form id="loginForm">
+                <!-- Usuario o Correo -->
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="inputUser" placeholder="Usuario o Correo" required>
+                    <label for="inputUser"><i class="bi bi-person-fill me-2"></i>Usuario o Correo</label>
+                </div>
 
-                <!-- Formulario Normal (Para Admins y Docentes) -->
-                <form id="formLogin">
-                    <div class="input-group-custom">
-                        <input type="email" id="correo" placeholder="Correo electrónico" required autocomplete="email">
-                        <i class="bi bi-envelope-fill"></i>
-                    </div>
-                    <div class="input-group-custom">
-                        <input type="password" id="contrasena" placeholder="Contraseña" required autocomplete="current-password">
-                        <i class="bi bi-lock-fill"></i>
-                    </div>
-                    <div class="input-group-custom">
-                        <input type="text" id="codigoSeguridad" placeholder="Código: CLASES26$COED" required maxlength="15" autocomplete="off">
-                        <i class="bi bi-shield-lock-fill"></i>
-                    </div>
+                <!-- Contraseña -->
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="inputPass" placeholder="Contraseña" required>
+                    <label for="inputPass"><i class="bi bi-lock-fill me-2"></i>Contraseña</label>
+                </div>
 
-                    <button type="submit" class="btn-login" id="btnLogin">
-                        <span id="btnText">Iniciar Sesión</span>
-                        <span id="btnLoading" style="display: none;">
-                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>Verificando...
-                        </span>
-                    </button>
-                </form>
+                <!-- Código de Seguridad -->
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="inputCode" placeholder="Código" required>
+                    <label for="inputCode"><i class="bi bi-shield-lock-fill me-2"></i>Código de Seguridad</label>
+                </div>
 
-                <div class="divider"><span>O continúa con</span></div>
-
-                <!-- Botón SOLO de Google (Exclusivo para Docentes con @clases.edu.sv) -->
-                <button id="btnGoogle" class="btn-google">
-                    <svg viewBox="0 0 24 24" width="20" height="20">
-                        <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    Google (Solo Docentes)
+                <button type="submit" class="btn-login" id="btnSubmit">
+                    <span id="btnText">Iniciar Sesión</span>
+                    <span id="btnLoader" class="d-none">
+                        <span class="spinner-border spinner-border-sm me-2"></span> Validando...
+                    </span>
                 </button>
-            </div>
+            </form>
 
-            <div class="login-footer">
-                <a href="recuperar.html" class="forgot-password">¿Olvidaste tu contraseña?</a>
-                <p class="register-link">¿Eres docente? <a href="registro.html">Regístrate aquí</a></p>
+            <div class="divider"><span>O ACCESO RÁPIDO</span></div>
+
+            <button class="btn btn-outline-light w-100 rounded-3 py-2 mb-2" style="border-color: var(--border); color: var(--text-muted);" onclick="alert('Próximamente: Acceso con Google para Docentes')">
+                <i class="bi bi-google me-2"></i> Continuar con Google
+            </button>
+
+            <div class="footer-links">
+                <a href="recuperar.html">¿Olvidaste tu contraseña?</a>
+                <br>
+                <span class="text-muted mt-2 d-inline-block">¿Eres docente? <a href="registro.html">Regístrate aquí</a></span>
             </div>
         </div>
     </div>
+
+    <!-- Contenedor de Notificaciones -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { 
-            getAuth, signInWithEmailAndPassword, GoogleAuthProvider, 
-            signInWithPopup, signOut, onAuthStateChanged 
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // TU NUEVA CONFIGURACIÓN DE FIREBASE
+        // Configuración Firebase (NUEVA)
         const firebaseConfig = {
             apiKey: "AIzaSyC1VnkczVVRwNDj6G1kPPdHNZXWNPy_JXA",
             authDomain: "sistema-escolar-8fcee.firebaseapp.com",
@@ -283,114 +274,99 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const googleProvider = new GoogleAuthProvider();
 
-        const CODIGO_SEGURIDAD = 'CLASES26$COED';
-        const alerta = document.getElementById('alerta');
-        const btnLogin = document.getElementById('btnLogin');
-        const btnText = document.getElementById('btnText');
-        const btnLoading = document.getElementById('btnLoading');
+        const CODIGO_SEGURIDAD = "CLASES26$COED";
 
-        function mostrarAlerta(mensaje, tipo) {
-            alerta.textContent = mensaje;
-            alerta.className = `alert-custom ${tipo} show`;
-            setTimeout(() => alerta.classList.remove('show'), 5000);
+        // Función para mostrar notificaciones
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `custom-toast ${type}`;
+            toast.innerHTML = `<i class="bi bi-${type === 'error' ? 'x-circle-fill' : 'check-circle-fill'}"></i> <span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
         }
 
-        // 1. Verificar sesión activa al cargar
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    localStorage.setItem('usuario', JSON.stringify({
-                        uid: user.uid, nombre: userData.nombre, correo: userData.correo,
-                        rol: userData.rol, grado: userData.grado || ''
-                    }));
-                    window.location.href = userData.rol === 'admin' ? 'admin.html' : 'dashboard.html';
-                }
-            } else {
-                // Ocultar loading si no hay sesión
-                setTimeout(() => { document.getElementById('loadingScreen').style.display = 'none'; }, 1500);
-            }
-        });
-
-        // 2. Lógica del Formulario Normal (Admins y Docentes)
-        document.getElementById('formLogin').addEventListener('submit', async (e) => {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const correo = document.getElementById('correo').value.trim();
-            const contrasena = document.getElementById('contrasena').value;
-            const codigo = document.getElementById('codigoSeguridad').value.trim();
+            
+            const rawUser = document.getElementById('inputUser').value.trim();
+            const pass = document.getElementById('inputPass').value;
+            const code = document.getElementById('inputCode').value.trim();
 
-            if (codigo !== CODIGO_SEGURIDAD) {
-                mostrarAlerta('❌ Código de seguridad incorrecto.', 'error');
+            // 1. Validar Código de Seguridad
+            if (code !== CODIGO_SEGURIDAD) {
+                showToast('Código de seguridad incorrecto', 'error');
                 return;
             }
 
-            btnLogin.disabled = true; btnText.style.display = 'none'; btnLoading.style.display = 'inline';
+            // UI Loading
+            const btn = document.getElementById('btnSubmit');
+            const btnText = document.getElementById('btnText');
+            const btnLoader = document.getElementById('btnLoader');
+            btn.disabled = true;
+            btnText.classList.add('d-none');
+            btnLoader.classList.remove('d-none');
 
             try {
-                const userCredential = await signInWithEmailAndPassword(auth, correo, contrasena);
-                const userDoc = await getDoc(doc(db, 'usuarios', userCredential.user.uid));
+                // 2. Lógica "Usuario o Correo"
+                // Si no tiene '@', asumimos que es un usuario (admin1, jperez) y le agregamos el dominio
+                let email = rawUser;
+                if (!rawUser.includes('@')) {
+                    email = `${rawUser}@clases.edu.sv`;
+                }
+
+                // 3. Autenticar en Firebase
+                const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+                const user = userCredential.user;
+
+                // 4. Obtener datos de Firestore para verificar Rol
+                const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
                 
                 if (userDoc.exists()) {
-                    const userData = userDoc.data();
+                    const data = userDoc.data();
+                    
+                    // Guardar sesión local
                     localStorage.setItem('usuario', JSON.stringify({
-                        uid: userCredential.user.uid, nombre: userData.nombre, correo: userData.correo,
-                        rol: userData.rol, grado: userData.grado || ''
+                        uid: user.uid,
+                        nombre: data.nombre || data.nombreCompleto,
+                        correo: data.correo,
+                        rol: data.rol,
+                        grado: data.gradoEncargado || data.grado || '',
+                        usuario: data.usuario || rawUser
                     }));
-                    mostrarAlerta('✅ Inicio de sesión exitoso.', 'success');
+
+                    showToast(`Bienvenido, ${data.nombre || data.usuario}`, 'success');
+
+                    // Redirección según Rol
                     setTimeout(() => {
-                        window.location.href = userData.rol === 'admin' ? 'admin.html' : 'dashboard.html';
+                        if (data.rol === 'admin') {
+                            window.location.href = 'admin.html';
+                        } else {
+                            window.location.href = 'dashboard.html';
+                        }
                     }, 1000);
+
                 } else {
-                    mostrarAlerta('❌ Usuario no encontrado en la base de datos.', 'error');
-                    btnLogin.disabled = false; btnText.style.display = 'inline'; btnLoading.style.display = 'none';
+                    // Si existe en Auth pero no en Firestore (caso raro)
+                    showToast('Error: Usuario no registrado en la base de datos', 'error');
+                    btn.disabled = false;
+                    btnText.classList.remove('d-none');
+                    btnLoader.classList.add('d-none');
                 }
+
             } catch (error) {
-                let msg = 'Error al iniciar sesión.';
-                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') msg = '❌ Correo o contraseña incorrectos.';
-                mostrarAlerta(msg, 'error');
-                btnLogin.disabled = false; btnText.style.display = 'inline'; btnLoading.style.display = 'none';
-            }
-        });
-
-        // 3. Lógica del Botón Google (SOLO para Docentes con @clases.edu.sv)
-        document.getElementById('btnGoogle').addEventListener('click', async () => {
-            try {
-                const result = await signInWithPopup(auth, googleProvider);
-                const user = result.user;
-
-                // 🔒 VALIDACIÓN ESTRICTA DE DOMINIO PARA GOOGLE
-                if (!user.email.endsWith('@clases.edu.sv')) {
-                    await signOut(auth); // Cierra la sesión inmediatamente
-                    mostrarAlerta('❌ Acceso denegado: Solo se permiten correos institucionales (@clases.edu.sv).', 'error');
-                    return;
+                console.error(error);
+                let msg = "Error al iniciar sesión";
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                    msg = "Usuario o contraseña incorrectos";
+                } else if (error.code === 'auth/too-many-requests') {
+                    msg = "Demasiados intentos. Intenta más tarde";
                 }
-
-                // Si pasa la validación, verificamos si existe en Firestore
-                const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    if (userData.rol !== 'docente') {
-                        await signOut(auth);
-                        mostrarAlerta('❌ Las cuentas de administrador deben usar el formulario normal.', 'error');
-                        return;
-                    }
-                    localStorage.setItem('usuario', JSON.stringify({
-                        uid: user.uid, nombre: userData.nombre, correo: userData.correo,
-                        rol: userData.rol, grado: userData.grado || ''
-                    }));
-                    mostrarAlerta('✅ Bienvenido, docente.', 'success');
-                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
-                } else {
-                    await signOut(auth);
-                    mostrarAlerta('❌ Tu correo no está registrado en el sistema. Regístrate primero.', 'error');
-                }
-            } catch (error) {
-                if (error.code !== 'auth/popup-closed-by-user') {
-                    mostrarAlerta('❌ Error al iniciar sesión con Google.', 'error');
-                }
+                showToast(msg, 'error');
+                btn.disabled = false;
+                btnText.classList.remove('d-none');
+                btnLoader.classList.add('d-none');
             }
         });
     </script>
