@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Contraseña - Sistema Escolar</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: rgba(30, 41, 59, 0.95);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-primary: #6366f1;
+            --accent-hover: #4f46e5;
+            --border: #334155;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* --- Fondo Animado Sutil --- */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        /* --- Tarjeta de Recuperación --- */
+        .recover-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 450px;
+            width: 100%;
+            padding: 40px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .recover-header { text-align: center; margin-bottom: 30px; }
+        
+        .recover-icon {
+            width: 80px; height: 80px;
+            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 36px; color: white;
+            margin: 0 auto 20px;
+            animation: bounceIn 0.8s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% { opacity: 0; transform: scale(0.3); }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+
+        .recover-title { font-size: 24px; font-weight: 700; margin-bottom: 10px; }
+        .recover-subtitle { color: var(--text-secondary); font-size: 14px; line-height: 1.5; }
+
+        /* --- Inputs --- */
+        .input-group-custom { position: relative; margin-bottom: 25px; }
+        .input-group-custom i {
+            position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+            color: var(--text-secondary); font-size: 18px; transition: color 0.3s;
+        }
+        .input-group-custom input {
+            background: rgba(15, 23, 42, 0.6); border: 2px solid var(--border);
+            border-radius: 12px; padding: 14px 15px 14px 50px;
+            color: var(--text-primary); width: 100%; font-size: 15px; transition: all 0.3s;
+        }
+        .input-group-custom input:focus {
+            outline: none; border-color: var(--accent-primary);
+            background: rgba(15, 23, 42, 0.9); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+        .input-group-custom input:focus + i { color: var(--accent-primary); }
+        .input-group-custom input::placeholder { color: #64748b; }
+
+        /* --- Botones --- */
+        .btn-recover {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
+            border: none; border-radius: 12px; color: white; font-size: 16px;
+            font-weight: 600; cursor: pointer; transition: all 0.3s;
+        }
+        .btn-recover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5); }
+        .btn-recover:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .back-link {
+            display: block; text-align: center; margin-top: 25px;
+            color: var(--text-secondary); text-decoration: none; font-size: 14px;
+            transition: color 0.3s;
+        }
+        .back-link:hover { color: var(--accent-primary); }
+        .back-link i { margin-right: 5px; }
+
+        /* --- Notificaciones Flotantes (Toasts) --- */
+        .toast-container {
+            position: fixed; top: 20px; right: 20px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .toast-notification {
+            padding: 15px 20px; border-radius: 12px; color: white;
+            font-weight: 500; font-size: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            display: flex; align-items: center; gap: 12px;
+            min-width: 300px; max-width: 400px;
+            animation: slideInRight 0.4s ease-out, fadeOut 0.5s ease-in 4.5s forwards;
+            backdrop-filter: blur(10px);
+        }
+        .toast-notification.success { background: rgba(16, 185, 129, 0.9); border: 1px solid #10b981; }
+        .toast-notification.error { background: rgba(239, 68, 68, 0.9); border: 1px solid #ef4444; }
+        .toast-notification i { font-size: 20px; }
+
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeOut { to { opacity: 0; transform: translateX(100%); } }
+
+        @media (max-width: 576px) {
+            .recover-card { padding: 30px 20px; }
+            .recover-title { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Contenedor para notificaciones flotantes -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <div class="recover-card">
+        <div class="recover-header">
+            <div class="recover-icon">
+                <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <h1 class="recover-title">Recuperar Contraseña</h1>
+            <p class="recover-subtitle">
+                Ingresa tu correo electrónico y te enviaremos un enlace seguro para restablecer tu contraseña.
+            </p>
+        </div>
+
+        <form id="formRecuperar">
+            <div class="input-group-custom">
+                <input type="email" id="correo" placeholder="correo@ejemplo.com" required autocomplete="email">
+                <i class="bi bi-envelope-fill"></i>
+            </div>
+
+            <button type="submit" class="btn-recover" id="btnEnviar">
+                <span id="btnText">Enviar Enlace de Recuperación</span>
+                <span id="btnLoading" style="display: none;">
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>Enviando...
+                </span>
+            </button>
+        </form>
+
+        <a href="index.html" class="back-link">
+            <i class="bi bi-arrow-left"></i> Volver al inicio de sesión
+        </a>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // ✅ CONFIGURACIÓN DEL NUEVO PROYECTO
+        const firebaseConfig = {
+            apiKey: "AIzaSyC1VnkczVVRwNDj6G1kPPdHNZXWNPy_JXA",
+            authDomain: "sistema-escolar-8fcee.firebaseapp.com",
+            projectId: "sistema-escolar-8fcee",
+            storageBucket: "sistema-escolar-8fcee.firebasestorage.app",
+            messagingSenderId: "1017912885647",
+            appId: "1:1017912885647:web:ba6746d5605d281b1dcbfa"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const form = document.getElementById('formRecuperar');
+        const btnEnviar = document.getElementById('btnEnviar');
+        const btnText = document.getElementById('btnText');
+        const btnLoading = document.getElementById('btnLoading');
+
+        // Función para mostrar notificaciones flotantes
+        function mostrarToast(mensaje, tipo) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${tipo}`;
+            
+            const icono = tipo === 'success' 
+                ? '<i class="bi bi-check-circle-fill"></i>' 
+                : '<i class="bi bi-x-circle-fill"></i>';
+            
+            toast.innerHTML = `${icono} <span>${mensaje}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => toast.remove(), 5000);
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const correo = document.getElementById('correo').value.trim();
+
+            if (!correo) {
+                mostrarToast('Por favor, ingresa un correo electrónico.', 'error');
+                return;
+            }
+
+            // Estado de carga
+            btnEnviar.disabled = true;
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline-flex';
+
+            try {
+                // Enviar correo de restablecimiento
+                await sendPasswordResetEmail(auth, correo);
+                
+                mostrarToast(`✅ Enlace enviado a ${correo}. Revisa tu bandeja de entrada (y spam).`, 'success');
+                
+                // Limpiar formulario
+                form.reset();
+                
+            } catch (error) {
+                console.error("Error al enviar correo:", error);
+                
+                let msg = 'Error al enviar el enlace.';
+                if (error.code === 'auth/user-not-found') {
+                    msg = '❌ No existe ninguna cuenta registrada con ese correo.';
+                } else if (error.code === 'auth/invalid-email') {
+                    msg = '❌ El formato del correo no es válido.';
+                } else if (error.code === 'auth/too-many-requests') {
+                    msg = '⚠️ Demasiadas solicitudes. Intenta de nuevo más tarde.';
+                }
+                
+                mostrarToast(msg, 'error');
+            } finally {
+                // Restaurar botón
+                btnEnviar.disabled = false;
+                btnText.style.display = 'inline';
+                btnLoading.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
