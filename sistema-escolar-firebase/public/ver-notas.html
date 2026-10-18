@@ -4,212 +4,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ver Notas Globales - Sistema Escolar</title>
-    
-    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    
-    <!-- jsPDF para exportar a PDF -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
     <style>
         :root {
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --bg-card: rgba(30, 41, 59, 0.95);
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --accent-primary: #6366f1;
-            --accent-success: #10b981;
-            --accent-danger: #ef4444;
-            --accent-warning: #f59e0b;
-            --border: #334155;
+            --bg-primary: #0f172a; --bg-secondary: #1e293b; --bg-card: rgba(30, 41, 59, 0.95);
+            --text-primary: #f1f5f9; --text-secondary: #94a3b8;
+            --accent-primary: #6366f1; --accent-success: #10b981; --accent-danger: #ef4444;
+            --accent-warning: #f59e0b; --border: #334155;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--bg-primary) 0%, #1a1a2e 100%);
-            color: var(--text-primary);
-            min-height: 100vh;
-        }
-
-        .navbar-custom {
-            background: rgba(30, 41, 59, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border);
-            padding: 15px 0;
-        }
-
-        .navbar-brand-custom {
-            display: flex; align-items: center; gap: 12px;
-            color: var(--text-primary); font-weight: 700; font-size: 18px; text-decoration: none;
-        }
-
-        .navbar-brand-custom .logo-icon {
-            width: 40px; height: 40px;
-            background: linear-gradient(135deg, var(--accent-warning), #d97706);
-            border-radius: 10px; display: flex; align-items: center; justify-content: center;
-            font-size: 20px; color: white;
-        }
-
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, var(--bg-primary) 0%, #1a1a2e 100%); color: var(--text-primary); min-height: 100vh; }
+        .navbar-custom { background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 15px 0; }
+        .navbar-brand-custom { display: flex; align-items: center; gap: 12px; color: var(--text-primary); font-weight: 700; font-size: 18px; text-decoration: none; }
+        .navbar-brand-custom .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent-warning), #d97706); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; }
         .user-info { display: flex; align-items: center; gap: 15px; }
-        .user-avatar {
-            width: 40px; height: 40px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-warning), #d97706);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 600; color: white;
-        }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-warning), #d97706); display: flex; align-items: center; justify-content: center; font-weight: 600; color: white; }
         .user-name { font-weight: 600; color: var(--text-primary); }
         .user-role { font-size: 12px; color: var(--text-secondary); }
-        
-        .btn-logout {
-            background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #fca5a5; padding: 8px 16px; border-radius: 8px;
-            font-size: 14px; transition: all 0.3s; cursor: pointer;
-        }
-        .btn-logout:hover { background: rgba(239, 68, 68, 0.2); color: #fecaca; }
-
+        .btn-logout { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; padding: 8px 16px; border-radius: 8px; font-size: 14px; cursor: pointer; }
         .main-content { padding: 30px 0; }
-
-        .page-header {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.15));
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            border-radius: 16px; padding: 30px; margin-bottom: 30px;
-            animation: slideUp 0.6s ease-out;
-        }
+        .page-header { background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.15)); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 16px; padding: 30px; margin-bottom: 30px; animation: slideUp 0.6s ease-out; }
         .page-header h1 { font-size: 28px; font-weight: 700; margin-bottom: 10px; }
         .page-header .subtitle { color: var(--text-secondary); font-size: 16px; }
-
-        .controls-card {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 16px; padding: 25px; margin-bottom: 25px;
-            animation: slideUp 0.6s ease-out 0.1s both;
-        }
-
-        .control-group label {
-            display: block; font-size: 13px; font-weight: 600;
-            color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase;
-        }
-        .control-group select {
-            width: 100%; background: rgba(15, 23, 42, 0.6); border: 2px solid var(--border);
-            border-radius: 10px; padding: 12px 15px; color: var(--text-primary);
-            font-size: 14px; transition: all 0.3s;
-        }
-        .control-group select:focus {
-            outline: none; border-color: var(--accent-primary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-        }
-
-        .btn-action {
-            padding: 12px 20px; border-radius: 10px; border: none;
-            font-weight: 600; cursor: pointer; transition: all 0.3s;
-            display: inline-flex; align-items: center; gap: 8px; font-size: 14px;
-        }
-        .btn-primary-custom {
-            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6); color: white;
-        }
+        .controls-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 25px; margin-bottom: 25px; animation: slideUp 0.6s ease-out 0.1s both; }
+        .control-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; }
+        .control-group select { width: 100%; background: rgba(15, 23, 42, 0.6); border: 2px solid var(--border); border-radius: 10px; padding: 12px 15px; color: var(--text-primary); font-size: 14px; }
+        .control-group select:focus { outline: none; border-color: var(--accent-primary); }
+        .btn-action { padding: 12px 20px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
+        .btn-primary-custom { background: linear-gradient(135deg, var(--accent-primary), #8b5cf6); color: white; }
         .btn-primary-custom:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5); }
-        .btn-success-custom {
-            background: linear-gradient(135deg, var(--accent-success), #059669); color: white;
-        }
+        .btn-success-custom { background: linear-gradient(135deg, var(--accent-success), #059669); color: white; }
         .btn-success-custom:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.5); }
-
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px; margin-bottom: 30px; animation: slideUp 0.6s ease-out 0.2s both;
-        }
-        .stat-card {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 16px; padding: 20px; text-align: center; transition: all 0.3s;
-        }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; animation: slideUp 0.6s ease-out 0.2s both; }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center; transition: all 0.3s; }
         .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         .stat-card.total { border-top: 4px solid var(--accent-primary); }
         .stat-card.aprobados { border-top: 4px solid var(--accent-success); }
         .stat-card.reprobados { border-top: 4px solid var(--accent-danger); }
         .stat-card.porcentaje { border-top: 4px solid var(--accent-warning); }
-
         .stat-value { font-size: 32px; font-weight: 700; margin-bottom: 5px; }
         .stat-card.total .stat-value { color: var(--accent-primary); }
         .stat-card.aprobados .stat-value { color: var(--accent-success); }
         .stat-card.reprobados .stat-value { color: var(--accent-danger); }
         .stat-card.porcentaje .stat-value { color: var(--accent-warning); }
         .stat-label { color: var(--text-secondary); font-size: 13px; text-transform: uppercase; }
-
-        .table-card {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: 16px; padding: 25px; overflow-x: auto;
-            animation: slideUp 0.6s ease-out 0.3s both;
-        }
-
-        .grades-table {
-            width: 100%; border-collapse: separate; border-spacing: 0; min-width: 800px;
-        }
-        .grades-table thead th {
-            background: rgba(15, 23, 42, 0.8); color: var(--text-secondary);
-            padding: 12px 10px; font-size: 12px; text-transform: uppercase;
-            border-bottom: 2px solid var(--border); position: sticky; top: 0;
-            text-align: center; white-space: nowrap;
-        }
+        .table-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 25px; overflow-x: auto; animation: slideUp 0.6s ease-out 0.3s both; }
+        .grades-table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 800px; }
+        .grades-table thead th { background: rgba(15, 23, 42, 0.8); color: var(--text-secondary); padding: 12px 10px; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid var(--border); position: sticky; top: 0; text-align: center; white-space: nowrap; }
         .grades-table thead th:first-child { text-align: left; min-width: 200px; position: sticky; left: 0; z-index: 10; background: rgba(15, 23, 42, 0.95); }
         .grades-table thead th:last-child { position: sticky; right: 0; z-index: 10; background: rgba(15, 23, 42, 0.95); }
-        
-        .grades-table tbody td {
-            padding: 12px 10px; border-bottom: 1px solid var(--border);
-            text-align: center; vertical-align: middle; font-size: 14px;
-        }
-        .grades-table tbody td:first-child { 
-            text-align: left; font-weight: 600; position: sticky; left: 0; 
-            background: var(--bg-card); z-index: 5;
-        }
-        .grades-table tbody td:last-child { 
-            position: sticky; right: 0; background: var(--bg-card); z-index: 5; font-weight: 700;
-        }
+        .grades-table tbody td { padding: 12px 10px; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle; font-size: 14px; }
+        .grades-table tbody td:first-child { text-align: left; font-weight: 600; position: sticky; left: 0; background: var(--bg-card); z-index: 5; }
+        .grades-table tbody td:last-child { position: sticky; right: 0; background: var(--bg-card); z-index: 5; font-weight: 700; }
         .grades-table tbody tr:hover td { background: rgba(99, 102, 241, 0.05); }
-        .grades-table tbody tr:hover td:first-child, .grades-table tbody tr:hover td:last-child { background: rgba(99, 102, 241, 0.1); }
-
         .nota-aprobada { color: var(--accent-success); font-weight: 600; }
         .nota-reprobada { color: var(--accent-danger); font-weight: 600; }
         .nota-vacia { color: var(--text-secondary); font-style: italic; }
-
-        .badge-estado {
-            padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
-        }
+        .badge-estado { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
         .badge-aprobado { background: rgba(16, 185, 129, 0.15); color: var(--accent-success); }
         .badge-reprobado { background: rgba(239, 68, 68, 0.15); color: var(--accent-danger); }
-
         .empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
         .empty-state i { font-size: 64px; margin-bottom: 20px; opacity: 0.5; }
         .empty-state h4 { font-size: 20px; margin-bottom: 10px; color: var(--text-primary); }
-
-        .loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-primary); display: flex; align-items: center; justify-content: center;
-            z-index: 9999;
-        }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-primary); display: flex; align-items: center; justify-content: center; z-index: 9999; }
         .loading-wave { display: flex; align-items: center; gap: 8px; }
-        .loading-bar {
-            width: 8px; height: 40px;
-            background: linear-gradient(135deg, var(--accent-warning), #d97706);
-            border-radius: 4px; animation: wave 1s ease-in-out infinite;
-        }
+        .loading-bar { width: 8px; height: 40px; background: linear-gradient(135deg, var(--accent-warning), #d97706); border-radius: 4px; animation: wave 1s ease-in-out infinite; }
         .loading-bar:nth-child(2) { animation-delay: 0.1s; }
         .loading-bar:nth-child(3) { animation-delay: 0.2s; }
         .loading-bar:nth-child(4) { animation-delay: 0.3s; }
-
         @keyframes wave { 0%, 100% { height: 10px; } 50% { height: 60px; } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-
-        @media (max-width: 768px) {
-            .page-header h1 { font-size: 22px; }
-            .user-name { display: none; }
-            .controls-row { flex-direction: column; }
-        }
+        @media (max-width: 768px) { .page-header h1 { font-size: 22px; } .user-name { display: none; } }
     </style>
 </head>
 <body>
@@ -253,13 +123,7 @@
                 <div class="col-md-4 control-group">
                     <label><i class="bi bi-mortarboard-fill"></i> Grado y Sección</label>
                     <select id="selectGrado">
-                        <option value="">Selecciona un grado...</option>
-                        <option value="Parvularia">Parvularia</option>
-                        <option value="1° Grado - Sección A (Matutino)">1° Grado - Sección A (Matutino)</option>
-                        <option value="7° Grado - Sección A (Matutino)">7° Grado - Sección A (Matutino)</option>
-                        <option value="1° Año ITSI (Vespertino)">1° Año ITSI (Vespertino)</option>
-                        <option value="2° Año ITSI (Vespertino)">2° Año ITSI (Vespertino)</option>
-                        <option value="3° Año ITSI (Vespertino)">3° Año ITSI (Vespertino)</option>
+                        <option value="">Cargando grados...</option>
                     </select>
                 </div>
                 <div class="col-md-3 control-group">
@@ -309,14 +173,9 @@
                     <thead>
                         <tr id="tablaHeader">
                             <th>Nombre del Alumno</th>
-                            <!-- Las materias se insertarán dinámicamente aquí -->
-                            <th>Promedio</th>
-                            <th>Estado</th>
                         </tr>
                     </thead>
-                    <tbody id="tablaBody">
-                        <!-- Las filas se insertarán dinámicamente aquí -->
-                    </tbody>
+                    <tbody id="tablaBody"></tbody>
                 </table>
             </div>
         </div>
@@ -333,9 +192,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, query, where, getDocs, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // ✅ CONFIGURACIÓN DEL NUEVO PROYECTO
         const firebaseConfig = {
             apiKey: "AIzaSyC1VnkczVVRwNDj6G1kPPdHNZXWNPy_JXA",
             authDomain: "sistema-escolar-8fcee.firebaseapp.com",
@@ -350,18 +208,39 @@
         const db = getFirestore(app);
 
         let datosProcesados = [];
-        const materiasPredefinidas = ["Matemáticas", "Ciencias", "Lenguaje", "Sociales", "Inglés", "Sistema Modular", "MUCI", "OPV", "Servicio Social"];
+        let materiasEncontradas = [];
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
-            const userData = JSON.parse(localStorage.getItem('usuario'));
-            if (!userData || userData.rol !== 'admin') { window.location.href = 'dashboard.html'; return; }
+            const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
+            if (!userDoc.exists()) { window.location.href = 'index.html'; return; }
+            const userData = userDoc.data();
+            if (userData.rol !== 'admin') { window.location.href = 'dashboard.html'; return; }
 
-            document.getElementById('userName').textContent = userData.nombre;
-            document.getElementById('userAvatar').textContent = userData.nombre.charAt(0).toUpperCase();
-            
+            document.getElementById('userName').textContent = userData.nombre || userData.nombreCompleto;
+            document.getElementById('userAvatar').textContent = (userData.nombre || userData.nombreCompleto || 'A').charAt(0).toUpperCase();
+
+            await cargarGradosDisponibles();
             setTimeout(() => { document.getElementById('loadingOverlay').style.display = 'none'; }, 800);
         });
+
+        async function cargarGradosDisponibles() {
+            try {
+                const snapAlumnos = await getDocs(collection(db, 'alumnos'));
+                const gradosSet = new Set();
+                snapAlumnos.forEach(d => { if (d.data().grado) gradosSet.add(d.data().grado); });
+                
+                const selectGrado = document.getElementById('selectGrado');
+                selectGrado.innerHTML = '<option value="">Selecciona un grado...</option>';
+                Array.from(gradosSet).sort().forEach(g => {
+                    const opt = document.createElement('option');
+                    opt.value = g; opt.textContent = g;
+                    selectGrado.appendChild(opt);
+                });
+            } catch (error) {
+                console.error('Error cargando grados:', error);
+            }
+        }
 
         document.getElementById('btnBuscar').addEventListener('click', cargarDatos);
 
@@ -369,10 +248,7 @@
             const grado = document.getElementById('selectGrado').value;
             const periodo = parseInt(document.getElementById('selectPeriodo').value);
 
-            if (!grado) {
-                alert('Por favor, selecciona un grado.');
-                return;
-            }
+            if (!grado) { alert('Selecciona un grado'); return; }
 
             document.getElementById('loadingOverlay').style.display = 'flex';
             document.getElementById('statsGrid').style.display = 'none';
@@ -388,28 +264,33 @@
                 snapAlumnos.forEach(doc => alumnos.push({ id: doc.id, ...doc.data() }));
                 alumnos.sort((a, b) => a.nombre.localeCompare(b.nombre));
 
-                if (alumnos.length === 0) {
-                    mostrarVacio();
-                    return;
-                }
+                if (alumnos.length === 0) { mostrarVacio(); return; }
 
-                // 2. Obtener calificaciones del grado y período
+                // 2. Obtener TODAS las calificaciones del grado y período
                 const qNotas = query(
-                    collection(db, 'calificaciones'),
+                    collection(db, 'notas'),
                     where('grado', '==', grado),
                     where('periodo', '==', periodo)
                 );
                 const snapNotas = await getDocs(qNotas);
-                const notasMap = {};
                 
-                // Estructura: notasMap[alumnoId][materia] = nota
+                const notasMap = {};
+                const materiasSet = new Set();
+                
                 snapNotas.forEach(doc => {
                     const data = doc.data();
                     if (!notasMap[data.alumnoId]) notasMap[data.alumnoId] = {};
                     notasMap[data.alumnoId][data.materia] = parseFloat(data.nota);
+                    materiasSet.add(data.materia);
                 });
 
-                // 3. Procesar datos para la tabla
+                // 3. Obtener lista de materias únicas (¡CLAVE!)
+                materiasEncontradas = Array.from(materiasSet).sort();
+                console.log('Materias encontradas:', materiasEncontradas);
+
+                if (materiasEncontradas.length === 0) { mostrarVacio(); return; }
+
+                // 4. Procesar datos
                 datosProcesados = [];
                 let aprobados = 0, reprobados = 0;
 
@@ -417,7 +298,7 @@
                     const fila = { nombre: alumno.nombre, notas: {}, promedio: 0, estado: 'Pendiente' };
                     let sumaNotas = 0, countNotas = 0;
 
-                    materiasPredefinidas.forEach(materia => {
+                    materiasEncontradas.forEach(materia => {
                         const nota = notasMap[alumno.id]?.[materia];
                         fila.notas[materia] = nota !== undefined ? nota : null;
                         if (nota !== undefined && nota !== null) {
@@ -432,7 +313,6 @@
                         if (fila.estado === 'Aprobado') aprobados++;
                         else reprobados++;
                     }
-
                     datosProcesados.push(fila);
                 });
 
@@ -444,40 +324,35 @@
                 document.getElementById('btnExportarPDF').disabled = false;
 
             } catch (error) {
-                console.error('Error al cargar datos:', error);
-                alert('Error al cargar los datos. Revisa la consola.');
+                console.error('Error:', error);
+                alert('Error al cargar datos: ' + error.message);
             } finally {
                 document.getElementById('loadingOverlay').style.display = 'none';
             }
         }
 
         function renderizarTabla(grado, periodo) {
-            // Construir encabezados
             const headerRow = document.getElementById('tablaHeader');
             headerRow.innerHTML = '<th>Nombre del Alumno</th>';
             
-            // Filtrar solo las materias que tienen al menos una nota registrada, o usar todas las predefinidas
-            const materiasActivas = materiasPredefinidas.filter(materia => 
-                datosProcesados.some(fila => fila.notas[materia] !== null)
-            );
-
-            if (materiasActivas.length === 0) {
-                materiasActivas.push("Sin materias registradas");
-            }
-
-            materiasActivas.forEach(materia => {
-                headerRow.innerHTML += `<th>${materia}</th>`;
+            materiasEncontradas.forEach(materia => {
+                // Formatear nombre de materia para mostrar
+                let nombreMostrar = materia;
+                if (materia.startsWith('modulo_')) {
+                    const num = materia.replace('modulo_', '');
+                    nombreMostrar = `Módulo ${num}`;
+                }
+                headerRow.innerHTML += `<th>${nombreMostrar}</th>`;
             });
             headerRow.innerHTML += '<th>Promedio</th><th>Estado</th>';
 
-            // Construir filas
             const tbody = document.getElementById('tablaBody');
             tbody.innerHTML = '';
 
             datosProcesados.forEach(fila => {
                 let rowHtml = `<tr><td>${fila.nombre}</td>`;
                 
-                materiasActivas.forEach(materia => {
+                materiasEncontradas.forEach(materia => {
                     const nota = fila.notas[materia];
                     if (nota === null || nota === undefined) {
                         rowHtml += `<td class="nota-vacia">-</td>`;
@@ -501,7 +376,6 @@
             document.getElementById('statTotal').textContent = total;
             document.getElementById('statAprobados').textContent = aprobados;
             document.getElementById('statReprobados').textContent = reprobados;
-            
             const conNota = aprobados + reprobados;
             const porcentaje = conNota > 0 ? ((aprobados / conNota) * 100).toFixed(1) : 0;
             document.getElementById('statPorcentaje').textContent = `${porcentaje}%`;
@@ -512,87 +386,86 @@
             document.getElementById('btnExportarPDF').disabled = true;
         }
 
-        // --- EXPORTAR A PDF ---
+        // EXPORTAR PDF
         document.getElementById('btnExportarPDF').addEventListener('click', () => {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4'); // Horizontal (landscape)
+            const pdfDoc = new jsPDF('l', 'mm', 'a4');
 
             const grado = document.getElementById('selectGrado').value;
             const periodo = document.getElementById('selectPeriodo').options[document.getElementById('selectPeriodo').selectedIndex].text;
 
-            // Encabezado del PDF
-            doc.setFontSize(18);
-            doc.setTextColor(40, 40, 40);
-            doc.text("Complejo Educativo Thomas Jefferson", 14, 20);
-            
-            doc.setFontSize(14);
-            doc.text("Reporte de Calificaciones", 14, 30);
-            
-            doc.setFontSize(10);
-            doc.setTextColor(100, 100, 100);
-            doc.text(`Grado: ${grado} | ${periodo}`, 14, 38);
-            doc.text(`Fecha de emisión: ${new Date().toLocaleDateString('es-SV')}`, 14, 44);
+            // Intentar cargar logo
+            let logoImg = null;
+            fetch('img/fondos/logo.png').then(r => {
+                if (r.ok) return r.blob();
+                throw new Error();
+            }).then(blob => {
+                const reader = new FileReader();
+                reader.onloadend = () => { logoImg = reader.result; renderPDFContent(); };
+                reader.readAsDataURL(blob);
+            }).catch(() => { renderPDFContent(); });
 
-            // Preparar datos para autoTable
-            const headers = [['Alumno', ...document.querySelectorAll('#tablaHeader th').slice(1, -1).map(th => th.textContent), 'Promedio', 'Estado']];
-            
-            const body = datosProcesados.map(fila => {
-                const row = [fila.nombre];
-                const materiasActivas = document.querySelectorAll('#tablaHeader th').slice(1, -1).map(th => th.textContent);
+            function renderPDFContent() {
+                if (logoImg) pdfDoc.addImage(logoImg, 'PNG', 14, 10, 20, 20);
+                pdfDoc.setFontSize(16);
+                pdfDoc.setTextColor(40, 40, 40);
+                pdfDoc.text("Complejo Educativo Thomas Jefferson", logoImg ? 38 : 14, 18);
+                pdfDoc.setFontSize(12);
+                pdfDoc.text("Sistema de Gestión Académica", logoImg ? 38 : 14, 26);
+                pdfDoc.setFontSize(14);
+                pdfDoc.text(`Reporte de Calificaciones - ${grado}`, 14, 42);
+                pdfDoc.setFontSize(10);
+                pdfDoc.setTextColor(100, 100, 100);
+                pdfDoc.text(`${periodo} | Fecha: ${new Date().toLocaleDateString('es-SV')}`, 14, 48);
+
+                const headers = [['#', 'Alumno', ...materiasEncontradas.map(m => m.startsWith('modulo_') ? `Módulo ${m.replace('modulo_', '')}` : m), 'Promedio', 'Estado']];
                 
-                materiasActivas.forEach(materia => {
-                    const nota = fila.notas[materia];
-                    row.push(nota !== null && nota !== undefined ? nota.toFixed(1) : '-');
+                const body = datosProcesados.map((fila, idx) => {
+                    const row = [idx + 1, fila.nombre];
+                    materiasEncontradas.forEach(materia => {
+                        const nota = fila.notas[materia];
+                        row.push(nota !== null && nota !== undefined ? nota.toFixed(1) : '-');
+                    });
+                    const promDisplay = fila.promedio > 0 ? fila.promedio.toFixed(1) : '-';
+                    row.push(promDisplay, fila.estado);
+                    return row;
                 });
-                
-                const promDisplay = fila.promedio > 0 ? fila.promedio.toFixed(1) : '-';
-                row.push(promDisplay, fila.estado);
-                return row;
-            });
 
-            // Generar tabla
-            doc.autoTable({
-                head: headers,
-                body: body,
-                startY: 50,
-                theme: 'grid',
-                headStyles: { fillColor: [99, 102, 241], textColor: 255, fontStyle: 'bold', fontSize: 9 },
-                bodyStyles: { fontSize: 9, textColor: 50 },
-                alternateRowStyles: { fillColor: [240, 240, 245] },
-                columnStyles: {
-                    0: { cellWidth: 50, fontStyle: 'bold' }, // Columna nombre más ancha
-                },
-                didParseCell: function(data) {
-                    // Colorear celdas de notas
-                    if (data.section === 'body' && data.column.index > 0 && data.column.index < data.table.columns.length - 2) {
-                        const val = parseFloat(data.cell.raw);
-                        if (!isNaN(val)) {
-                            data.cell.styles.textColor = val >= 7.0 ? [16, 185, 129] : [239, 68, 68];
-                            data.cell.styles.fontStyle = 'bold';
+                pdfDoc.autoTable({
+                    head: headers, body: body, startY: 55, theme: 'grid',
+                    headStyles: { fillColor: [99, 102, 241], textColor: 255, fontStyle: 'bold', fontSize: 9 },
+                    bodyStyles: { fontSize: 9, textColor: 50 },
+                    alternateRowStyles: { fillColor: [240, 240, 245] },
+                    columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 50 } },
+                    didParseCell: function(data) {
+                        if (data.section === 'body' && data.column.index > 1 && data.column.index < data.table.columns.length - 2) {
+                            const val = parseFloat(data.cell.raw);
+                            if (!isNaN(val)) {
+                                data.cell.styles.textColor = val >= 7.0 ? [16, 185, 129] : [239, 68, 68];
+                                data.cell.styles.fontStyle = 'bold';
+                            }
+                        }
+                        if (data.section === 'body' && data.column.index === data.table.columns.length - 1) {
+                            if (data.cell.raw === 'Aprobado') data.cell.styles.textColor = [16, 185, 129];
+                            else if (data.cell.raw === 'Reprobado') data.cell.styles.textColor = [239, 68, 68];
                         }
                     }
-                    // Colorear columna de estado
-                    if (data.section === 'body' && data.column.index === data.table.columns.length - 1) {
-                        if (data.cell.raw === 'Aprobado') data.cell.styles.textColor = [16, 185, 129];
-                        else if (data.cell.raw === 'Reprobado') data.cell.styles.textColor = [239, 68, 68];
-                    }
+                });
+
+                const pageCount = pdfDoc.internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    pdfDoc.setPage(i);
+                    pdfDoc.setFontSize(8);
+                    pdfDoc.setTextColor(150, 150, 150);
+                    pdfDoc.text(`Página ${i} de ${pageCount}`, pdfDoc.internal.pageSize.getWidth() - 40, pdfDoc.internal.pageSize.getHeight() - 10);
                 }
-            });
 
-            // Pie de página
-            const pageCount = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                doc.setFontSize(8);
-                doc.setTextColor(150, 150, 150);
-                doc.text(`Página ${i} de ${pageCount} - Sistema de Gestión Escolar`, doc.internal.pageSize.getWidth() - 40, doc.internal.pageSize.getHeight() - 10);
+                pdfDoc.save(`Notas_${grado.replace(/[^a-zA-Z0-9]/g, '_')}_P${document.getElementById('selectPeriodo').value}.pdf`);
             }
-
-            doc.save(`Notas_${grado.replace(/[^a-zA-Z0-9]/g, '_')}_P${periodo}.pdf`);
         });
 
         document.getElementById('btnLogout').addEventListener('click', async () => {
-            if (confirm('¿Cerrar sesión de administrador?')) {
+            if (confirm('¿Cerrar sesión?')) {
                 await signOut(auth);
                 localStorage.removeItem('usuario');
                 window.location.href = 'index.html';
