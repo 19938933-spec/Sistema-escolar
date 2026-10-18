@@ -13,13 +13,14 @@
     
     <style>
         :root {
-            --bg-dark: #0f172a;
-            --bg-card: rgba(30, 41, 59, 0.7);
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: rgba(255, 255, 255, 0.1);
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: rgba(30, 41, 59, 0.85);
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --accent-primary: #6366f1;
+            --accent-hover: #4f46e5;
+            --border: rgba(255, 255, 255, 0.15);
         }
 
         * {
@@ -28,45 +29,124 @@
             box-sizing: border-box;
         }
 
-        html, body {
-            height: 100%;
-            overflow-x: hidden;
-        }
-
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 70%);
-            color: var(--text-main);
+            background: var(--bg-primary);
+            color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
         }
 
-        /* Efecto de fondo sutil */
-        .bg-pattern {
+        /* FONDO ANIMADO CON PATRÓN SVG */
+        .pattern-bg-container {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('img/fondos/fondo-login.jpg');
-            background-size: cover;
-            background-position: center;
-            opacity: 0.08;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             z-index: -1;
-            filter: blur(3px);
-            animation: fadeIn 1.5s ease-out;
+            overflow: hidden;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 0.08; }
+        .pattern-bg {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            position: relative;
         }
 
+        .pattern-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                135deg,
+                rgba(99, 102, 241, 0.03) 0px,
+                rgba(99, 102, 241, 0.03) 60px,
+                transparent 70px,
+                transparent 130px
+            );
+            animation: patternMove 20s linear infinite;
+        }
+
+        @keyframes patternMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-130px, -130px); }
+        }
+
+        .cube-svg {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            left: -50%;
+            top: -50%;
+            opacity: 0.08;
+            animation: cubeRotate 30s linear infinite;
+        }
+
+        @keyframes cubeRotate {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        /* LOADING SCREEN */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-wave {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .loading-bar {
+            width: 8px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
+            border-radius: 4px;
+            animation: loadingWave 1s ease-in-out infinite;
+        }
+
+        .loading-bar:nth-child(2) { animation-delay: 0.1s; }
+        .loading-bar:nth-child(3) { animation-delay: 0.2s; }
+        .loading-bar:nth-child(4) { animation-delay: 0.3s; }
+
+        @keyframes loadingWave {
+            0%, 100% { height: 10px; }
+            50% { height: 60px; }
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 14px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* LOGIN CONTAINER */
         .login-container {
             width: 100%;
-            max-width: 420px;
+            max-width: 450px;
             padding: 20px;
             z-index: 10;
             animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
@@ -85,14 +165,15 @@
 
         .login-card {
             background: var(--bg-card);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border: 1px solid var(--border);
             border-radius: 24px;
-            padding: 40px 30px;
+            padding: 40px 35px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
+        /* LOGO AREA */
         .logo-area {
             text-align: center;
             margin-bottom: 30px;
@@ -117,11 +198,11 @@
         }
 
         .logo-img {
-            width: 90px;
-            height: 90px;
+            width: 100px;
+            height: 100px;
             object-fit: contain;
             margin-bottom: 15px;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
             animation: rotateIn 0.8s ease-out 0.4s both;
         }
 
@@ -137,11 +218,12 @@
         }
 
         .school-name {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: 700;
-            color: var(--text-main);
+            color: var(--text-primary);
             margin-bottom: 8px;
             animation: fadeInDown 0.6s ease-out 0.6s both;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         @keyframes fadeInDown {
@@ -157,12 +239,18 @@
 
         .system-name {
             font-size: 0.85rem;
-            color: var(--text-muted);
+            color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 1.5px;
             animation: fadeIn 0.6s ease-out 0.8s both;
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* FORM INPUTS */
         .form-floating {
             margin-bottom: 15px;
             animation: slideInLeft 0.5s ease-out both;
@@ -184,47 +272,45 @@
         }
 
         .form-control {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid var(--border);
-            color: white;
+            background: rgba(15, 23, 42, 0.7);
+            border: 2px solid var(--border);
+            color: var(--text-primary);
             border-radius: 12px;
             padding: 16px;
             height: auto;
+            font-size: 15px;
             transition: all 0.3s ease;
         }
 
         .form-control:focus {
-            background: rgba(15, 23, 42, 0.8);
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
-            color: white;
+            background: rgba(15, 23, 42, 0.9);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+            color: var(--text-primary);
             transform: translateY(-2px);
         }
 
-        .form-control::placeholder { color: #64748b; }
+        .form-control::placeholder { 
+            color: #94a3b8;
+            opacity: 1;
+        }
         
         .form-floating label {
-            color: #64748b;
+            color: var(--text-secondary);
             padding-left: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .form-floating label i {
+            font-weight: 500;
             transition: all 0.3s ease;
         }
 
         .form-control:focus + label,
         .form-control:not(:placeholder-shown) + label {
-            color: var(--primary);
+            color: var(--accent-primary);
+            font-weight: 600;
         }
 
-        .form-control:focus + label i {
-            color: var(--primary);
-            transform: scale(1.1);
-        }
-
+        /* LOGIN BUTTON */
         .btn-login {
-            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
             border: none;
             border-radius: 12px;
             padding: 14px;
@@ -264,31 +350,15 @@
             animation: none;
         }
 
-        .btn-login::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .btn-login:active::before {
-            width: 300px;
-            height: 300px;
-        }
-
+        /* DIVIDER */
         .divider {
             display: flex;
             align-items: center;
             text-align: center;
             margin: 25px 0;
-            color: var(--text-muted);
-            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
             animation: fadeIn 0.6s ease-out 0.7s both;
         }
         .divider::before, .divider::after {
@@ -298,11 +368,14 @@
         }
         .divider span { padding: 0 15px; }
 
+        /* GOOGLE BUTTON */
         .btn-google {
-            border-color: var(--border);
-            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--border);
+            color: var(--text-primary);
             border-radius: 12px;
             padding: 12px;
+            font-weight: 500;
             transition: all 0.3s ease;
             animation: slideInRight 0.5s ease-out 0.8s both;
         }
@@ -319,30 +392,38 @@
         }
 
         .btn-google:hover {
-            border-color: var(--primary);
-            color: var(--text-main);
-            background: rgba(99, 102, 241, 0.1);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
             transform: translateY(-2px);
         }
 
+        .btn-google i {
+            font-size: 18px;
+        }
+
+        /* FOOTER LINKS */
         .footer-links {
             text-align: center;
             margin-top: 25px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             animation: fadeIn 0.6s ease-out 0.9s both;
         }
         .footer-links a {
-            color: var(--primary);
+            color: var(--accent-primary);
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
             transition: all 0.3s ease;
         }
         .footer-links a:hover { 
             text-decoration: underline;
-            color: var(--primary-hover);
+            color: var(--accent-hover);
+        }
+        .footer-links .text-muted {
+            color: var(--text-secondary) !important;
         }
 
-        /* Toast Notifications */
+        /* TOAST NOTIFICATIONS */
         .toast-container { 
             position: fixed; 
             top: 20px; 
@@ -351,8 +432,8 @@
         }
         .custom-toast {
             background: rgba(30, 41, 59, 0.95);
-            border-left: 4px solid var(--primary);
-            color: white;
+            border-left: 4px solid var(--accent-primary);
+            color: var(--text-primary);
             padding: 15px 20px;
             border-radius: 8px;
             margin-bottom: 10px;
@@ -361,8 +442,9 @@
             align-items: center;
             gap: 12px;
             animation: slideInRight 0.4s ease, fadeOut 0.5s ease-in 3.5s forwards;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(10px);
             min-width: 280px;
+            font-weight: 500;
         }
         .custom-toast.error { border-left-color: #ef4444; }
         .custom-toast.success { border-left-color: #10b981; }
@@ -374,46 +456,7 @@
             }
         }
 
-        /* Loading Screen */
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-dark);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease;
-        }
-
-        .loading-wave {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .loading-bar {
-            width: 8px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--primary), #8b5cf6);
-            border-radius: 4px;
-            animation: loadingWave 1s ease-in-out infinite;
-        }
-
-        .loading-bar:nth-child(2) { animation-delay: 0.1s; }
-        .loading-bar:nth-child(3) { animation-delay: 0.2s; }
-        .loading-bar:nth-child(4) { animation-delay: 0.3s; }
-
-        @keyframes loadingWave {
-            0%, 100% { height: 10px; }
-            50% { height: 60px; }
-        }
-
-        /* Responsive */
+        /* RESPONSIVE */
         @media (max-width: 576px) {
             body {
                 padding: 10px;
@@ -430,12 +473,12 @@
             }
 
             .logo-img {
-                width: 70px;
-                height: 70px;
+                width: 80px;
+                height: 80px;
             }
 
             .school-name {
-                font-size: 1rem;
+                font-size: 1.1rem;
             }
 
             .form-control {
@@ -461,18 +504,32 @@
             <div class="loading-bar"></div>
             <div class="loading-bar"></div>
         </div>
-        <p style="color: var(--text-muted); margin-top: 20px; font-size: 14px; animation: fadeIn 0.5s ease-out;">
-            Cargando sistema...
-        </p>
+        <p class="loading-text">Cargando sistema...</p>
     </div>
 
-    <div class="bg-pattern"></div>
+    <!-- Fondo Animado -->
+    <div class="pattern-bg-container">
+        <div class="pattern-bg">
+            <svg class="cube-svg" preserveAspectRatio="xMidYMid slice" viewBox="0 0 120 104">
+                <defs>
+                    <linearGradient y2="100%" x2="100%" y1="0%" x1="0%" id="cube-dark">
+                        <stop stop-color="#232526" offset="0%"></stop>
+                        <stop stop-color="#414345" offset="100%"></stop>
+                    </linearGradient>
+                    <linearGradient y2="0%" x2="100%" y1="100%" x1="0%" id="cube-mid">
+                        <stop stop-color="#4b6cb7" offset="0%"></stop>
+                        <stop stop-color="#182848" offset="100%"></stop>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+    </div>
 
+    <!-- Login Container -->
     <div class="login-container">
         <div class="login-card">
             <div class="logo-area">
-                <!-- LOGO INSTITUCIONAL -->
-                <img src="img/fondos/logo.png" alt="Logo Escuela" class="logo-img" onerror="this.src='https://via.placeholder.com/90?text=LOGO'">
+                <img src="img/fondos/logo.png" alt="Logo Escuela" class="logo-img" onerror="this.src='https://via.placeholder.com/100?text=LOGO'">
                 <h1 class="school-name">Complejo Educativo<br>Thomas Jefferson</h1>
                 <p class="system-name">Sistema de Gestión Académica</p>
             </div>
@@ -506,7 +563,7 @@
 
             <div class="divider"><span>O ACCESO RÁPIDO</span></div>
 
-            <button class="btn btn-outline-light w-100 btn-google" onclick="alert('Próximamente: Acceso con Google para Docentes')">
+            <button class="btn btn-google w-100" id="btnGoogle">
                 <i class="bi bi-google me-2"></i> Continuar con Google
             </button>
 
@@ -518,13 +575,19 @@
         </div>
     </div>
 
-    <!-- Contenedor de Notificaciones -->
+    <!-- Toast Container -->
     <div id="toastContainer" class="toast-container"></div>
 
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            GoogleAuthProvider, 
+            signInWithPopup,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // Configuración Firebase
@@ -540,6 +603,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const googleProvider = new GoogleAuthProvider();
 
         const CODIGO_SEGURIDAD = "CLASES26$COED";
 
@@ -559,11 +623,13 @@
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `custom-toast ${type}`;
-            toast.innerHTML = `<i class="bi bi-${type === 'error' ? 'x-circle-fill' : 'check-circle-fill'}"></i> <span>${msg}</span>`;
+            const icon = type === 'error' ? 'x-circle-fill' : (type === 'success' ? 'check-circle-fill' : 'info-circle-fill');
+            toast.innerHTML = `<i class="bi bi-${icon}"></i> <span>${msg}</span>`;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 4000);
         }
 
+        // LOGIN CON USUARIO/CORREO
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -571,7 +637,7 @@
             const pass = document.getElementById('inputPass').value;
             const code = document.getElementById('inputCode').value.trim();
 
-            // 1. Validar Código de Seguridad
+            // Validar Código de Seguridad
             if (code !== CODIGO_SEGURIDAD) {
                 showToast('Código de seguridad incorrecto', 'error');
                 return;
@@ -586,17 +652,17 @@
             btnLoader.classList.remove('d-none');
 
             try {
-                // 2. Lógica "Usuario o Correo"
+                // Lógica "Usuario o Correo"
                 let email = rawUser;
                 if (!rawUser.includes('@')) {
                     email = `${rawUser}@clases.edu.sv`;
                 }
 
-                // 3. Autenticar en Firebase
+                // Autenticar en Firebase
                 const userCredential = await signInWithEmailAndPassword(auth, email, pass);
                 const user = userCredential.user;
 
-                // 4. Obtener datos de Firestore
+                // Obtener datos de Firestore
                 const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
                 
                 if (userDoc.exists()) {
@@ -642,6 +708,64 @@
                 btn.disabled = false;
                 btnText.classList.remove('d-none');
                 btnLoader.classList.add('d-none');
+            }
+        });
+
+        // LOGIN CON GOOGLE
+        document.getElementById('btnGoogle').addEventListener('click', async () => {
+            try {
+                const result = await signInWithPopup(auth, googleProvider);
+                const user = result.user;
+
+                // Validar que el correo sea @clases.edu.sv
+                if (!user.email.endsWith('@clases.edu.sv')) {
+                    await signOut(auth);
+                    showToast('Solo se permiten correos institucionales (@clases.edu.sv)', 'error');
+                    return;
+                }
+
+                // Verificar si existe en Firestore
+                const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
+                
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    
+                    if (data.rol !== 'docente') {
+                        await signOut(auth);
+                        showToast('Las cuentas de administrador deben usar el formulario normal', 'error');
+                        return;
+                    }
+
+                    localStorage.setItem('usuario', JSON.stringify({
+                        uid: user.uid,
+                        nombre: data.nombre || data.nombreCompleto,
+                        correo: data.correo,
+                        rol: data.rol,
+                        grado: data.gradoEncargado || data.grado || '',
+                        usuario: data.usuario || user.email.split('@')[0]
+                    }));
+
+                    showToast(`Bienvenido, ${data.nombre}`, 'success');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1000);
+
+                } else {
+                    await signOut(auth);
+                    showToast('Tu correo no está registrado. Regístrate primero.', 'error');
+                }
+
+            } catch (error) {
+                console.error(error);
+                if (error.code === 'auth/popup-closed-by-user') {
+                    showToast('Ventana de Google cerrada', 'info');
+                } else if (error.code === 'auth/popup-blocked') {
+                    showToast('Popup bloqueado. Permite popups para este sitio', 'error');
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    showToast('Dominio no autorizado en Firebase', 'error');
+                } else {
+                    showToast('Error al iniciar sesión con Google', 'error');
+                }
             }
         });
     </script>
