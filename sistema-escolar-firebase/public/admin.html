@@ -74,22 +74,23 @@
         
         .action-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 25px; animation: slideUp 0.6s ease-out 0.3s both; margin-bottom: 30px; }
         .action-card h3 { font-size: 20px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .action-card p { color: var(--text-secondary); margin-bottom: 20px; }
         .action-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
         .action-group { flex: 1; min-width: 200px; }
         .action-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; }
         .action-group select { width: 100%; background: rgba(15, 23, 42, 0.6); border: 2px solid var(--border); border-radius: 10px; padding: 12px 15px; color: var(--text-primary); font-size: 14px; }
         .action-group select:focus { outline: none; border-color: var(--accent-primary); }
         
-        .btn-action { padding: 12px 20px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
+        .btn-action { padding: 12px 20px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; text-decoration: none; }
         .btn-primary-custom { background: linear-gradient(135deg, var(--accent-primary), #8b5cf6); color: white; }
-        .btn-primary-custom:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5); }
+        .btn-primary-custom:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5); color: white; }
         .btn-success-custom { background: linear-gradient(135deg, var(--accent-success), #059669); color: white; }
-        .btn-success-custom:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.5); }
+        .btn-success-custom:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.5); color: white; }
         .btn-warning-custom { background: linear-gradient(135deg, var(--accent-warning), #d97706); color: white; }
-        .btn-warning-custom:hover { transform: translateY(-2px); }
+        .btn-warning-custom:hover { transform: translateY(-2px); color: white; }
         
         .periods-list { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-        .period-item { background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border); border-radius: 10px; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .period-item { background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border); border-radius: 10px; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .period-item .period-info { display: flex; flex-direction: column; }
         .period-item .period-title { font-weight: 600; font-size: 15px; }
         .period-item .period-meta { font-size: 12px; color: var(--text-secondary); }
@@ -211,9 +212,7 @@
 
         <div class="action-card">
             <h3><i class="bi bi-unlock-fill"></i> Reabrir Períodos Cerrados</h3>
-            <p style="color: var(--text-secondary); margin-bottom: 20px;">
-                Si un docente cerró un período por error, puedes reabrirlo desde aquí. Selecciona el docente, materia y grado para ver los períodos cerrados.
-            </p>
+            <p>Si un docente cerró un período por error, puedes reabrirlo desde aquí. Selecciona el docente, materia y grado para ver los períodos cerrados.</p>
             <div class="action-row">
                 <div class="action-group">
                     <label>Docente</label>
@@ -245,14 +244,12 @@
 
         <div class="action-card">
             <h3><i class="bi bi-file-earmark-pdf-fill"></i> Generar Reporte PDF por Grado</h3>
-            <p style="color: var(--text-secondary); margin-bottom: 20px;">
-                Genera un PDF con la lista de alumnos y sus calificaciones por grado y sección. Incluye el logo institucional.
-            </p>
+            <p>Genera un PDF con la lista de alumnos y sus calificaciones por grado y sección. Incluye el logo institucional.</p>
             <div class="action-row">
                 <div class="action-group">
                     <label>Grado/Sección</label>
                     <select id="selectGradoPDF">
-                        <option value="">Selecciona un grado...</option>
+                        <option value="">Cargando grados...</option>
                     </select>
                 </div>
                 <div class="action-group">
@@ -273,8 +270,8 @@
             </div>
         </div>
 
-        <div class="text-center mt-4">
-            <a href="ver-notas.html" class="btn-action btn-primary-custom" style="text-decoration: none;">
+        <div class="text-center mt-4 mb-5">
+            <a href="ver-notas.html" class="btn-action btn-primary-custom">
                 <i class="bi bi-table"></i> Ver Notas Globales (Todas las Calificaciones)
             </a>
         </div>
@@ -283,7 +280,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, where, deleteDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC1VnkczVVRwNDj6G1kPPdHNZXWNPy_JXA",
@@ -304,6 +301,7 @@
 
         function mostrarToast(mensaje, tipo) {
             const container = document.getElementById('toastContainer');
+            if (!container) return;
             const toast = document.createElement('div');
             toast.className = `toast-notification ${tipo}`;
             const icono = tipo === 'success' ? '<i class="bi bi-check-circle-fill"></i>' : tipo === 'error' ? '<i class="bi bi-x-circle-fill"></i>' : '<i class="bi bi-info-circle-fill"></i>';
@@ -316,18 +314,19 @@
             if (!user) { window.location.href = 'index.html'; return; }
 
             try {
-                const userDoc = await getDocs(collection(db, 'usuarios'));
-                let userData = null;
-                userDoc.forEach(d => { if (d.id === user.uid) userData = { uid: d.id, ...d.data() }; });
-
-                if (!userData || userData.rol !== 'admin') {
+                const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
+                if (!userDoc.exists()) { window.location.href = 'index.html'; return; }
+                
+                const userData = userDoc.data();
+                if (userData.rol !== 'admin') {
                     window.location.href = 'dashboard.html';
                     return;
                 }
 
-                document.getElementById('userName').textContent = userData.nombre || userData.nombreCompleto;
-                document.getElementById('welcomeName').textContent = userData.nombre || userData.nombreCompleto;
-                document.getElementById('userAvatar').textContent = (userData.nombre || userData.nombreCompleto || 'A').charAt(0).toUpperCase();
+                const nombre = userData.nombre || userData.nombreCompleto || 'Admin';
+                document.getElementById('userName').textContent = nombre;
+                document.getElementById('welcomeName').textContent = nombre;
+                document.getElementById('userAvatar').textContent = nombre.charAt(0).toUpperCase();
 
                 await cargarDatos();
                 llenarSelectores();
@@ -405,18 +404,15 @@
         });
 
         function llenarSelectores() {
-            // Selectores de reabrir período
             const selectDocente = document.getElementById('selectDocente');
             selectDocente.innerHTML = '<option value="">Selecciona un docente...</option>';
             docentesLista.forEach(d => {
                 const opt = document.createElement('option');
                 opt.value = d.uid;
-                opt.textContent = d.nombre || d.nombreCompleto;
-                opt.dataset.nombre = d.nombre || d.nombreCompleto;
+                opt.textContent = d.nombre || d.nombreCompleto || d.usuario || 'Docente';
                 selectDocente.appendChild(opt);
             });
 
-            // Selector de grado para PDF
             const selectGradoPDF = document.getElementById('selectGradoPDF');
             selectGradoPDF.innerHTML = '<option value="">Selecciona un grado...</option>';
             Array.from(gradosConAlumnos).sort().forEach(g => {
@@ -460,8 +456,8 @@
                 (m.grados || []).forEach(g => grados.add(g));
             });
 
-            selectMateria.disabled = false;
-            selectGrado.disabled = false;
+            selectMateria.disabled = materias.length === 0;
+            selectGrado.disabled = grados.size === 0;
             Array.from(grados).sort().forEach(g => {
                 const opt = document.createElement('option');
                 opt.value = g;
@@ -509,7 +505,7 @@
                     item.innerHTML = `
                         <div class="period-info">
                             <span class="period-title">Período ${data.periodo} - Cerrado</span>
-                            <span class="period-meta">Docente: ${docente?.nombre || 'N/A'} | ${materiaNombre} | ${grado}</span>
+                            <span class="period-meta">Docente: ${docente?.nombre || docente?.nombreCompleto || 'N/A'} | ${materiaNombre} | ${grado}</span>
                             <span class="period-meta">Fecha de cierre: ${new Date(data.fechaCierre).toLocaleString('es-SV')}</span>
                         </div>
                         <button class="btn-reopen" data-id="${docSnap.id}" data-periodo="${data.periodo}">
@@ -546,38 +542,54 @@
 
         document.getElementById('btnGenerarPDF').addEventListener('click', async () => {
             const grado = document.getElementById('selectGradoPDF').value;
-            const periodo = document.getElementById('selectPeriodoPDF').value;
+            const periodo = parseInt(document.getElementById('selectPeriodoPDF').value);
 
-            if (!grado) {
-                mostrarToast('Selecciona un grado', 'error');
-                return;
-            }
-
+            if (!grado) { mostrarToast('Selecciona un grado', 'error'); return; }
             mostrarToast('Generando PDF...', 'info');
 
             try {
                 const { jsPDF } = window.jspdf;
                 const pdfDoc = new jsPDF('l', 'mm', 'a4');
 
-                // Intentar cargar el logo
                 let logoImg = null;
                 try {
                     const logoResp = await fetch('img/fondos/logo.png');
                     if (logoResp.ok) {
                         const logoBlob = await logoResp.blob();
-                        const logoBase64 = await new Promise((resolve) => {
+                        logoImg = await new Promise((resolve) => {
                             const reader = new FileReader();
                             reader.onloadend = () => resolve(reader.result);
                             reader.readAsDataURL(logoBlob);
                         });
-                        logoImg = logoBase64;
                     }
                 } catch (e) { console.log('Logo no disponible'); }
 
-                // Encabezado
-                if (logoImg) {
-                    pdfDoc.addImage(logoImg, 'PNG', 14, 10, 20, 20);
-                }
+                const qAlumnos = query(collection(db, 'alumnos'), where('grado', '==', grado));
+                const snapAlumnos = await getDocs(qAlumnos);
+                const alumnos = [];
+                snapAlumnos.forEach(d => alumnos.push({ id: d.id, ...d.data() }));
+                alumnos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+                if (alumnos.length === 0) { mostrarToast('No hay alumnos en este grado', 'error'); return; }
+
+                const qNotas = query(collection(db, 'notas'), where('grado', '==', grado), where('periodo', '==', periodo));
+                const snapNotas = await getDocs(qNotas);
+                const notasMap = {};
+                const materiasSet = new Set();
+                
+                snapNotas.forEach(d => {
+                    const data = d.data();
+                    if (!notasMap[data.alumnoId]) notasMap[data.alumnoId] = {};
+                    notasMap[data.alumnoId][data.materia] = parseFloat(data.nota);
+                    materiasSet.add(data.materia);
+                });
+
+                const materias = Array.from(materiasSet).sort();
+                console.log('Materias en PDF:', materias);
+
+                if (materias.length === 0) { mostrarToast('No hay calificaciones registradas para este período', 'error'); return; }
+
+                if (logoImg) pdfDoc.addImage(logoImg, 'PNG', 14, 10, 20, 20);
                 pdfDoc.setFontSize(16);
                 pdfDoc.setTextColor(40, 40, 40);
                 pdfDoc.text("Complejo Educativo Thomas Jefferson", logoImg ? 38 : 14, 18);
@@ -589,44 +601,15 @@
                 pdfDoc.setTextColor(100, 100, 100);
                 pdfDoc.text(`Período ${periodo} | Fecha: ${new Date().toLocaleDateString('es-SV')}`, 14, 48);
 
-                // Obtener alumnos
-                const qAlumnos = query(collection(db, 'alumnos'), where('grado', '==', grado));
-                const snapAlumnos = await getDocs(qAlumnos);
-                const alumnos = [];
-                snapAlumnos.forEach(d => alumnos.push({ id: d.id, ...d.data() }));
-                alumnos.sort((a, b) => a.nombre.localeCompare(b.nombre));
-
-                if (alumnos.length === 0) {
-                    mostrarToast('No hay alumnos en este grado', 'error');
-                    return;
-                }
-
-                // Obtener calificaciones
-                const qNotas = query(collection(db, 'calificaciones'), where('grado', '==', grado), where('periodo', '==', parseInt(periodo)));
-                const snapNotas = await getDocs(qNotas);
-                const notasMap = {};
-                const materiasSet = new Set();
-                snapNotas.forEach(d => {
-                    const data = d.data();
-                    if (!notasMap[data.alumnoId]) notasMap[data.alumnoId] = {};
-                    notasMap[data.alumnoId][data.materia] = parseFloat(data.nota);
-                    materiasSet.add(data.materia);
-                });
-                const materias = Array.from(materiasSet).sort();
-
-                const headers = [['#', 'Alumno', ...materias, 'Promedio', 'Estado']];
+                const headers = [['#', 'Alumno', ...materias.map(m => m.startsWith('modulo_') ? `Mód. ${m.replace('modulo_', '')}` : m), 'Prom.', 'Estado']];
+                
                 const body = alumnos.map((alumno, idx) => {
                     const row = [idx + 1, alumno.nombre];
                     let suma = 0, count = 0;
                     materias.forEach(m => {
                         const nota = notasMap[alumno.id]?.[m];
-                        if (nota !== undefined && nota !== null) {
-                            row.push(nota.toFixed(1));
-                            suma += nota;
-                            count++;
-                        } else {
-                            row.push('-');
-                        }
+                        if (nota !== undefined && nota !== null) { row.push(nota.toFixed(1)); suma += nota; count++; }
+                        else { row.push('-'); }
                     });
                     const promedio = count > 0 ? (suma / count) : 0;
                     row.push(promedio > 0 ? promedio.toFixed(1) : '-');
@@ -635,10 +618,7 @@
                 });
 
                 pdfDoc.autoTable({
-                    head: headers,
-                    body: body,
-                    startY: 55,
-                    theme: 'grid',
+                    head: headers, body: body, startY: 55, theme: 'grid',
                     headStyles: { fillColor: [99, 102, 241], textColor: 255, fontStyle: 'bold', fontSize: 9 },
                     bodyStyles: { fontSize: 9, textColor: 50 },
                     alternateRowStyles: { fillColor: [240, 240, 245] },
