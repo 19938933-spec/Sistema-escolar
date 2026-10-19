@@ -83,36 +83,6 @@ sistema-escolar/
 
 ---
 
-## ⚙️ Instalación y Configuración Local
-
-### 1. Prerrequisitos
-- Navegador web moderno (Chrome, Firefox, Edge).
-- Editor de código (Visual Studio Code recomendado).
-- Extensión "Live Server" en VS Code (o Python: `python -m http.server 8000`).
-
-### 2. Clonar el Repositorio
-```bash
-git clone https://github.com/tu-usuario/sistema-escolar.git
-cd sistema-escolar
-```
-
-### 3. Configuración de Firebase
-1. Crea un proyecto en [Firebase Console](https://console.firebase.google.com/).
-2. Habilita **Authentication** (Proveedor: Correo/Contraseña y Google).
-3. Crea una base de datos **Cloud Firestore** (inicia en modo prueba para desarrollo).
-4. Ve a la configuración del proyecto y copia el objeto `firebaseConfig`.
-5. Reemplaza la configuración en todos los archivos `.html` y `.js` que contengan el bloque `firebaseConfig`.
-
-### 4. Ejecutar el Proyecto
-Abre la carpeta `public` con Live Server en VS Code, o ejecuta en la terminal:
-```bash
-cd public
-python3 -m http.server 8000
-```
-Accede a: `http://localhost:8000/index.html`
-
----
-
 ## 🔒 Seguridad y Buenas Prácticas
 
 Este proyecto implementa medidas de seguridad fundamentales para proteger los datos académicos:
