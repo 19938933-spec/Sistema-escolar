@@ -28,7 +28,7 @@
         
         .navbar-custom { background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 15px 0; }
         .navbar-brand-custom { display: flex; align-items: center; gap: 12px; color: var(--text-primary); font-weight: 700; font-size: 18px; text-decoration: none; }
-        .navbar-brand-custom .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent-warning), #d97706); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; }
+        .navbar-brand-custom .logo-img { width: 42px; height: 42px; object-fit: contain; border-radius: 8px; }
         .user-info { display: flex; align-items: center; gap: 15px; }
         .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-warning), #d97706); display: flex; align-items: center; justify-content: center; font-weight: 600; color: white; }
         .user-name { font-weight: 600; color: var(--text-primary); }
@@ -97,7 +97,7 @@
         .btn-reopen { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: var(--accent-warning); padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; transition: all 0.3s; }
         .btn-reopen:hover { background: rgba(245, 158, 11, 0.3); }
         
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-primary); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-primary); display: flex; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s ease; }
         .loading-wave { display: flex; align-items: center; gap: 8px; }
         .loading-bar { width: 8px; height: 40px; background: linear-gradient(135deg, var(--accent-warning), #d97706); border-radius: 4px; animation: wave 1s ease-in-out infinite; }
         .loading-bar:nth-child(2) { animation-delay: 0.1s; }
@@ -130,13 +130,14 @@
             <div class="loading-bar"></div><div class="loading-bar"></div>
         </div>
     </div>
+
     <div id="toastContainer" class="toast-container"></div>
 
     <nav class="navbar-custom">
         <div class="container-fluid px-4">
             <div class="d-flex justify-content-between align-items-center">
                 <a href="admin.html" class="navbar-brand-custom">
-                    <div class="logo-icon"><i class="bi bi-shield-lock-fill"></i></div>
+                    <img src="img/fondos/logo.png" alt="Logo" class="logo-img" onerror="this.style.display='none'">
                     <div>
                         <div>Panel Administrativo</div>
                         <small style="color: var(--text-secondary); font-size: 12px;">Sistema Escolar Thomas Jefferson</small>
@@ -304,18 +305,26 @@
             if (!container) return;
             const toast = document.createElement('div');
             toast.className = `toast-notification ${tipo}`;
-            const icono = tipo === 'success' ? '<i class="bi bi-check-circle-fill"></i>' : tipo === 'error' ? '<i class="bi bi-x-circle-fill"></i>' : '<i class="bi bi-info-circle-fill"></i>';
+            const icono = tipo === 'success' ? '<i class="bi bi-check-circle-fill"></i>' : 
+                          tipo === 'error' ? '<i class="bi bi-x-circle-fill"></i>' : 
+                          '<i class="bi bi-info-circle-fill"></i>';
             toast.innerHTML = `${icono} <span>${mensaje}</span>`;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 5000);
         }
 
         onAuthStateChanged(auth, async (user) => {
-            if (!user) { window.location.href = 'index.html'; return; }
+            if (!user) { 
+                window.location.href = 'index.html'; 
+                return; 
+            }
 
             try {
                 const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-                if (!userDoc.exists()) { window.location.href = 'index.html'; return; }
+                if (!userDoc.exists()) { 
+                    window.location.href = 'index.html'; 
+                    return; 
+                }
                 
                 const userData = userDoc.data();
                 if (userData.rol !== 'admin') {
@@ -331,11 +340,15 @@
                 await cargarDatos();
                 llenarSelectores();
 
-                setTimeout(() => { document.getElementById('loadingOverlay').style.display = 'none'; }, 800);
             } catch (error) {
                 console.error('Error:', error);
                 mostrarToast('Error al cargar datos', 'error');
             }
+
+            setTimeout(() => { 
+                const overlay = document.getElementById('loadingOverlay');
+                if (overlay) overlay.style.display = 'none'; 
+            }, 700);
         });
 
         async function cargarDatos() {
@@ -427,6 +440,7 @@
             const uid = e.target.value;
             const selectMateria = document.getElementById('selectMateriaReabrir');
             const selectGrado = document.getElementById('selectGradoReabrir');
+
             selectMateria.innerHTML = '<option value="">Selecciona materia...</option>';
             selectGrado.innerHTML = '<option value="">Selecciona grado...</option>';
             selectMateria.disabled = true;
@@ -439,7 +453,10 @@
 
             const materias = docente.materiasImpartidas || [];
             const grados = new Set();
-            if (docente.gradoEncargado || docente.grado) grados.add(docente.gradoEncargado || docente.grado);
+
+            if (docente.gradoEncargado || docente.grado) {
+                grados.add(docente.gradoEncargado || docente.grado);
+            }
 
             materias.forEach(m => {
                 const opt = document.createElement('option');
@@ -458,6 +475,7 @@
 
             selectMateria.disabled = materias.length === 0;
             selectGrado.disabled = grados.size === 0;
+
             Array.from(grados).sort().forEach(g => {
                 const opt = document.createElement('option');
                 opt.value = g;
@@ -520,6 +538,7 @@
                         const id = btn.dataset.id;
                         const periodo = btn.dataset.periodo;
                         if (!confirm(`¿Reabrir Período ${periodo}?\nEl docente podrá editar las notas nuevamente.`)) return;
+
                         try {
                             await deleteDoc(doc(db, 'periodosCerrados', id));
                             mostrarToast(`Período ${periodo} reabierto correctamente`, 'success');
@@ -533,7 +552,6 @@
                         }
                     });
                 });
-
             } catch (error) {
                 console.error('Error:', error);
                 periodsList.innerHTML = '<p class="text-danger">Error al buscar períodos</p>';
@@ -544,7 +562,11 @@
             const grado = document.getElementById('selectGradoPDF').value;
             const periodo = parseInt(document.getElementById('selectPeriodoPDF').value);
 
-            if (!grado) { mostrarToast('Selecciona un grado', 'error'); return; }
+            if (!grado) { 
+                mostrarToast('Selecciona un grado', 'error'); 
+                return; 
+            }
+
             mostrarToast('Generando PDF...', 'info');
 
             try {
@@ -562,7 +584,9 @@
                             reader.readAsDataURL(logoBlob);
                         });
                     }
-                } catch (e) { console.log('Logo no disponible'); }
+                } catch (e) { 
+                    console.log('Logo no disponible'); 
+                }
 
                 const qAlumnos = query(collection(db, 'alumnos'), where('grado', '==', grado));
                 const snapAlumnos = await getDocs(qAlumnos);
@@ -570,7 +594,10 @@
                 snapAlumnos.forEach(d => alumnos.push({ id: d.id, ...d.data() }));
                 alumnos.sort((a, b) => a.nombre.localeCompare(b.nombre));
 
-                if (alumnos.length === 0) { mostrarToast('No hay alumnos en este grado', 'error'); return; }
+                if (alumnos.length === 0) { 
+                    mostrarToast('No hay alumnos en este grado', 'error'); 
+                    return; 
+                }
 
                 const qNotas = query(collection(db, 'notas'), where('grado', '==', grado), where('periodo', '==', periodo));
                 const snapNotas = await getDocs(qNotas);
@@ -587,9 +614,11 @@
                 });
 
                 const materias = Array.from(materiasSet).sort();
-                console.log('Materias en PDF:', materias);
 
-                if (materias.length === 0) { mostrarToast('No hay calificaciones registradas para este período', 'error'); return; }
+                if (materias.length === 0) { 
+                    mostrarToast('No hay calificaciones registradas para este período', 'error'); 
+                    return; 
+                }
 
                 function formatearNombreMateria(materia) {
                     if (materia.startsWith('modulo_')) {
@@ -600,6 +629,7 @@
                 }
 
                 if (logoImg) pdfDoc.addImage(logoImg, 'PNG', 14, 10, 20, 20);
+
                 pdfDoc.setFontSize(16);
                 pdfDoc.setTextColor(40, 40, 40);
                 pdfDoc.text("Complejo Educativo Thomas Jefferson", logoImg ? 38 : 14, 18);
@@ -637,7 +667,10 @@
                 });
 
                 pdfDoc.autoTable({
-                    head: headers, body: body, startY: 55, theme: 'grid',
+                    head: headers, 
+                    body: body, 
+                    startY: 55, 
+                    theme: 'grid',
                     headStyles: { fillColor: [99, 102, 241], textColor: 255, fontStyle: 'bold', fontSize: 9 },
                     bodyStyles: { fontSize: 9, textColor: 50 },
                     alternateRowStyles: { fillColor: [240, 240, 245] },
@@ -662,12 +695,15 @@
                     pdfDoc.setPage(i);
                     pdfDoc.setFontSize(8);
                     pdfDoc.setTextColor(150, 150, 150);
-                    pdfDoc.text(`Página ${i} de ${pageCount} - Sistema Escolar Thomas Jefferson`, pdfDoc.internal.pageSize.getWidth() - 60, pdfDoc.internal.pageSize.getHeight() - 10);
+                    pdfDoc.text(
+                        `Página ${i} de ${pageCount} - Sistema Escolar Thomas Jefferson`, 
+                        pdfDoc.internal.pageSize.getWidth() - 60, 
+                        pdfDoc.internal.pageSize.getHeight() - 10
+                    );
                 }
 
                 pdfDoc.save(`Notas_${grado.replace(/[^a-zA-Z0-9]/g, '_')}_P${periodo}.pdf`);
                 mostrarToast('PDF generado correctamente', 'success');
-
             } catch (error) {
                 console.error('Error:', error);
                 mostrarToast('Error al generar PDF: ' + error.message, 'error');
