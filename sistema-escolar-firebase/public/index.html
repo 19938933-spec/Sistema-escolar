@@ -552,7 +552,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
-
         const CODIGO_SEGURIDAD = "CLASES26$COED";
 
         // Ocultar loading screen
@@ -578,13 +577,9 @@
             const icon = type === 'error' ? 'x-circle-fill' : (type === 'success' ? 'check-circle-fill' : 'info-circle-fill');
             toast.innerHTML = `<i class="bi bi-${icon}"></i> <span>${msg}</span>`;
             container.appendChild(toast);
-
             setTimeout(() => toast.remove(), 4500);
         }
-
-        // ==========================================
-        // LOGIN CON USUARIO O CORREO (MEJORADO)
-        // ==========================================
+        
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -617,10 +612,9 @@
 
                 // Si el usuario escribió solo el nombre de usuario (sin @)
                 if (!rawUser.includes('@')) {
-                    // Se asume el dominio institucional
                     email = `${rawUser}@clases.edu.sv`;
                 } else {
-                    // Validación muy básica de formato de correo (acepta guiones)
+                    // Validación básica de formato de correo (acepta guiones)
                     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                     if (!emailRegex.test(rawUser)) {
                         showToast('El formato del correo no es válido', 'error');
@@ -665,11 +659,9 @@
                                 window.location.href = 'dashboard.html';
                             }
                         } else {
-                            // Rol desconocido → seguridad
                             window.location.href = 'index.html';
                         }
                     }, 900);
-
                 } else {
                     // Usuario autenticado en Auth pero no existe en Firestore
                     await signOut(auth);
@@ -683,7 +675,6 @@
                 console.error("Error de login:", error);
 
                 let msg = "Error al iniciar sesión";
-
                 if (error.code === 'auth/user-not-found' || 
                     error.code === 'auth/wrong-password' || 
                     error.code === 'auth/invalid-credential' ||
@@ -702,57 +693,51 @@
             }
         });
 
-        // ==========================================
-        // LOGIN CON GOOGLE
-        // ==========================================
         document.getElementById('btnGoogle').addEventListener('click', async () => {
             try {
                 const result = await signInWithPopup(auth, googleProvider);
                 const user = result.user;
 
-                // 1. Solo correos institucionales
-                if (!user.email || !user.email.endsWith('@clases.edu.sv')) {
-                    await signOut(auth);
-                    showToast('Solo se permiten correos institucionales (@clases.edu.sv)', 'error');
-                    return;
-                }
-
-                // 2. Verificar si existe en Firestore
+                // Verificar si el usuario existe en Firestore
                 const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-                
-                if (userDoc.exists()) {
-                    const data = userDoc.data();
-                    
-                    // Los administradores deben usar el formulario normal
-                    if (data.rol !== 'docente') {
-                        await signOut(auth);
-                        showToast('Las cuentas de administrador deben iniciar sesión con el formulario', 'error');
-                        return;
-                    }
 
-                    // Guardar sesión
+                if (userDoc.exists()) {
+                    // ===== USUARIO YA REGISTRADO → ENTRAR =====
+                    const data = userDoc.data();
+
                     localStorage.setItem('usuario', JSON.stringify({
                         uid: user.uid,
-                        nombre: data.nombre || data.nombreCompleto || user.displayName || 'Docente',
+                        nombre: data.nombre || data.nombreCompleto || user.displayName,
                         correo: data.correo || user.email,
                         rol: data.rol,
-                        grado: data.gradoEncargado || data.grado || '',
+                        grado: data.gradoEncargado || '',
                         usuario: data.usuario || user.email.split('@')[0],
                         perfilConfigurado: data.perfilConfigurado
                     }));
 
-                    showToast(`Bienvenido, ${data.nombre || 'Docente'}`, 'success');
-                    
+                    showToast(`Bienvenido, ${data.nombre || data.nombreCompleto || 'Usuario'}`, 'success');
+
                     setTimeout(() => {
-                        if (data.perfilConfigurado === false) {
+                        if (data.rol === 'admin') {
+                            window.location.href = 'admin.html';
+                        } else if (data.perfilConfigurado === false) {
                             window.location.href = 'configurar-perfil.html';
                         } else {
                             window.location.href = 'dashboard.html';
                         }
-                    }, 900);
+                    }, 1000);
 
                 } else {
-                    await signOut(auth);
+                    // ===== USUARIO NO REGISTRADO =====
+                    // Eliminamos la cuenta que Firebase acaba de crear en Authentication
+                    try {
+                        await user.delete();
+                    } catch (deleteError) {
+                        console.error("No se pudo eliminar la cuenta temporal:", deleteError);
+                        // Aun así cerramos sesión por seguridad
+                        await signOut(auth);
+                    }
+
                     showToast('Tu correo no está registrado. Debes registrarte primero.', 'error');
                 }
 
@@ -760,9 +745,9 @@
                 console.error("Error de Google Login:", error);
 
                 if (error.code === 'auth/popup-closed-by-user') {
-                    showToast('Inicio de sesión cancelado', 'info');
+                    showToast('Ventana de Google cerrada', 'info');
                 } else if (error.code === 'auth/popup-blocked') {
-                    showToast('El navegador bloqueó la ventana. Permite popups para este sitio', 'error');
+                    showToast('Popup bloqueado. Permite popups para este sitio', 'error');
                 } else if (error.code === 'auth/unauthorized-domain') {
                     showToast('Dominio no autorizado en Firebase', 'error');
                 } else {
