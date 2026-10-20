@@ -19,7 +19,7 @@
         body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, var(--bg-primary) 0%, #1a1a2e 100%); color: var(--text-primary); min-height: 100vh; }
         .navbar-custom { background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 15px 0; }
         .navbar-brand-custom { display: flex; align-items: center; gap: 12px; color: var(--text-primary); font-weight: 700; font-size: 18px; text-decoration: none; }
-        .navbar-brand-custom .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent-primary), #8b5cf6); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; }
+        .navbar-brand-custom .logo-img { width: 42px; height: 42px; object-fit: contain; border-radius: 8px; }
         .user-info { display: flex; align-items: center; gap: 15px; }
         .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-primary), #8b5cf6); display: flex; align-items: center; justify-content: center; font-weight: 600; color: white; }
         .user-name { font-weight: 600; color: var(--text-primary); }
@@ -40,6 +40,7 @@
         .btn-primary-custom:hover { transform: translateY(-2px); }
         .btn-success-custom { background: linear-gradient(135deg, var(--accent-success), #059669); color: white; }
         .btn-warning-custom { background: linear-gradient(135deg, var(--accent-warning), #d97706); color: white; }
+        .btn-danger-custom { background: linear-gradient(135deg, var(--accent-danger), #dc2626); color: white; }
         .periods-tabs { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; animation: slideUp 0.6s ease-out 0.2s both; }
         .period-tab { flex: 1; min-width: 120px; padding: 15px 20px; background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s; font-weight: 600; }
         .period-tab:hover { border-color: var(--accent-primary); transform: translateY(-2px); }
@@ -75,7 +76,7 @@
         .empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
         .empty-state i { font-size: 64px; margin-bottom: 20px; opacity: 0.5; }
         .empty-state h4 { font-size: 20px; margin-bottom: 10px; color: var(--text-primary); }
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-primary); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-primary); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s ease; }
         .loading-wave { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
         .loading-bar { width: 8px; height: 40px; background: linear-gradient(135deg, var(--accent-primary), #8b5cf6); border-radius: 4px; animation: wave 1s ease-in-out infinite; }
         .loading-bar:nth-child(2) { animation-delay: 0.1s; }
@@ -101,13 +102,14 @@
         </div>
         <p style="color: var(--text-secondary); font-size: 14px;">Cargando calificaciones...</p>
     </div>
+
     <div id="toastContainer" class="toast-container"></div>
 
     <nav class="navbar-custom">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
                 <a href="dashboard.html" class="navbar-brand-custom">
-                    <div class="logo-icon"><i class="bi bi-mortarboard-fill"></i></div>
+                    <img src="img/fondos/logo.png" alt="Logo" class="logo-img" onerror="this.style.display='none'">
                     <div>
                         <div>Complejo Educativo Thomas Jefferson</div>
                         <small style="color: var(--text-secondary); font-size: 12px;">Sistema de Gestión Escolar</small>
@@ -143,11 +145,15 @@
                 </div>
                 <div class="control-group" style="flex: 0 0 auto;">
                     <label>&nbsp;</label>
-                    <button class="btn-action btn-primary-custom" id="btnNuevaActividad" disabled><i class="bi bi-plus-circle-fill"></i> Nueva Actividad</button>
+                    <button class="btn-action btn-primary-custom" id="btnNuevaActividad" disabled>
+                        <i class="bi bi-plus-circle-fill"></i> Nueva Actividad
+                    </button>
                 </div>
                 <div class="control-group" style="flex: 0 0 auto;">
                     <label>&nbsp;</label>
-                    <button class="btn-action btn-success-custom" id="btnGuardarTodo" disabled><i class="bi bi-cloud-arrow-up-fill"></i> Guardar Todo</button>
+                    <button class="btn-action btn-success-custom" id="btnGuardarTodo" disabled>
+                        <i class="bi bi-cloud-arrow-up-fill"></i> Guardar Todo
+                    </button>
                 </div>
             </div>
         </div>
@@ -161,20 +167,33 @@
 
         <div class="table-card">
             <div id="tablaContainer">
-                <div class="empty-state"><i class="bi bi-journal-x"></i><h4>Selecciona una materia y grado para comenzar</h4></div>
+                <div class="empty-state">
+                    <i class="bi bi-journal-x"></i>
+                    <h4>Selecciona una materia y grado para comenzar</h4>
+                </div>
             </div>
+
             <div class="stats-bar" id="statsBar" style="display: none;">
                 <div class="stat-badge total"><i class="bi bi-people-fill"></i> Total: <span id="statTotal">0</span></div>
                 <div class="stat-badge aprobados"><i class="bi bi-check-circle-fill"></i> Aprobados (≥7): <span id="statAprobados">0</span></div>
                 <div class="stat-badge reprobados"><i class="bi bi-x-circle-fill"></i> Reprobados (<7): <span id="statReprobados">0</span></div>
             </div>
+
             <div class="mt-4 text-end" id="cerrarPeriodoSection" style="display: none;">
-                <button class="btn-action btn-warning-custom" id="btnCerrarPeriodo"><i class="bi bi-lock-fill"></i> Cerrar Período</button>
+                <button class="btn-action btn-warning-custom" id="btnCerrarPeriodo">
+                    <i class="bi bi-lock-fill"></i> Cerrar Período
+                </button>
+            </div>
+
+            <div class="mt-4 text-end" id="reabrirPeriodoSection" style="display: none;">
+                <button class="btn-action btn-danger-custom" id="btnReabrirPeriodo">
+                    <i class="bi bi-unlock-fill"></i> Reabrir Período
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Modal Nueva Actividad -->
     <div class="modal fade" id="modalActividad" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 16px;">
@@ -194,19 +213,20 @@
                 </div>
                 <div class="modal-footer" style="border-top: 1px solid var(--border);">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary-custom btn-action" id="btnCrearActividad"><i class="bi bi-check-circle-fill"></i> Crear</button>
+                    <button type="button" class="btn btn-primary-custom btn-action" id="btnCrearActividad">
+                        <i class="bi bi-check-circle-fill"></i> Crear
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap JS (NECESARIO para el modal) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, query, where, getDocs, writeBatch, doc, deleteDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, query, where, getDocs, writeBatch, doc, deleteDoc, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC1VnkczVVRwNDj6G1kPPdHNZXWNPy_JXA",
@@ -229,35 +249,31 @@
         let materiaActual = '';
         let gradoActual = '';
         let periodoCerrado = false;
-
         let modalActividad;
+        let documentoPeriodoCerradoId = null;
 
         function mostrarToast(mensaje, tipo) {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast-notification ${tipo}`;
-            const icono = tipo === 'success' ? '<i class="bi bi-check-circle-fill"></i>' : tipo === 'error' ? '<i class="bi bi-x-circle-fill"></i>' : '<i class="bi bi-info-circle-fill"></i>';
+            const icono = tipo === 'success' ? '<i class="bi bi-check-circle-fill"></i>' : 
+                          tipo === 'error' ? '<i class="bi bi-x-circle-fill"></i>' : 
+                          '<i class="bi bi-info-circle-fill"></i>';
             toast.innerHTML = `${icono} <span>${mensaje}</span>`;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 5000);
         }
 
         onAuthStateChanged(auth, async (user) => {
-            if (!user) { 
-                console.log("No hay usuario, redirigiendo...");
-                window.location.href = 'index.html'; 
-                return; 
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
             }
-            
-            console.log("Usuario autenticado:", user.uid);
 
             try {
-                // Recargar datos frescos de Firestore
-                const { getDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
                 const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
                 
                 if (!userDoc.exists()) {
-                    console.error("Usuario no existe en Firestore");
                     window.location.href = 'index.html';
                     return;
                 }
@@ -265,15 +281,13 @@
                 const data = userDoc.data();
                 
                 if (data.rol !== 'docente') {
-                    console.log("No es docente, redirigiendo...");
                     window.location.href = 'admin.html';
                     return;
                 }
 
-                // Guardar en localStorage
                 usuarioActual = {
                     uid: user.uid,
-                    nombre: data.nombre || data.nombreCompleto,
+                    nombre: data.nombre || data.nombreCompleto || 'Docente',
                     correo: data.correo,
                     rol: data.rol,
                     grado: data.gradoEncargado || '',
@@ -281,32 +295,28 @@
                     perfilConfigurado: data.perfilConfigurado,
                     materiasImpartidas: data.materiasImpartidas || []
                 };
-                localStorage.setItem('usuario', JSON.stringify(usuarioActual));
 
-                console.log("Datos del docente cargados:", usuarioActual);
-                console.log("Materias impartidas:", usuarioActual.materiasImpartidas);
+                localStorage.setItem('usuario', JSON.stringify(usuarioActual));
 
                 document.getElementById('userName').textContent = usuarioActual.nombre;
                 document.getElementById('userAvatar').textContent = usuarioActual.nombre.charAt(0).toUpperCase();
                 document.getElementById('docenteNombre').textContent = usuarioActual.nombre;
 
-                // Inicializar modal de Bootstrap
                 modalActividad = new bootstrap.Modal(document.getElementById('modalActividad'));
-
-                // Llenar selector de materias
                 llenarSelectorMaterias();
 
-                // Ocultar loading
-                setTimeout(() => {
-                    document.getElementById('loadingOverlay').style.opacity = '0';
-                    setTimeout(() => { document.getElementById('loadingOverlay').style.display = 'none'; }, 500);
-                }, 800);
-
             } catch (error) {
-                console.error("Error en onAuthStateChanged:", error);
+                console.error("Error:", error);
                 mostrarToast('Error al cargar datos: ' + error.message, 'error');
-                document.getElementById('loadingOverlay').style.display = 'none';
             }
+
+            setTimeout(() => {
+                const overlay = document.getElementById('loadingOverlay');
+                if (overlay) {
+                    overlay.style.opacity = '0';
+                    setTimeout(() => { overlay.style.display = 'none'; }, 500);
+                }
+            }, 700);
         });
 
         function llenarSelectorMaterias() {
@@ -341,11 +351,13 @@
             const selectGrado = document.getElementById('selectGrado');
             selectGrado.innerHTML = '<option value="">Selecciona un grado...</option>';
             selectGrado.disabled = true;
+
             document.getElementById('btnNuevaActividad').disabled = true;
             document.getElementById('btnGuardarTodo').disabled = true;
             document.getElementById('tablaContainer').innerHTML = '<div class="empty-state"><i class="bi bi-journal-x"></i><h4>Selecciona un grado</h4></div>';
             document.getElementById('statsBar').style.display = 'none';
             document.getElementById('cerrarPeriodoSection').style.display = 'none';
+            document.getElementById('reabrirPeriodoSection').style.display = 'none';
 
             if (!materiaActual || index === undefined) return;
 
@@ -389,7 +401,6 @@
                 alumnos = [];
                 snapshot.forEach(d => alumnos.push({ id: d.id, ...d.data() }));
                 alumnos.sort((a, b) => a.nombre.localeCompare(b.nombre));
-                console.log(`Alumnos cargados: ${alumnos.length}`);
             } catch (error) {
                 console.error('Error cargando alumnos:', error);
                 mostrarToast('Error al cargar alumnos', 'error');
@@ -398,6 +409,7 @@
 
         async function cargarActividades() {
             if (!materiaActual || !gradoActual) return;
+
             try {
                 const q = query(
                     collection(db, 'actividades'),
@@ -411,8 +423,6 @@
                 snapshot.forEach(d => actividades.push({ id: d.id, ...d.data() }));
                 actividades.sort((a, b) => (a.orden || 0) - (b.orden || 0));
                 
-                console.log(`Actividades cargadas: ${actividades.length}`);
-                
                 await cargarNotas();
                 await verificarPeriodoCerrado();
                 renderizarTabla();
@@ -423,7 +433,11 @@
         }
 
         async function cargarNotas() {
-            if (actividades.length === 0 || alumnos.length === 0) { notas = {}; return; }
+            if (actividades.length === 0 || alumnos.length === 0) { 
+                notas = {}; 
+                return; 
+            }
+
             try {
                 notas = {};
                 for (const act of actividades) {
@@ -450,8 +464,12 @@
                     where('periodo', '==', periodoActual)
                 );
                 const snapshot = await getDocs(q);
+                
                 periodoCerrado = !snapshot.empty;
+                documentoPeriodoCerradoId = snapshot.empty ? null : snapshot.docs[0].id;
+
                 document.getElementById('cerrarPeriodoSection').style.display = periodoCerrado ? 'none' : 'block';
+                document.getElementById('reabrirPeriodoSection').style.display = periodoCerrado ? 'block' : 'none';
             } catch (error) {
                 console.error('Error verificando período:', error);
                 periodoCerrado = false;
@@ -462,42 +480,101 @@
             const container = document.getElementById('tablaContainer');
             
             if (alumnos.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i class="bi bi-inbox"></i><h4>No hay alumnos en este grado</h4><p>Registra alumnos primero</p></div>';
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h4>No hay alumnos en este grado</h4>
+                        <p>Registra alumnos primero</p>
+                    </div>
+                `;
                 document.getElementById('statsBar').style.display = 'none';
                 return;
             }
 
             if (actividades.length === 0) {
-                container.innerHTML = `<div class="empty-state"><i class="bi bi-journal-plus"></i><h4>Sin actividades en Período ${periodoActual}</h4><p>Haz clic en "Nueva Actividad" para comenzar</p></div>`;
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-journal-plus"></i>
+                        <h4>Sin actividades en Período ${periodoActual}</h4>
+                        <p>Haz clic en "Nueva Actividad" para comenzar</p>
+                    </div>
+                `;
                 document.getElementById('statsBar').style.display = 'none';
                 return;
             }
 
             let html = '<table class="grades-table"><thead><tr><th>Alumno</th>';
+            
             actividades.forEach(act => {
-                html += `<th><div class="activity-header"><div><div class="activity-name" title="${act.nombre}">${act.nombre}</div><small style="opacity:0.7">/${act.valorMaximo}</small></div><button class="activity-delete" onclick="eliminarActividad('${act.id}')" ${periodoCerrado ? 'disabled' : ''}><i class="bi bi-trash-fill"></i></button></div></th>`;
+                html += `
+                    <th>
+                        <div class="activity-header">
+                            <div>
+                                <div class="activity-name" title="${act.nombre}">${act.nombre}</div>
+                                <small style="opacity:0.7">/${act.valorMaximo}</small>
+                            </div>
+                            <button class="activity-delete" onclick="eliminarActividad('${act.id}')" ${periodoCerrado ? 'disabled' : ''}>
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </div>
+                    </th>
+                `;
             });
+            
             html += '<th>Promedio</th></tr></thead><tbody>';
             
             let aprobados = 0, reprobados = 0;
             
             alumnos.forEach(alumno => {
-                html += `<tr><td><div class="student-cell"><div class="student-avatar">${alumno.nombre.charAt(0).toUpperCase()}</div><div class="student-name">${alumno.nombre}</div></div></td>`;
+                html += `
+                    <tr>
+                        <td>
+                            <div class="student-cell">
+                                <div class="student-avatar">${alumno.nombre.charAt(0).toUpperCase()}</div>
+                                <div class="student-name">${alumno.nombre}</div>
+                            </div>
+                        </td>
+                `;
                 
                 let suma = 0, count = 0;
+                
                 actividades.forEach(act => {
                     const nota = notas[alumno.id]?.[act.id] ?? '';
                     const valorMax = parseFloat(act.valorMaximo) || 10;
                     const notaNorm = nota !== '' ? (parseFloat(nota) / valorMax) * 10 : '';
-                    if (nota !== '') { suma += notaNorm; count++; }
+                    
+                    if (nota !== '') { 
+                        suma += notaNorm; 
+                        count++; 
+                    }
+                    
                     const clase = nota === '' ? '' : (notaNorm >= 7 ? 'aprobado' : 'reprobado');
-                    html += `<td><input type="number" class="grade-input ${clase}" data-alumno="${alumno.id}" data-actividad="${act.id}" value="${nota}" min="0" max="${valorMax}" step="0.1" onchange="actualizarNota(this)" ${periodoCerrado ? 'disabled' : ''}></td>`;
+                    
+                    html += `
+                        <td>
+                            <input type="number" 
+                                   class="grade-input ${clase}" 
+                                   data-alumno="${alumno.id}" 
+                                   data-actividad="${act.id}" 
+                                   value="${nota}" 
+                                   min="0" 
+                                   max="${valorMax}" 
+                                   step="0.1" 
+                                   onchange="actualizarNota(this)" 
+                                   ${periodoCerrado ? 'disabled' : ''}>
+                        </td>
+                    `;
                 });
                 
                 const promedio = count > 0 ? (suma / count) : 0;
                 const promClase = count > 0 ? (promedio >= 7 ? 'aprobado' : 'reprobado') : '';
                 const promDisplay = count > 0 ? promedio.toFixed(1) : '-';
-                if (count > 0) { if (promedio >= 7) aprobados++; else reprobados++; }
+                
+                if (count > 0) { 
+                    if (promedio >= 7) aprobados++; 
+                    else reprobados++; 
+                }
+                
                 html += `<td><span class="promedio-cell ${promClase}">${promDisplay}</span></td></tr>`;
             });
             
@@ -511,7 +588,11 @@
         }
 
         window.actualizarNota = (input) => {
-            if (periodoCerrado) { mostrarToast('Período cerrado', 'error'); return; }
+            if (periodoCerrado) { 
+                mostrarToast('El período está cerrado', 'error'); 
+                return; 
+            }
+
             const alumnoId = input.dataset.alumno;
             const actividadId = input.dataset.actividad;
             const valor = input.value.trim();
@@ -524,7 +605,7 @@
             } else {
                 const num = parseFloat(valor);
                 if (isNaN(num) || num < 0 || num > valorMax) {
-                    mostrarToast(`Nota entre 0 y ${valorMax}`, 'error');
+                    mostrarToast(`La nota debe estar entre 0 y ${valorMax}`, 'error');
                     input.value = '';
                     return;
                 }
@@ -540,9 +621,11 @@
         function recalcularPromedios() {
             const filas = document.querySelectorAll('.grades-table tbody tr');
             let aprobados = 0, reprobados = 0;
+
             filas.forEach((fila, idx) => {
                 const alumno = alumnos[idx];
                 if (!alumno) return;
+
                 let suma = 0, count = 0;
                 actividades.forEach(act => {
                     const input = fila.querySelector(`input[data-actividad="${act.id}"]`);
@@ -553,23 +636,30 @@
                         count++;
                     }
                 });
+
                 const promedio = count > 0 ? (suma / count) : 0;
                 const cell = fila.querySelector('.promedio-cell');
+                
                 if (count > 0) {
                     cell.textContent = promedio.toFixed(1);
                     cell.className = `promedio-cell ${promedio >= 7 ? 'aprobado' : 'reprobado'}`;
-                    if (promedio >= 7) aprobados++; else reprobados++;
+                    if (promedio >= 7) aprobados++; 
+                    else reprobados++;
                 } else {
                     cell.textContent = '-';
                     cell.className = 'promedio-cell';
                 }
             });
+
             document.getElementById('statAprobados').textContent = aprobados;
             document.getElementById('statReprobados').textContent = reprobados;
         }
 
         document.getElementById('btnNuevaActividad').addEventListener('click', () => {
-            if (periodoCerrado) { mostrarToast('Período cerrado', 'error'); return; }
+            if (periodoCerrado) { 
+                mostrarToast('El período está cerrado. Reábrelo para agregar actividades.', 'error'); 
+                return; 
+            }
             document.getElementById('inputNombreActividad').value = '';
             document.getElementById('inputValorMaximo').value = '10';
             modalActividad.show();
@@ -578,26 +668,43 @@
         document.getElementById('btnCrearActividad').addEventListener('click', async () => {
             const nombre = document.getElementById('inputNombreActividad').value.trim();
             const valorMaximo = parseFloat(document.getElementById('inputValorMaximo').value);
-            if (!nombre) { mostrarToast('Ingresa un nombre', 'error'); return; }
-            if (isNaN(valorMaximo) || valorMaximo <= 0) { mostrarToast('Valor inválido', 'error'); return; }
+
+            if (!nombre) { 
+                mostrarToast('Ingresa un nombre para la actividad', 'error'); 
+                return; 
+            }
+            if (isNaN(valorMaximo) || valorMaximo <= 0) { 
+                mostrarToast('Valor máximo inválido', 'error'); 
+                return; 
+            }
+
             try {
                 await addDoc(collection(db, 'actividades'), {
-                    nombre, valorMaximo, materia: materiaActual, grado: gradoActual,
-                    periodo: periodoActual, docenteId: usuarioActual.uid,
-                    orden: actividades.length, fechaCreacion: new Date().toISOString()
+                    nombre, 
+                    valorMaximo, 
+                    materia: materiaActual, 
+                    grado: gradoActual,
+                    periodo: periodoActual, 
+                    docenteId: usuarioActual.uid,
+                    orden: actividades.length, 
+                    fechaCreacion: new Date().toISOString()
                 });
                 modalActividad.hide();
-                mostrarToast('Actividad creada', 'success');
+                mostrarToast('Actividad creada correctamente', 'success');
                 await cargarActividades();
             } catch (error) {
                 console.error('Error:', error);
-                mostrarToast('Error al crear', 'error');
+                mostrarToast('Error al crear la actividad', 'error');
             }
         });
 
         window.eliminarActividad = async (id) => {
-            if (periodoCerrado) { mostrarToast('Período cerrado', 'error'); return; }
-            if (!confirm('¿Eliminar actividad y notas?')) return;
+            if (periodoCerrado) { 
+                mostrarToast('El período está cerrado', 'error'); 
+                return; 
+            }
+            if (!confirm('¿Eliminar esta actividad y todas sus notas?')) return;
+
             try {
                 await deleteDoc(doc(db, 'actividades', id));
                 const q = query(collection(db, 'notas'), where('actividadId', '==', id));
@@ -609,14 +716,23 @@
                 await cargarActividades();
             } catch (error) {
                 console.error('Error:', error);
-                mostrarToast('Error al eliminar', 'error');
+                mostrarToast('Error al eliminar la actividad', 'error');
             }
         };
 
         document.getElementById('btnGuardarTodo').addEventListener('click', async () => {
-            if (periodoCerrado) { mostrarToast('Período cerrado', 'error'); return; }
-            if (!materiaActual || !gradoActual) { mostrarToast('Selecciona materia y grado', 'error'); return; }
-            if (actividades.length === 0) { mostrarToast('Sin actividades', 'error'); return; }
+            if (periodoCerrado) { 
+                mostrarToast('El período está cerrado', 'error'); 
+                return; 
+            }
+            if (!materiaActual || !gradoActual) { 
+                mostrarToast('Selecciona materia y grado', 'error'); 
+                return; 
+            }
+            if (actividades.length === 0) { 
+                mostrarToast('No hay actividades para guardar', 'error'); 
+                return; 
+            }
             
             const btn = document.getElementById('btnGuardarTodo');
             btn.disabled = true;
@@ -625,45 +741,80 @@
             try {
                 const batch = writeBatch(db);
                 const notasRef = collection(db, 'notas');
+
                 for (const alumnoId in notas) {
                     for (const actividadId in notas[alumnoId]) {
                         const nota = notas[alumnoId][actividadId];
                         if (nota === '' || nota === undefined) continue;
+
                         const q = query(notasRef, where('actividadId', '==', actividadId), where('alumnoId', '==', alumnoId));
                         const existing = await getDocs(q);
+
                         const notaData = {
-                            actividadId, alumnoId, nota: parseFloat(nota),
-                            materia: materiaActual, grado: gradoActual, periodo: periodoActual,
+                            actividadId, 
+                            alumnoId, 
+                            nota: parseFloat(nota),
+                            materia: materiaActual, 
+                            grado: gradoActual, 
+                            periodo: periodoActual,
                             docenteId: usuarioActual.uid,
                             fechaActualizacion: new Date().toISOString()
                         };
-                        if (existing.empty) batch.set(doc(notasRef), notaData);
-                        else batch.update(existing.docs[0].ref, notaData);
+
+                        if (existing.empty) {
+                            batch.set(doc(notasRef), notaData);
+                        } else {
+                            batch.update(existing.docs[0].ref, notaData);
+                        }
                     }
                 }
+
                 await batch.commit();
                 mostrarToast(`Calificaciones guardadas (Período ${periodoActual})`, 'success');
             } catch (error) {
                 console.error('Error:', error);
                 mostrarToast('Error al guardar: ' + error.message, 'error');
             }
+
             btn.disabled = false;
             btn.innerHTML = '<i class="bi bi-cloud-arrow-up-fill"></i> Guardar Todo';
         });
 
         document.getElementById('btnCerrarPeriodo').addEventListener('click', async () => {
-            if (!confirm(`¿Cerrar Período ${periodoActual}?\n\nSolo un admin podrá reabrirlo.`)) return;
+            if (!confirm(`¿Cerrar el Período ${periodoActual}?\n\nPodrás reabrirlo más tarde si lo necesitas.`)) return;
+
             try {
                 await addDoc(collection(db, 'periodosCerrados'), {
-                    docenteId: usuarioActual.uid, materia: materiaActual,
-                    grado: gradoActual, periodo: periodoActual,
+                    docenteId: usuarioActual.uid, 
+                    materia: materiaActual,
+                    grado: gradoActual, 
+                    periodo: periodoActual,
                     fechaCierre: new Date().toISOString()
                 });
-                mostrarToast(`Período ${periodoActual} cerrado`, 'success');
+                mostrarToast(`Período ${periodoActual} cerrado correctamente`, 'success');
                 await cargarActividades();
             } catch (error) {
                 console.error('Error:', error);
-                mostrarToast('Error al cerrar período', 'error');
+                mostrarToast('Error al cerrar el período', 'error');
+            }
+        });
+
+        // Nueva función: Reabrir período
+        document.getElementById('btnReabrirPeriodo').addEventListener('click', async () => {
+            if (!confirm(`¿Reabrir el Período ${periodoActual}?\n\nPodrás volver a editar las notas.`)) return;
+
+            if (!documentoPeriodoCerradoId) {
+                mostrarToast('No se encontró el registro del período cerrado', 'error');
+                return;
+            }
+
+            try {
+                await deleteDoc(doc(db, 'periodosCerrados', documentoPeriodoCerradoId));
+                mostrarToast(`Período ${periodoActual} reabierto correctamente`, 'success');
+                await cargarActividades();
+            } catch (error) {
+                console.error('Error:', error);
+                mostrarToast('Error al reabrir el período', 'error');
             }
         });
 
