@@ -10,77 +10,242 @@
     
     <style>
         :root {
-            --bg-primary: #0f172a; --bg-card: rgba(30, 41, 59, 0.85);
-            --text-primary: #f1f5f9; --text-secondary: #cbd5e1;
-            --accent-primary: #6366f1; --border: rgba(255, 255, 255, 0.15);
+            --bg-primary: #0f172a; 
+            --bg-card: rgba(30, 41, 59, 0.85);
+            --text-primary: #f1f5f9; 
+            --text-secondary: #cbd5e1;
+            --accent-primary: #6366f1; 
+            --border: rgba(255, 255, 255, 0.15);
         }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; padding: 40px 20px; }
-        .config-container { max-width: 800px; margin: 0 auto; animation: slideUp 0.6s ease-out; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .header-section { text-align: center; margin-bottom: 40px; }
-        .header-section h1 { font-size: 2rem; font-weight: 700; margin-bottom: 10px; }
-        .header-section p { color: var(--text-secondary); font-size: 1.1rem; }
-        .config-card { background: var(--bg-card); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 20px; padding: 30px; margin-bottom: 25px; }
-        .config-card h3 { font-size: 1.3rem; font-weight: 600; margin-bottom: 20px; color: var(--accent-primary); display: flex; align-items: center; gap: 10px; }
-        .form-control, .form-select { background: rgba(15, 23, 42, 0.7); border: 2px solid var(--border); color: var(--text-primary); border-radius: 10px; padding: 12px; }
-        .form-control:focus, .form-select:focus { border-color: var(--accent-primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); background: rgba(15, 23, 42, 0.9); color: white; }
-        .form-label { font-weight: 500; margin-bottom: 8px; color: var(--text-secondary); }
-        .subject-checkbox { display: flex; align-items: center; gap: 10px; padding: 12px; background: rgba(15, 23, 42, 0.5); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s; }
-        .subject-checkbox:hover { border-color: var(--accent-primary); background: rgba(99, 102, 241, 0.1); }
-        .subject-checkbox input { width: 20px; height: 20px; accent-color: var(--accent-primary); cursor: pointer; }
-        .subject-checkbox label { margin: 0; cursor: pointer; flex: 1; font-weight: 500; }
-        .grades-assignment { margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 10px; display: none; }
-        .grades-assignment.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .grade-check { display: inline-block; margin: 5px; }
-        .grade-check input { display: none; }
-        .grade-check label { display: inline-block; padding: 8px 15px; background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border); border-radius: 20px; cursor: pointer; font-size: 0.85rem; transition: all 0.3s; }
-        .grade-check input:checked + label { background: var(--accent-primary); border-color: var(--accent-primary); color: white; }
-        .btn-save { background: linear-gradient(135deg, var(--accent-primary), #4f46e5); border: none; border-radius: 12px; padding: 15px; font-weight: 600; width: 100%; color: white; font-size: 1.1rem; transition: all 0.3s; }
-        .btn-save:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4); }
-        .btn-back { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 12px; padding: 12px; font-weight: 500; width: 100%; margin-top: 10px; transition: all 0.3s; }
-        .btn-back:hover { border-color: var(--accent-primary); color: var(--text-primary); }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg-primary); 
+            color: var(--text-primary); 
+            min-height: 100vh; 
+            padding: 40px 20px; 
+        }
+        .config-container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            animation: slideUp 0.6s ease-out; 
+        }
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translateY(30px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .header-section { 
+            text-align: center; 
+            margin-bottom: 40px; 
+        }
+        .header-section img {
+            width: 80px; 
+            height: 80px; 
+            object-fit: contain; 
+            margin-bottom: 15px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+        .header-section h1 { 
+            font-size: 2rem; 
+            font-weight: 700; 
+            margin-bottom: 10px; 
+        }
+        .header-section p { 
+            color: var(--text-secondary); 
+            font-size: 1.1rem; 
+        }
+        .config-card { 
+            background: var(--bg-card); 
+            backdrop-filter: blur(15px); 
+            border: 1px solid var(--border); 
+            border-radius: 20px; 
+            padding: 30px; 
+            margin-bottom: 25px; 
+        }
+        .config-card h3 { 
+            font-size: 1.3rem; 
+            font-weight: 600; 
+            margin-bottom: 20px; 
+            color: var(--accent-primary); 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+        .form-control, .form-select { 
+            background: rgba(15, 23, 42, 0.7); 
+            border: 2px solid var(--border); 
+            color: var(--text-primary); 
+            border-radius: 10px; 
+            padding: 12px; 
+        }
+        .form-control:focus, .form-select:focus { 
+            border-color: var(--accent-primary); 
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); 
+            background: rgba(15, 23, 42, 0.9); 
+            color: white; 
+        }
+        .form-label { 
+            font-weight: 500; 
+            margin-bottom: 8px; 
+            color: var(--text-secondary); 
+        }
+        .subject-checkbox { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            padding: 12px; 
+            background: rgba(15, 23, 42, 0.5); 
+            border: 1px solid var(--border); 
+            border-radius: 10px; 
+            margin-bottom: 10px; 
+            cursor: pointer; 
+            transition: all 0.3s; 
+        }
+        .subject-checkbox:hover { 
+            border-color: var(--accent-primary); 
+            background: rgba(99, 102, 241, 0.1); 
+        }
+        .subject-checkbox input { 
+            width: 20px; 
+            height: 20px; 
+            accent-color: var(--accent-primary); 
+            cursor: pointer; 
+        }
+        .subject-checkbox label { 
+            margin: 0; 
+            cursor: pointer; 
+            flex: 1; 
+            font-weight: 500; 
+        }
+        .grades-assignment { 
+            margin-top: 15px; 
+            padding: 15px; 
+            background: rgba(0,0,0,0.2); 
+            border-radius: 10px; 
+            display: none; 
+        }
+        .grades-assignment.active { 
+            display: block; 
+            animation: fadeIn 0.3s ease; 
+        }
+        @keyframes fadeIn { 
+            from { opacity: 0; } 
+            to { opacity: 1; } 
+        }
+        .grade-check { 
+            display: inline-block; 
+            margin: 5px; 
+        }
+        .grade-check input { 
+            display: none; 
+        }
+        .grade-check label { 
+            display: inline-block; 
+            padding: 8px 15px; 
+            background: rgba(15, 23, 42, 0.7); 
+            border: 1px solid var(--border); 
+            border-radius: 20px; 
+            cursor: pointer; 
+            font-size: 0.85rem; 
+            transition: all 0.3s; 
+        }
+        .grade-check input:checked + label { 
+            background: var(--accent-primary); 
+            border-color: var(--accent-primary); 
+            color: white; 
+        }
+        .btn-save { 
+            background: linear-gradient(135deg, var(--accent-primary), #4f46e5); 
+            border: none; 
+            border-radius: 12px; 
+            padding: 15px; 
+            font-weight: 600; 
+            width: 100%; 
+            color: white; 
+            font-size: 1.1rem; 
+            transition: all 0.3s; 
+        }
+        .btn-save:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4); 
+        }
+        .btn-save:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-back { 
+            background: transparent; 
+            border: 1px solid var(--border); 
+            color: var(--text-secondary); 
+            border-radius: 12px; 
+            padding: 12px; 
+            font-weight: 500; 
+            width: 100%; 
+            margin-top: 10px; 
+            transition: all 0.3s; 
+        }
+        .btn-back:hover { 
+            border-color: var(--accent-primary); 
+            color: var(--text-primary); 
+        }
     </style>
 </head>
 <body>
     <div class="config-container">
         <div class="header-section">
-            <img src="img/fondos/logo.png" alt="Logo" style="width: 80px; height: 80px; object-fit: contain; margin-bottom: 15px;" onerror="this.src='https://via.placeholder.com/80?text=LOGO'">
+            <img src="img/fondos/logo.png" alt="Logo Complejo Educativo Thomas Jefferson" onerror="this.src='https://via.placeholder.com/80?text=LOGO'">
             <h1>Configura tu Perfil Docente</h1>
             <p>Selecciona tu grado a cargo y las materias que impartirás este año</p>
         </div>
 
         <form id="formConfiguracion">
+            <!-- Grado a Cargo -->
             <div class="config-card">
                 <h3><i class="bi bi-person-badge-fill"></i> Grado a Cargo (Tutor/Encargado)</h3>
-                <p class="text-muted mb-3" style="font-size: 0.9rem;">Selecciona el grado del cual eres responsable administrativo. Si no eres encargado de ningún grado, deja "Ninguno".</p>
+                <p class="text-muted mb-3" style="font-size: 0.9rem;">
+                    Selecciona el grado del cual eres responsable administrativo. Si no eres encargado de ningún grado, deja "Ninguno".
+                </p>
                 <select class="form-select" id="gradoEncargado">
                     <option value="">Ninguno (Solo impartiré clases)</option>
                 </select>
             </div>
 
+            <!-- Materias Regulares -->
             <div class="config-card">
                 <h3><i class="bi bi-book-fill"></i> Materias que Impartes</h3>
-                <p class="text-muted mb-3" style="font-size: 0.9rem;">Selecciona las materias y luego asigna los grados donde las impartirás.</p>
+                <p class="text-muted mb-3" style="font-size: 0.9rem;">
+                    Selecciona las materias y luego asigna los grados donde las impartirás.
+                </p>
                 <div id="listaMaterias"></div>
             </div>
 
+            <!-- Módulo Técnico -->
             <div class="config-card" style="border-color: var(--accent-primary);">
                 <h3><i class="bi bi-cpu-fill"></i> Módulo Técnico (Solo Bachillerato Técnico)</h3>
-                <p class="text-muted mb-3" style="font-size: 0.9rem;">Si impartes un módulo técnico, completa esta sección. 2 módulos por período, 8 módulos al año.</p>
+                <p class="text-muted mb-3" style="font-size: 0.9rem;">
+                    Si impartes un módulo técnico, completa esta sección. 2 módulos por período, 8 módulos al año.
+                </p>
+                
                 <div class="subject-checkbox" onclick="document.getElementById('checkModulo').click()">
                     <input type="checkbox" id="checkModulo">
-                    <label for="checkModulo" style="font-weight: 700; color: var(--accent-primary);">Impartir Módulo Técnico</label>
+                    <label for="checkModulo" style="font-weight: 700; color: var(--accent-primary);">
+                        Impartir Módulo Técnico
+                    </label>
                 </div>
+
                 <div class="grades-assignment" id="asignacionModulo">
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label class="form-label">Número de Módulo (1-8)</label>
                             <select class="form-select" id="numeroModulo">
-                                <option value="1">Módulo 1</option><option value="2">Módulo 2</option>
-                                <option value="3">Módulo 3</option><option value="4">Módulo 4</option>
-                                <option value="5">Módulo 5</option><option value="6">Módulo 6</option>
-                                <option value="7">Módulo 7</option><option value="8">Módulo 8</option>
+                                <option value="1">Módulo 1</option>
+                                <option value="2">Módulo 2</option>
+                                <option value="3">Módulo 3</option>
+                                <option value="4">Módulo 4</option>
+                                <option value="5">Módulo 5</option>
+                                <option value="6">Módulo 6</option>
+                                <option value="7">Módulo 7</option>
+                                <option value="8">Módulo 8</option>
                             </select>
                         </div>
                         <div class="col-md-8">
@@ -120,10 +285,19 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const materiasRegulares = ["Matemáticas", "Informàtica", "Lenguaje", "Sociales", "Ciencia", "Inglés", "OPV", "Seminario", "Arte", "Educación Física"];
+        // Materias regulares (corregido "Informática")
+        const materiasRegulares = [
+            "Matemáticas", "Informática", "Lenguaje", "Sociales", "Ciencia", 
+            "Inglés", "OPV", "Seminario", "Arte", "Educación Física"
+        ];
+
+        // Lista completa de grados (se agregó 2° y 3° Año Bach. General)
         const gradosDisponibles = [
-            "Parvularia", "1° Grado", "2° Grado", "3° Grado", "4° Grado", "5° Grado", "6° Grado", "7° Grado", "8° Grado", "9° Grado",
-            "1° Año Bach. General", "1° Año ITSI", "2° Año ITSI", "3° Año ITSI",
+            "Parvularia",
+            "1° Grado", "2° Grado", "3° Grado", "4° Grado", "5° Grado", 
+            "6° Grado", "7° Grado", "8° Grado", "9° Grado",
+            "1° Año Bach. General", "2° Año Bach. General",
+            "1° Año ITSI", "2° Año ITSI", "3° Año ITSI",
             "1° Año Contador", "2° Año Contador", "3° Año Contador",
             "1° Año Salud", "2° Año Salud", "3° Año Salud",
             "1° Año Sist. Eléctricos", "2° Año Sist. Eléctricos", "3° Año Sist. Eléctricos"
@@ -132,23 +306,28 @@
         let usuarioActual = null;
 
         function inicializarUI() {
+            // Llenar select de Grado Encargado
             const selectEncargado = document.getElementById('gradoEncargado');
             gradosDisponibles.forEach(g => {
                 const opt = document.createElement('option');
-                opt.value = g; opt.textContent = g;
+                opt.value = g;
+                opt.textContent = g;
                 selectEncargado.appendChild(opt);
             });
 
+            // Generar lista de materias
             const listaMaterias = document.getElementById('listaMaterias');
             materiasRegulares.forEach(materia => {
                 const div = document.createElement('div');
                 div.className = 'mb-3';
+                const materiaId = materia.replace(/\s/g, '');
+                
                 div.innerHTML = `
-                    <div class="subject-checkbox" onclick="document.getElementById('check_${materia.replace(/\s/g, '')}').click()">
-                        <input type="checkbox" id="check_${materia.replace(/\s/g, '')}" class="check-materia" data-materia="${materia}">
-                        <label for="check_${materia.replace(/\s/g, '')}">${materia}</label>
+                    <div class="subject-checkbox" onclick="document.getElementById('check_${materiaId}').click()">
+                        <input type="checkbox" id="check_${materiaId}" class="check-materia" data-materia="${materia}">
+                        <label for="check_${materiaId}">${materia}</label>
                     </div>
-                    <div class="grades-assignment" id="asignacion_${materia.replace(/\s/g, '')}">
+                    <div class="grades-assignment" id="asignacion_${materiaId}">
                         <label class="form-label">Grados donde impartes ${materia}:</label>
                         <div class="grados-container" data-materia="${materia}"></div>
                     </div>
@@ -156,29 +335,43 @@
                 listaMaterias.appendChild(div);
             });
 
+            // Llenar checkboxes de grados en todas las asignaciones
             document.querySelectorAll('.grados-container').forEach(container => {
                 gradosDisponibles.forEach(grado => {
-                    const id = `grade_${grado.replace(/[\s°]/g, '')}_${container.dataset.materia || 'modulo'}`;
+                    const safeId = `grade_${grado.replace(/[\s°.]/g, '')}_${container.dataset.materia || 'modulo'}`;
                     const label = document.createElement('label');
                     label.className = 'grade-check';
-                    label.innerHTML = `<input type="checkbox" value="${grado}" id="${id}"><label for="${id}">${grado}</label>`;
+                    label.innerHTML = `
+                        <input type="checkbox" value="${grado}" id="${safeId}">
+                        <label for="${safeId}">${grado}</label>
+                    `;
                     container.appendChild(label);
                 });
             });
 
+            // Eventos para mostrar/ocultar grados de cada materia
             document.querySelectorAll('.check-materia').forEach(check => {
                 check.addEventListener('change', (e) => {
                     const materia = e.target.dataset.materia;
-                    const asignacion = document.getElementById(`asignacion_${materia.replace(/\s/g, '')}`);
-                    if (e.target.checked) asignacion.classList.add('active');
-                    else asignacion.classList.remove('active');
+                    const materiaId = materia.replace(/\s/g, '');
+                    const asignacion = document.getElementById(`asignacion_${materiaId}`);
+                    
+                    if (e.target.checked) {
+                        asignacion.classList.add('active');
+                    } else {
+                        asignacion.classList.remove('active');
+                    }
                 });
             });
 
+            // Evento para el módulo técnico
             document.getElementById('checkModulo').addEventListener('change', (e) => {
                 const asignacion = document.getElementById('asignacionModulo');
-                if (e.target.checked) asignacion.classList.add('active');
-                else asignacion.classList.remove('active');
+                if (e.target.checked) {
+                    asignacion.classList.add('active');
+                } else {
+                    asignacion.classList.remove('active');
+                }
             });
         }
 
@@ -187,8 +380,8 @@
             if (!usuarioActual.materiasImpartidas) return;
             
             // Cargar grado encargado
-            if (usuarioActual.grado) {
-                document.getElementById('gradoEncargado').value = usuarioActual.grado;
+            if (usuarioActual.gradoEncargado || usuarioActual.grado) {
+                document.getElementById('gradoEncargado').value = usuarioActual.gradoEncargado || usuarioActual.grado;
             }
 
             // Cargar materias
@@ -196,22 +389,25 @@
                 if (asignacion.nombre === "Módulo") {
                     document.getElementById('checkModulo').checked = true;
                     document.getElementById('asignacionModulo').classList.add('active');
-                    document.getElementById('numeroModulo').value = asignacion.numero;
-                    document.getElementById('nombreModulo').value = asignacion.nombrePersonalizado;
-                    asignacion.grados.forEach(g => {
-                        const id = `grade_${g.replace(/[\s°]/g, '')}_modulo`;
-                        const checkbox = document.getElementById(id);
+                    document.getElementById('numeroModulo').value = asignacion.numero || 1;
+                    document.getElementById('nombreModulo').value = asignacion.nombrePersonalizado || '';
+                    
+                    (asignacion.grados || []).forEach(g => {
+                        const safeId = `grade_${g.replace(/[\s°.]/g, '')}_modulo`;
+                        const checkbox = document.getElementById(safeId);
                         if (checkbox) checkbox.checked = true;
                     });
                 } else {
-                    const checkId = `check_${asignacion.nombre.replace(/\s/g, '')}`;
-                    const check = document.getElementById(checkId);
+                    const materiaId = asignacion.nombre.replace(/\s/g, '');
+                    const check = document.getElementById(`check_${materiaId}`);
+                    
                     if (check) {
                         check.checked = true;
-                        document.getElementById(`asignacion_${asignacion.nombre.replace(/\s/g, '')}`).classList.add('active');
-                        asignacion.grados.forEach(g => {
-                            const id = `grade_${g.replace(/[\s°]/g, '')}_${asignacion.nombre.replace(/\s/g, '')}`;
-                            const checkbox = document.getElementById(id);
+                        document.getElementById(`asignacion_${materiaId}`).classList.add('active');
+                        
+                        (asignacion.grados || []).forEach(g => {
+                            const safeId = `grade_${g.replace(/[\s°.]/g, '')}_${materiaId}`;
+                            const checkbox = document.getElementById(safeId);
                             if (checkbox) checkbox.checked = true;
                         });
                     }
@@ -220,16 +416,28 @@
         }
 
         onAuthStateChanged(auth, async (user) => {
-            if (!user) { window.location.href = 'index.html'; return; }
+            if (!user) { 
+                window.location.href = 'index.html'; 
+                return; 
+            }
             
-            const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-            if (!userDoc.exists()) { window.location.href = 'index.html'; return; }
-            
-            usuarioActual = { uid: user.uid, ...userDoc.data() };
-            
-            // ✅ CORRECCIÓN: Ya NO redirige si está configurado. Siempre permite editar.
-            inicializarUI();
-            cargarDatosExistentes();
+            try {
+                const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
+                if (!userDoc.exists()) { 
+                    window.location.href = 'index.html'; 
+                    return; 
+                }
+                
+                usuarioActual = { uid: user.uid, ...userDoc.data() };
+                
+                // Siempre permite editar el perfil (ya no redirige)
+                inicializarUI();
+                cargarDatosExistentes();
+                
+            } catch (error) {
+                console.error('Error al cargar perfil:', error);
+                alert('Error al cargar los datos del perfil');
+            }
         });
 
         document.getElementById('formConfiguracion').addEventListener('submit', async (e) => {
@@ -242,32 +450,45 @@
             const gradoEncargado = document.getElementById('gradoEncargado').value || null;
             const materiasImpartidas = [];
 
+            // Recoger materias regulares
             document.querySelectorAll('.check-materia:checked').forEach(check => {
                 const materia = check.dataset.materia;
+                const materiaId = materia.replace(/\s/g, '');
                 const grados = [];
-                document.querySelectorAll(`#asignacion_${materia.replace(/\s/g, '')} input[type="checkbox"]:checked`).forEach(g => {
+                
+                document.querySelectorAll(`#asignacion_${materiaId} input[type="checkbox"]:checked`).forEach(g => {
                     grados.push(g.value);
                 });
+                
                 if (grados.length > 0) {
-                    materiasImpartidas.push({ nombre: materia, grados: grados });
+                    materiasImpartidas.push({ 
+                        nombre: materia, 
+                        grados: grados 
+                    });
                 }
             });
 
+            // Recoger módulo técnico
             if (document.getElementById('checkModulo').checked) {
                 const numero = document.getElementById('numeroModulo').value;
                 const nombre = document.getElementById('nombreModulo').value.trim();
                 const grados = [];
+                
                 document.querySelectorAll('#gradosModulo input[type="checkbox"]:checked').forEach(g => {
                     grados.push(g.value);
                 });
+                
                 if (nombre && grados.length > 0) {
                     materiasImpartidas.push({ 
-                        nombre: "Módulo", numero: parseInt(numero), 
-                        nombrePersonalizado: nombre, grados: grados 
+                        nombre: "Módulo", 
+                        numero: parseInt(numero), 
+                        nombrePersonalizado: nombre, 
+                        grados: grados 
                     });
                 }
             }
 
+            // Validación mínima
             if (materiasImpartidas.length === 0 && !gradoEncargado) {
                 alert('Debes seleccionar al menos una materia o un grado a cargo.');
                 btn.disabled = false;
@@ -282,7 +503,8 @@
                     materiasImpartidas: materiasImpartidas
                 });
 
-                const usuarioLocal = JSON.parse(localStorage.getItem('usuario'));
+                // Actualizar localStorage
+                const usuarioLocal = JSON.parse(localStorage.getItem('usuario') || '{}');
                 usuarioLocal.grado = gradoEncargado;
                 usuarioLocal.materiasImpartidas = materiasImpartidas;
                 usuarioLocal.perfilConfigurado = true;
@@ -290,7 +512,7 @@
 
                 alert('¡Perfil actualizado exitosamente!');
                 window.location.href = 'dashboard.html';
-
+                
             } catch (error) {
                 console.error(error);
                 alert('Error al guardar: ' + error.message);
