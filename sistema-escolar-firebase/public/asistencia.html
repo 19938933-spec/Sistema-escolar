@@ -8,6 +8,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- jsPDF + AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    
     <style>
         :root {
             --bg-primary: #0f172a;
@@ -44,7 +48,7 @@
         
         .controls-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 25px; margin-bottom: 25px; animation: slideUp 0.6s ease-out 0.1s both; }
         .controls-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
-        .control-group { flex: 1; min-width: 200px; }
+        .control-group { flex: 1; min-width: 180px; }
         .control-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; }
         .control-group select, .control-group input { width: 100%; background: var(--bg-input); border: 2px solid var(--border); border-radius: 10px; padding: 12px 15px; color: var(--text-primary); font-size: 14px; }
         .control-group select:focus, .control-group input:focus { outline: none; border-color: var(--accent-primary); }
@@ -52,6 +56,10 @@
         .btn-todos-presentes { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--accent-success); padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; }
         .btn-todos-presentes:hover { background: rgba(16, 185, 129, 0.25); transform: translateY(-2px); }
         .btn-todos-presentes:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        
+        .btn-pdf { background: linear-gradient(135deg, #ef4444, #dc2626); border: none; color: white; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; }
+        .btn-pdf:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4); }
+        .btn-pdf:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; transition: all 0.3s; animation: slideUp 0.6s ease-out; text-align: center; }
@@ -99,7 +107,7 @@
         .btn-estado.btn-ausente.active { background: var(--accent-danger); border-color: var(--accent-danger); color: white; }
         .btn-estado.btn-tarde.active { background: var(--accent-warning); border-color: var(--accent-warning); color: white; }
         
-        .save-section { margin-top: 25px; display: flex; justify-content: flex-end; }
+        .save-section { margin-top: 25px; display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
         .btn-guardar { background: linear-gradient(135deg, var(--accent-primary), #8b5cf6); border: none; border-radius: 12px; padding: 14px 30px; color: white; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 10px; }
         .btn-guardar:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5); }
         .btn-guardar:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
@@ -190,6 +198,12 @@
                         <i class="bi bi-check2-all"></i> Todos Presentes
                     </button>
                 </div>
+                <div class="control-group" style="flex: 0 0 auto;">
+                    <label>&nbsp;</label>
+                    <button class="btn-pdf" id="btnDescargarPDF" disabled>
+                        <i class="bi bi-file-earmark-pdf-fill"></i> Descargar PDF
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -239,6 +253,35 @@
         </div>
     </div>
 
+    <!-- Modal para elegir tipo de PDF -->
+    <div class="modal fade" id="modalPDF" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: #1e293b; color: #f1f5f9; border: 1px solid #334155; border-radius: 16px;">
+                <div class="modal-header" style="border-bottom: 1px solid #334155;">
+                    <h5 class="modal-title"><i class="bi bi-file-earmark-pdf-fill me-2"></i>Descargar PDF de Asistencia</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">Selecciona el tipo de reporte que deseas generar:</p>
+                    <div class="d-grid gap-3">
+                        <button class="btn btn-outline-light text-start p-3" id="btnPDFDiario" style="border-radius: 12px;">
+                            <i class="bi bi-calendar-day me-2"></i>
+                            <strong>Asistencia del Día</strong>
+                            <div class="small text-muted mt-1">Solo la fecha seleccionada actualmente</div>
+                        </button>
+                        <button class="btn btn-outline-light text-start p-3" id="btnPDFSemanal" style="border-radius: 12px;">
+                            <i class="bi bi-calendar-week me-2"></i>
+                            <strong>Asistencia de la Semana</strong>
+                            <div class="small text-muted mt-1">Últimos 7 días laborables (lun-vie)</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -261,6 +304,7 @@
         let alumnos = [];
         let asistencias = {};
         let gradoSeleccionado = '';
+        let modalPDF;
 
         const fechaInput = document.getElementById('fechaAsistencia');
         const attendanceList = document.getElementById('attendanceList');
@@ -268,8 +312,9 @@
         const btnGuardar = document.getElementById('btnGuardar');
         const btnGuardarText = document.getElementById('btnGuardarText');
         const btnTodosPresentes = document.getElementById('btnTodosPresentes');
+        const btnDescargarPDF = document.getElementById('btnDescargarPDF');
 
-        // Establecer fecha de hoy y limitar máximo a hoy
+        // Fecha de hoy y máximo
         const hoy = new Date().toISOString().split('T')[0];
         fechaInput.value = hoy;
         fechaInput.setAttribute('max', hoy);
@@ -280,27 +325,19 @@
             setTimeout(() => alerta.classList.remove('show'), 5500);
         }
 
-        // ============================================
-        // VALIDACIÓN DE FECHA (Futuras + Sábados/Domingos)
-        // ============================================
         function validarFecha(fechaStr) {
             if (!fechaStr) return { valida: false, mensaje: 'Selecciona una fecha' };
-
             const fecha = new Date(fechaStr + 'T00:00:00');
             const hoyDate = new Date();
             hoyDate.setHours(0, 0, 0, 0);
 
-            // Fecha futura
             if (fecha > hoyDate) {
                 return { valida: false, mensaje: '❌ No se puede registrar asistencia en fechas futuras' };
             }
-
-            // Sábado (6) o Domingo (0)
             const dia = fecha.getDay();
             if (dia === 0 || dia === 6) {
                 return { valida: false, mensaje: '❌ No se puede registrar asistencia en sábados o domingos' };
             }
-
             return { valida: true, mensaje: '' };
         }
 
@@ -325,11 +362,12 @@
                 };
 
                 localStorage.setItem('usuario', JSON.stringify(usuarioActual));
-
                 document.getElementById('userName').textContent = usuarioActual.nombre;
                 document.getElementById('userAvatar').textContent = usuarioActual.nombre.charAt(0).toUpperCase();
 
                 llenarSelectorGrados();
+                modalPDF = new bootstrap.Modal(document.getElementById('modalPDF'));
+
                 setTimeout(() => { document.getElementById('loadingOverlay').style.display = 'none'; }, 800);
             } catch (error) {
                 console.error('Error:', error);
@@ -374,10 +412,10 @@
                 document.getElementById('attendanceCard').style.display = 'none';
                 btnGuardar.disabled = true;
                 btnTodosPresentes.disabled = true;
+                btnDescargarPDF.disabled = true;
                 return;
             }
 
-            // Validar fecha antes de cargar
             const validacion = validarFecha(fechaInput.value);
             if (!validacion.valida) {
                 mostrarAlerta(validacion.mensaje, 'error');
@@ -385,6 +423,7 @@
                 document.getElementById('attendanceCard').style.display = 'none';
                 btnGuardar.disabled = true;
                 btnTodosPresentes.disabled = true;
+                btnDescargarPDF.disabled = true;
                 return;
             }
 
@@ -392,6 +431,7 @@
             document.getElementById('attendanceCard').style.display = 'block';
             btnGuardar.disabled = false;
             btnTodosPresentes.disabled = false;
+            btnDescargarPDF.disabled = false;
 
             await cargarAlumnos();
             await cargarAsistencias();
@@ -402,12 +442,11 @@
             
             if (!validacion.valida) {
                 mostrarAlerta(validacion.mensaje, 'error');
-                // Opcional: resetear a hoy
-                // fechaInput.value = hoy;
                 document.getElementById('statsGrid').style.display = 'none';
                 document.getElementById('attendanceCard').style.display = 'none';
                 btnGuardar.disabled = true;
                 btnTodosPresentes.disabled = true;
+                btnDescargarPDF.disabled = true;
                 return;
             }
 
@@ -417,6 +456,7 @@
             document.getElementById('attendanceCard').style.display = 'block';
             btnGuardar.disabled = false;
             btnTodosPresentes.disabled = false;
+            btnDescargarPDF.disabled = false;
 
             asistencias = {};
             await cargarAsistencias();
@@ -425,7 +465,6 @@
 
         async function cargarAlumnos() {
             if (!gradoSeleccionado) return;
-
             try {
                 const q = query(collection(db, 'alumnos'), where('grado', '==', gradoSeleccionado));
                 const snapshot = await getDocs(q);
@@ -574,7 +613,6 @@
         });
 
         btnGuardar.addEventListener('click', async () => {
-            // Validación de fecha antes de guardar
             const validacion = validarFecha(fechaInput.value);
             if (!validacion.valida) {
                 mostrarAlerta(validacion.mensaje, 'error');
@@ -629,6 +667,201 @@
             btnGuardar.disabled = false;
             btnGuardarText.textContent = 'Guardar Asistencia';
         });
+
+        btnDescargarPDF.addEventListener('click', () => {
+            if (!gradoSeleccionado || alumnos.length === 0) {
+                mostrarAlerta('Selecciona un grado con alumnos primero', 'error');
+                return;
+            }
+            modalPDF.show();
+        });
+
+        document.getElementById('btnPDFDiario').addEventListener('click', async () => {
+            modalPDF.hide();
+            await generarPDFDiario();
+        });
+
+        document.getElementById('btnPDFSemanal').addEventListener('click', async () => {
+            modalPDF.hide();
+            await generarPDFSemanal();
+        });
+
+        async function generarPDFDiario() {
+            const fecha = fechaInput.value;
+            mostrarAlerta('Generando PDF del día...', 'info');
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+
+                // Logo
+                let logoImg = null;
+                try {
+                    const resp = await fetch('img/fondos/logo.png');
+                    if (resp.ok) {
+                        const blob = await resp.blob();
+                        logoImg = await new Promise(resolve => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => resolve(reader.result);
+                            reader.readAsDataURL(blob);
+                        });
+                    }
+                } catch (e) {}
+
+                if (logoImg) pdf.addImage(logoImg, 'PNG', 14, 10, 18, 18);
+
+                pdf.setFontSize(14);
+                pdf.setTextColor(40, 40, 40);
+                pdf.text('Complejo Educativo Thomas Jefferson', logoImg ? 36 : 14, 18);
+                pdf.setFontSize(10);
+                pdf.text('Sistema de Gestión Académica', logoImg ? 36 : 14, 24);
+
+                pdf.setFontSize(13);
+                pdf.text(`Reporte de Asistencia - ${gradoSeleccionado}`, 14, 38);
+                pdf.setFontSize(10);
+                pdf.setTextColor(100, 100, 100);
+                pdf.text(`Fecha: ${fecha}  |  Docente: ${usuarioActual.nombre}`, 14, 45);
+
+                // Datos de la tabla
+                const headers = [['#', 'Alumno', 'Género', 'Estado']];
+                const body = alumnos.map((a, i) => {
+                    const estado = asistencias[a.id] || 'Sin marcar';
+                    return [i + 1, a.nombre, a.genero || '-', estado];
+                });
+
+                pdf.autoTable({
+                    head: headers,
+                    body: body,
+                    startY: 52,
+                    theme: 'grid',
+                    headStyles: { fillColor: [16, 185, 129], textColor: 255, fontStyle: 'bold', fontSize: 10 },
+                    bodyStyles: { fontSize: 9 },
+                    didParseCell: function(data) {
+                        if (data.section === 'body' && data.column.index === 3) {
+                            const val = data.cell.raw;
+                            if (val === 'Presente') data.cell.styles.textColor = [16, 185, 129];
+                            else if (val === 'Ausente') data.cell.styles.textColor = [239, 68, 68];
+                            else if (val === 'Tarde') data.cell.styles.textColor = [245, 158, 11];
+                        }
+                    }
+                });
+
+                // Totales
+                const finalY = pdf.lastAutoTable.finalY + 10;
+                const presentes = Object.values(asistencias).filter(e => e === 'Presente').length;
+                const ausentes = Object.values(asistencias).filter(e => e === 'Ausente').length;
+                const tardes = Object.values(asistencias).filter(e => e === 'Tarde').length;
+
+                pdf.setFontSize(10);
+                pdf.setTextColor(40, 40, 40);
+                pdf.text(`Total alumnos: ${alumnos.length}   |   Presentes: ${presentes}   |   Ausentes: ${ausentes}   |   Tardes: ${tardes}`, 14, finalY);
+
+                pdf.save(`Asistencia_${gradoSeleccionado.replace(/[^a-zA-Z0-9]/g, '_')}_${fecha}.pdf`);
+                mostrarAlerta('✅ PDF del día generado correctamente', 'success');
+            } catch (error) {
+                console.error(error);
+                mostrarAlerta('Error al generar PDF: ' + error.message, 'error');
+            }
+        }
+
+        async function generarPDFSemanal() {
+            mostrarAlerta('Generando PDF de la semana...', 'info');
+
+            try {
+                // Calcular últimos 7 días laborables
+                const fechas = [];
+                let d = new Date(fechaInput.value + 'T00:00:00');
+                let count = 0;
+                while (fechas.length < 5 && count < 15) { // máximo 5 días laborables
+                    const dia = d.getDay();
+                    if (dia !== 0 && dia !== 6) {
+                        fechas.unshift(d.toISOString().split('T')[0]);
+                    }
+                    d.setDate(d.getDate() - 1);
+                    count++;
+                }
+
+                // Cargar asistencias de todos esos días
+                const asistenciasSemana = {}; // { alumnoId: { fecha: estado } }
+
+                for (const f of fechas) {
+                    const q = query(
+                        collection(db, 'asistencias'),
+                        where('fecha', '==', f),
+                        where('grado', '==', gradoSeleccionado)
+                    );
+                    const snap = await getDocs(q);
+                    snap.forEach(docSnap => {
+                        const data = docSnap.data();
+                        if (!asistenciasSemana[data.alumnoId]) asistenciasSemana[data.alumnoId] = {};
+                        asistenciasSemana[data.alumnoId][f] = data.estado;
+                    });
+                }
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('l', 'mm', 'a4'); // landscape
+
+                let logoImg = null;
+                try {
+                    const resp = await fetch('img/fondos/logo.png');
+                    if (resp.ok) {
+                        const blob = await resp.blob();
+                        logoImg = await new Promise(resolve => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => resolve(reader.result);
+                            reader.readAsDataURL(blob);
+                        });
+                    }
+                } catch (e) {}
+
+                if (logoImg) pdf.addImage(logoImg, 'PNG', 14, 10, 16, 16);
+
+                pdf.setFontSize(13);
+                pdf.setTextColor(40, 40, 40);
+                pdf.text('Complejo Educativo Thomas Jefferson', logoImg ? 34 : 14, 17);
+                pdf.setFontSize(10);
+                pdf.text('Sistema de Gestión Académica', logoImg ? 34 : 14, 23);
+
+                pdf.setFontSize(12);
+                pdf.text(`Reporte Semanal de Asistencia - ${gradoSeleccionado}`, 14, 35);
+                pdf.setFontSize(9);
+                pdf.setTextColor(100, 100, 100);
+                pdf.text(`Docente: ${usuarioActual.nombre}  |  Días: ${fechas.join('  →  ')}`, 14, 42);
+
+                // Headers dinámicos
+                const headers = [['#', 'Alumno', ...fechas.map(f => f.slice(5)), 'P', 'A', 'T']];
+                
+                const body = alumnos.map((a, i) => {
+                    const row = [i + 1, a.nombre];
+                    let p = 0, au = 0, t = 0;
+                    fechas.forEach(f => {
+                        const est = asistenciasSemana[a.id]?.[f] || '-';
+                        row.push(est === 'Presente' ? 'P' : est === 'Ausente' ? 'A' : est === 'Tarde' ? 'T' : '-');
+                        if (est === 'Presente') p++;
+                        if (est === 'Ausente') au++;
+                        if (est === 'Tarde') t++;
+                    });
+                    row.push(p, au, t);
+                    return row;
+                });
+
+                pdf.autoTable({
+                    head: headers,
+                    body: body,
+                    startY: 48,
+                    theme: 'grid',
+                    headStyles: { fillColor: [16, 185, 129], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+                    bodyStyles: { fontSize: 8 },
+                    styles: { cellPadding: 2 }
+                });
+
+                pdf.save(`Asistencia_Semanal_${gradoSeleccionado.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
+                mostrarAlerta('✅ PDF semanal generado correctamente', 'success');
+            } catch (error) {
+                console.error(error);
+                mostrarAlerta('Error al generar PDF semanal: ' + error.message, 'error');
+            }
+        }
 
         document.getElementById('btnLogout').addEventListener('click', async () => {
             if (confirm('¿Cerrar sesión?')) {
