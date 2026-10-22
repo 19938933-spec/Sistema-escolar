@@ -6,94 +6,567 @@
     <title>Gestión de Alumnos - Sistema COED</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; font-family: Arial, sans-serif; }
-        .navbar { background-color: #0d6efd !important; }
-        .card { border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        :root {
+            --bg-primary: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.9);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-primary: #6366f1;
+            --accent-male: #3b82f6;
+            --accent-female: #ec4899;
+            --accent-success: #10b981;
+            --accent-danger: #ef4444;
+            --border: rgba(255, 255, 255, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, #1a1a2e 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .navbar-custom {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 0;
+        }
+
+        .navbar-brand-custom {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 18px;
+            text-decoration: none;
+        }
+
+        .navbar-brand-custom img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .user-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; color: white;
+        }
+        .user-name { font-weight: 600; color: var(--text-primary); }
+        .user-role { font-size: 12px; color: var(--text-secondary); }
+        
+        .btn-logout {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-logout:hover { background: rgba(239, 68, 68, 0.2); color: #fecaca; }
+
+        .main-content { padding: 30px 0; }
+
+        .page-header {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 16px;
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .page-header h1 { font-size: 24px; font-weight: 700; margin-bottom: 5px; }
+        .page-header .subtitle { color: var(--text-secondary); font-size: 15px; margin: 0; }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 25px;
+            animation: slideUp 0.6s ease-out 0.1s both;
+        }
+
+        .form-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .form-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group-custom {
+            position: relative;
+            margin-bottom: 18px;
+        }
+
+        .input-group-custom i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 18px;
+        }
+
+        .input-group-custom input,
+        .input-group-custom select {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 15px 14px 48px;
+            color: var(--text-primary);
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .input-group-custom input:focus,
+        .input-group-custom select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background: rgba(15, 23, 42, 0.9);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .input-group-custom input::placeholder { color: #64748b; }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .list-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .list-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 15px;
+            color: var(--text-primary);
+            width: 250px;
+            font-size: 14px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .student-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .student-item {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            animation: slideInRight 0.4s ease-out;
+        }
+
+        .student-item:hover {
+            background: rgba(15, 23, 42, 0.6);
+            border-color: var(--accent-primary);
+            transform: translateX(5px);
+        }
+
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .student-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 18px;
+            color: white;
+        }
+
+        .student-avatar.male { background: linear-gradient(135deg, var(--accent-male), #06b6d4); }
+        .student-avatar.female { background: linear-gradient(135deg, var(--accent-female), #f472b6); }
+
+        .student-details { flex: 1; }
+        .student-name { font-weight: 600; font-size: 16px; margin-bottom: 4px; }
+        .student-meta { font-size: 13px; color: var(--text-secondary); }
+
+        .gender-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .gender-badge.male { background: rgba(59, 130, 246, 0.15); color: var(--accent-male); }
+        .gender-badge.female { background: rgba(236, 72, 153, 0.15); color: var(--accent-female); }
+
+        .student-actions { display: flex; gap: 8px; }
+
+        .btn-action {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .btn-edit { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+        .btn-edit:hover { background: rgba(245, 158, 11, 0.3); transform: scale(1.1); }
+        .btn-delete { background: rgba(239, 68, 68, 0.15); color: var(--accent-danger); }
+        .btn-delete:hover { background: rgba(239, 68, 68, 0.3); transform: scale(1.1); }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-mini {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-mini .stat-num {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-mini .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .stat-mini.total .stat-num { color: var(--accent-primary); }
+        .stat-mini.male .stat-num { color: var(--accent-male); }
+        .stat-mini.female .stat-num { color: var(--accent-female); }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-action-custom {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, var(--accent-success), #059669);
+            color: white;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-csv {
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            color: white;
+        }
+
+        .btn-csv:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(6, 182, 212, 0.4);
+        }
+
+        .alert-custom {
+            padding: 12px 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-custom.show { display: block; animation: slideUp 0.3s ease-out; }
+        .alert-custom.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+        .alert-custom.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 56px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .empty-state h4 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-wave { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+        .loading-bar {
+            width: 8px; height: 40px;
+            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
+            border-radius: 4px;
+            animation: wave 1s ease-in-out infinite;
+        }
+        .loading-bar:nth-child(2) { animation-delay: 0.1s; }
+        .loading-bar:nth-child(3) { animation-delay: 0.2s; }
+        .loading-bar:nth-child(4) { animation-delay: 0.3s; }
+
+        @keyframes wave { 0%, 100% { height: 10px; } 50% { height: 60px; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+
+        @media (max-width: 992px) {
+            .content-grid { grid-template-columns: 1fr; }
+            .form-card { position: static; }
+        }
+
+        @media (max-width: 768px) {
+            .page-header h1 { font-size: 20px; }
+            .user-name { display: none; }
+            .student-item { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .student-actions { width: 100%; justify-content: flex-end; }
+            .stats-row { grid-template-columns: 1fr; }
+            .action-buttons { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-dark">
-        <div class="container-fluid">
-            <a href="dashboard.html" class="navbar-brand">COED Thomas Jefferson</a>
-            <button class="btn btn-outline-light btn-sm" id="btnLogout">Salir</button>
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-wave">
+            <div class="loading-bar"></div><div class="loading-bar"></div>
+            <div class="loading-bar"></div><div class="loading-bar"></div>
         </div>
-    </nav>
+        <p style="color: var(--text-secondary); font-size: 14px;">Cargando...</p>
+    </div>
 
-    <div class="container mt-4">
-        <div class="alert alert-info">
-            <h4>Gestión de Alumnos</h4>
-            <p class="mb-0">Grado: <strong id="gradoActual">Cargando...</strong></p>
-        </div>
-
-        <div id="alerta" class="alert d-none"></div>
-
-        <div class="card mb-3">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-8">
-                        <h5 class="card-title">Registrar Alumno</h5>
-                        <form id="formAlumno">
-                            <div class="row">
-                                <div class="col-md-5 mb-3">
-                                    <label class="form-label">Nombre completo</label>
-                                    <input type="text" id="nombreAlumno" class="form-control" required>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">NIE</label>
-                                    <input type="text" id="nieAlumno" class="form-control" placeholder="Ej: 12345678">
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <label class="form-label">Sexo</label>
-                                    <select id="sexoAlumno" class="form-select" required>
-                                        <option value="">Selecciona</option>
-                                        <option value="Masculino">Masculino</option>
-                                        <option value="Femenino">Femenino</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Agregar Alumno</button>
-                        </form>
+    <nav class="navbar-custom">
+        <div class="container-fluid px-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="dashboard.html" class="navbar-brand-custom">
+                    <img src="../img/logo.png" alt="Logo" onerror="this.src='https://via.placeholder.com/40?text=COED'">
+                    <div>
+                        <div>COED Thomas Jefferson</div>
+                        <small style="color: var(--text-secondary); font-size: 12px;">Turno Vespertino</small>
                     </div>
-                    <div class="col-md-4">
-                        <h5 class="card-title">Acciones</h5>
-                        <button class="btn btn-success w-100 mb-2" id="btnDescargarLista" style="display: none;">
-                            <i class="bi bi-download"></i> Descargar Lista de Asistencia
-                        </button>
-                        <button class="btn btn-info w-100" id="btnExportarCSV" style="display: none;">
-                            <i class="bi bi-file-earmark-spreadsheet"></i> Exportar CSV
-                        </button>
+                </a>
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">D</div>
+                    <div>
+                        <div class="user-name" id="userName">Cargando...</div>
+                        <div class="user-role">Docente</div>
                     </div>
+                    <button class="btn-logout" id="btnLogout"><i class="bi bi-box-arrow-right"></i> Salir</button>
                 </div>
             </div>
         </div>
+    </nav>
 
-        <div class="card">
-            <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <h5 class="card-title">Lista de Alumnos</h5>
+    <div class="container-fluid px-4 main-content">
+        <div class="page-header">
+            <h1><i class="bi bi-people-fill"></i> Gestión de Alumnos</h1>
+            <p class="subtitle">
+                <i class="bi bi-mortarboard-fill"></i>
+                Grado: <strong id="gradoActual">Cargando...</strong>
+            </p>
+        </div>
+
+        <div id="alerta" class="alert-custom"></div>
+
+        <div class="content-grid">
+            <div class="form-card">
+                <h3><i class="bi bi-person-plus-fill"></i> <span id="formTitle">Nuevo Alumno</span></h3>
+                
+                <form id="formAlumno">
+                    <input type="hidden" id="alumnoId">
+                    
+                    <div class="input-group-custom">
+                        <input type="text" id="nombreAlumno" placeholder="Nombre completo del alumno" required>
+                        <i class="bi bi-person-fill"></i>
                     </div>
-                    <div class="col-md-6">
-                        <input type="text" id="searchBox" class="form-control" placeholder="Buscar por nombre...">
+
+                    <div class="input-group-custom">
+                        <input type="text" id="nieAlumno" placeholder="NIE (opcional)">
+                        <i class="bi bi-card-text"></i>
+                    </div>
+
+                    <div class="input-group-custom">
+                        <select id="sexoAlumno" required>
+                            <option value="" disabled selected>Selecciona el sexo</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                        </select>
+                        <i class="bi bi-gender-ambiguous"></i>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="btnSubmit">
+                        <i class="bi bi-plus-circle-fill"></i>
+                        <span id="btnText">Agregar Alumno</span>
+                    </button>
+
+                    <button type="button" class="btn-submit" id="btnCancelar" style="display: none; background: var(--border); margin-top: 10px;">
+                        <i class="bi bi-x-circle-fill"></i> Cancelar Edición
+                    </button>
+                </form>
+            </div>
+
+            <div class="list-card">
+                <div class="list-header">
+                    <h3><i class="bi bi-list-ul"></i> Lista de Alumnos</h3>
+                    <input type="text" class="search-box" id="searchBox" placeholder=" Buscar por nombre...">
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-action-custom btn-download" id="btnDescargarLista" style="display: none;">
+                        <i class="bi bi-download"></i> Descargar Lista de Asistencia
+                    </button>
+                    <button class="btn-action-custom btn-csv" id="btnExportarCSV" style="display: none;">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> Exportar CSV
+                    </button>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-mini total">
+                        <div class="stat-num" id="statTotal">0</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-mini male">
+                        <div class="stat-num" id="statMale">0</div>
+                        <div class="stat-label">Masculino</div>
+                    </div>
+                    <div class="stat-mini female">
+                        <div class="stat-num" id="statFemale">0</div>
+                        <div class="stat-label">Femenino</div>
                     </div>
                 </div>
-                <div class="row mb-3">
-                    <div class="col-4 text-center">
-                        <h3 id="statTotal">0</h3>
-                        <small class="text-muted">Total</small>
+
+                <div class="student-list" id="studentList">
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h4>Cargando alumnos...</h4>
                     </div>
-                    <div class="col-4 text-center">
-                        <h3 id="statMale" class="text-primary">0</h3>
-                        <small class="text-muted">Masculino</small>
-                    </div>
-                    <div class="col-4 text-center">
-                        <h3 id="statFemale" class="text-danger">0</h3>
-                        <small class="text-muted">Femenino</small>
-                    </div>
-                </div>
-                <div id="studentList">
-                    <p class="text-muted text-center">Cargando...</p>
                 </div>
             </div>
         </div>
@@ -102,7 +575,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, deleteDoc, doc, query, where, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC5cehHIg_j-xdIshse4yCzlc-hO3JACuw",
@@ -119,16 +592,23 @@
 
         let usuarioActual = null;
         let alumnos = [];
+        let editandoId = null;
         let gradoActual = '';
+        let unsubscribeAlumnos = null;
 
         const params = new URLSearchParams(window.location.search);
         gradoActual = params.get('grado') || '';
 
+        const form = document.getElementById('formAlumno');
+        const alerta = document.getElementById('alerta');
+        const studentList = document.getElementById('studentList');
+        const searchBox = document.getElementById('searchBox');
+        const btnCancelar = document.getElementById('btnCancelar');
+
         function mostrarAlerta(mensaje, tipo) {
-            const alerta = document.getElementById('alerta');
             alerta.textContent = mensaje;
-            alerta.className = `alert alert-${tipo}`;
-            setTimeout(() => alerta.className = 'alert d-none', 3000);
+            alerta.className = `alert-custom ${tipo} show`;
+            setTimeout(() => alerta.classList.remove('show'), 3500);
         }
 
         onAuthStateChanged(auth, async (user) => {
@@ -147,49 +627,75 @@
                 }
 
                 const data = userDoc.data();
-                usuarioActual = { uid: user.uid, nombre: data.nombre, rol: 'docente' };
+                usuarioActual = {
+                    uid: user.uid,
+                    nombre: data.nombre,
+                    correo: data.correo,
+                    rol: 'docente'
+                };
+
+                localStorage.setItem('usuario', JSON.stringify(usuarioActual));
+
+                document.getElementById('userName').textContent = usuarioActual.nombre;
+                document.getElementById('userAvatar').textContent = usuarioActual.nombre.charAt(0).toUpperCase();
 
                 if (!gradoActual) {
-                    mostrarAlerta('No se especificó un grado', 'danger');
+                    mostrarAlerta('No se especificó un grado. Vuelve al dashboard.', 'error');
                     setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
                     return;
                 }
 
                 document.getElementById('gradoActual').textContent = gradoActual;
-                cargarAlumnos();
+                cargarAlumnosTiempoReal();
+
+                setTimeout(() => {
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                }, 800);
 
             } catch (error) {
-                console.error(error);
+                console.error('Error:', error);
+                mostrarAlerta('Error al cargar datos', 'error');
             }
         });
 
-        function cargarAlumnos() {
-            const q = query(collection(db, 'alumnos'), where('grado', '==', gradoActual));
+        function cargarAlumnosTiempoReal() {
+            const q = query(
+                collection(db, 'alumnos'),
+                where('grado', '==', gradoActual)
+            );
 
-            onSnapshot(q, (snapshot) => {
+            unsubscribeAlumnos = onSnapshot(q, (snapshot) => {
                 alumnos = [];
                 snapshot.forEach(docSnap => {
                     alumnos.push({ id: docSnap.id, ...docSnap.data() });
                 });
                 alumnos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+                
                 actualizarEstadisticas();
                 renderizarLista(alumnos);
                 actualizarBotones();
+            }, (error) => {
+                console.error('Error:', error);
+                mostrarAlerta('Error al cargar alumnos', 'error');
             });
         }
 
         function actualizarEstadisticas() {
-            document.getElementById('statTotal').textContent = alumnos.length;
-            document.getElementById('statMale').textContent = alumnos.filter(a => a.sexo === 'Masculino').length;
-            document.getElementById('statFemale').textContent = alumnos.filter(a => a.sexo === 'Femenino').length;
+            const total = alumnos.length;
+            const male = alumnos.filter(a => a.sexo === 'Masculino').length;
+            const female = alumnos.filter(a => a.sexo === 'Femenino').length;
+            
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statMale').textContent = male;
+            document.getElementById('statFemale').textContent = female;
         }
 
         function actualizarBotones() {
             const btnDescargar = document.getElementById('btnDescargarLista');
             const btnCSV = document.getElementById('btnExportarCSV');
             if (alumnos.length > 0) {
-                btnDescargar.style.display = 'block';
-                btnCSV.style.display = 'block';
+                btnDescargar.style.display = 'flex';
+                btnCSV.style.display = 'flex';
             } else {
                 btnDescargar.style.display = 'none';
                 btnCSV.style.display = 'none';
@@ -197,28 +703,47 @@
         }
 
         function renderizarLista(lista) {
-            const container = document.getElementById('studentList');
-            
             if (lista.length === 0) {
-                container.innerHTML = '<p class="text-muted text-center">No hay alumnos registrados</p>';
+                studentList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h4>No hay alumnos registrados</h4>
+                        <p>Comienza agregando el primer estudiante de ${gradoActual}</p>
+                    </div>
+                `;
                 return;
             }
 
-            container.innerHTML = lista.map(alumno => `
-                <div class="border rounded p-2 mb-2 d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>${alumno.nombre}</strong>
-                        ${alumno.nie ? `<small class="text-muted ms-2">NIE: ${alumno.nie}</small>` : ''}
-                        <span class="badge bg-${alumno.sexo === 'Masculino' ? 'primary' : 'danger'} ms-2">${alumno.sexo}</span>
+            studentList.innerHTML = lista.map((alumno, index) => `
+                <div class="student-item" style="animation-delay: ${index * 0.03}s">
+                    <div class="student-info">
+                        <div class="student-avatar ${alumno.sexo === 'Masculino' ? 'male' : 'female'}">
+                            ${alumno.nombre.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="student-details">
+                            <div class="student-name">${alumno.nombre}</div>
+                            <div class="student-meta">
+                                ${alumno.nie ? `<span class="me-2"><i class="bi bi-card-text"></i> ${alumno.nie}</span>` : ''}
+                                <span class="gender-badge ${alumno.sexo === 'Masculino' ? 'male' : 'female'}">
+                                    <i class="bi bi-${alumno.sexo === 'Masculino' ? 'gender-male' : 'gender-female'}"></i>
+                                    ${alumno.sexo}
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <button class="btn btn-sm btn-danger" onclick="eliminarAlumno('${alumno.id}', '${alumno.nombre.replace(/'/g, "\\'")}')">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                    <div class="student-actions">
+                        <button class="btn-action btn-edit" onclick="editarAlumno('${alumno.id}')" title="Editar">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button class="btn-action btn-delete" onclick="eliminarAlumno('${alumno.id}', '${alumno.nombre.replace(/'/g, "\\'")}')" title="Eliminar">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                    </div>
                 </div>
             `).join('');
         }
 
-        document.getElementById('formAlumno').addEventListener('submit', async (e) => {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const nombre = document.getElementById('nombreAlumno').value.trim();
@@ -226,49 +751,86 @@
             const sexo = document.getElementById('sexoAlumno').value;
 
             if (!nombre || !sexo) {
-                mostrarAlerta('Completa nombre y sexo', 'danger');
+                mostrarAlerta('Completa nombre y sexo', 'error');
                 return;
             }
 
+            const btnSubmit = document.getElementById('btnSubmit');
+            btnSubmit.disabled = true;
+
             try {
-                await addDoc(collection(db, 'alumnos'), {
-                    nombre: nombre,
-                    nie: nie,
-                    sexo: sexo,
-                    grado: gradoActual,
-                    docenteId: usuarioActual.uid,
-                    fechaRegistro: new Date().toISOString()
-                });
-                mostrarAlerta('Alumno registrado', 'success');
-                document.getElementById('formAlumno').reset();
+                if (editandoId) {
+                    await updateDoc(doc(db, 'alumnos', editandoId), {
+                        nombre: nombre,
+                        nie: nie,
+                        sexo: sexo,
+                        fechaActualizacion: new Date().toISOString()
+                    });
+                    mostrarAlerta('Alumno actualizado correctamente', 'success');
+                    cancelarEdicion();
+                } else {
+                    await addDoc(collection(db, 'alumnos'), {
+                        nombre: nombre,
+                        nie: nie,
+                        sexo: sexo,
+                        grado: gradoActual,
+                        docenteId: usuarioActual.uid,
+                        fechaRegistro: new Date().toISOString()
+                    });
+                    mostrarAlerta('Alumno registrado correctamente', 'success');
+                    form.reset();
+                }
             } catch (error) {
-                console.error(error);
-                mostrarAlerta('Error al registrar', 'danger');
+                console.error('Error:', error);
+                mostrarAlerta('Error: ' + error.message, 'error');
             }
+
+            btnSubmit.disabled = false;
         });
 
+        window.editarAlumno = (id) => {
+            const alumno = alumnos.find(a => a.id === id);
+            if (!alumno) return;
+
+            editandoId = id;
+            document.getElementById('nombreAlumno').value = alumno.nombre;
+            document.getElementById('nieAlumno').value = alumno.nie || '';
+            document.getElementById('sexoAlumno').value = alumno.sexo;
+            document.getElementById('formTitle').textContent = 'Editar Alumno';
+            document.getElementById('btnText').textContent = 'Actualizar Alumno';
+            btnCancelar.style.display = 'flex';
+        };
+
+        function cancelarEdicion() {
+            editandoId = null;
+            form.reset();
+            document.getElementById('formTitle').textContent = 'Nuevo Alumno';
+            document.getElementById('btnText').textContent = 'Agregar Alumno';
+            btnCancelar.style.display = 'none';
+        }
+
+        btnCancelar.addEventListener('click', cancelarEdicion);
+
         window.eliminarAlumno = async (id, nombre) => {
-            if (!confirm(`¿Eliminar a "${nombre}"?`)) return;
+            if (!confirm(`¿Eliminar a "${nombre}"?\nEsta acción no se puede deshacer.`)) return;
             
             try {
                 await deleteDoc(doc(db, 'alumnos', id));
                 mostrarAlerta('Alumno eliminado', 'success');
             } catch (error) {
-                console.error(error);
-                mostrarAlerta('Error al eliminar', 'danger');
+                console.error('Error:', error);
+                mostrarAlerta('Error al eliminar', 'error');
             }
         };
 
-        document.getElementById('searchBox').addEventListener('input', (e) => {
+        searchBox.addEventListener('input', (e) => {
             const q = e.target.value.toLowerCase();
             const filtrados = alumnos.filter(a => a.nombre.toLowerCase().includes(q));
             renderizarLista(filtrados);
         });
 
         window.generarListaAsistencia = function() {
-            const alumnosDelGrado = alumnos.filter(a => a.grado === gradoActual);
-            
-            if (alumnosDelGrado.length === 0) {
+            if (alumnos.length === 0) {
                 alert('No hay alumnos registrados en este grado');
                 return;
             }
@@ -277,7 +839,7 @@
             const fechaActual = new Date();
             const año = fechaActual.getFullYear();
             const mes = fechaActual.toLocaleString('es-ES', { month: 'long' });
-            const numSemanas = alumnosDelGrado.length > 30 ? 3 : 2;
+            const numSemanas = alumnos.length > 30 ? 3 : 2;
             
             let html = `
             <!DOCTYPE html>
@@ -344,7 +906,7 @@
                     <tbody>
                 `;
 
-                alumnosDelGrado.forEach((alumno, index) => {
+                alumnos.forEach((alumno, index) => {
                     const numero = index + 1;
                     const nie = alumno.nie || '__________';
                     const nombre = alumno.nombre.toUpperCase();
@@ -389,15 +951,13 @@
         };
 
         window.exportarCSV = function() {
-            const alumnosDelGrado = alumnos.filter(a => a.grado === gradoActual);
-            
-            if (alumnosDelGrado.length === 0) {
+            if (alumnos.length === 0) {
                 alert('No hay alumnos registrados');
                 return;
             }
 
             let csv = 'N°,NIE,Nombre,Sexo\n';
-            alumnosDelGrado.forEach((alumno, index) => {
+            alumnos.forEach((alumno, index) => {
                 csv += `${index + 1},${alumno.nie || ''},"${alumno.nombre}",${alumno.sexo}\n`;
             });
 
@@ -417,6 +977,10 @@
                 localStorage.removeItem('usuario');
                 window.location.href = '../index.html';
             }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            if (unsubscribeAlumnos) unsubscribeAlumnos();
         });
     </script>
 </body>
