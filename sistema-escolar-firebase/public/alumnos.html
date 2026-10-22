@@ -234,6 +234,37 @@
         .loading-bar:nth-child(2) { animation-delay: 0.1s; }
         .loading-bar:nth-child(3) { animation-delay: 0.2s; }
         .loading-bar:nth-child(4) { animation-delay: 0.3s; }
+        .grado-selector-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 520px;
+            margin: 0 auto;
+            animation: slideUp 0.5s ease-out;
+        }
+        .grado-btn {
+            width: 100%;
+            text-align: left;
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .grado-btn:hover {
+            border-color: var(--accent-primary);
+            background: rgba(99, 102, 241, 0.1);
+            transform: translateX(5px);
+        }
         @keyframes wave { 0%, 100% { height: 10px; } 50% { height: 60px; } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
@@ -282,7 +313,7 @@
         </div>
     </nav>
 
-    <div class="container-fluid px-4 main-content">
+    <div class="container-fluid px-4 main-content" id="mainContent">
         <div class="page-header">
             <h1><i class="bi bi-people-fill"></i> Gestión de Alumnos</h1>
             <p class="subtitle">
@@ -293,8 +324,7 @@
 
         <div id="alerta" class="alert-custom"></div>
 
-        <div class="content-grid">
-            <!-- Formulario -->
+        <div class="content-grid" id="contentGrid" style="display: none;">
             <div class="form-card">
                 <h3><i class="bi bi-person-plus-fill"></i> <span id="formTitle">Nuevo Alumno</span></h3>
                 <form id="formAlumno">
@@ -325,7 +355,6 @@
                 </form>
             </div>
 
-            <!-- Lista -->
             <div class="list-card">
                 <div class="list-header">
                     <h3><i class="bi bi-list-ul"></i> Lista de Alumnos</h3>
@@ -371,7 +400,6 @@
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // ===== CONFIGURACIÓN CORRECTA DEL PROYECTO =====
         const firebaseConfig = {
             apiKey: "AIzaSyC1VnkczVVRwNDj6G1kPPdHNZXWNPy_JXA",
             authDomain: "sistema-escolar-8fcee.firebaseapp.com",
@@ -391,10 +419,6 @@
         let gradoActual = '';
         let unsubscribeAlumnos = null;
 
-        // Tomar el grado de la URL
-        const params = new URLSearchParams(window.location.search);
-        gradoActual = params.get('grado') || '';
-
         const form = document.getElementById('formAlumno');
         const alerta = document.getElementById('alerta');
         const studentList = document.getElementById('studentList');
@@ -407,9 +431,60 @@
             setTimeout(() => alerta.classList.remove('show'), 3500);
         }
 
-        // Validar que el nombre solo tenga letras y espacios
         function validarNombre(nombre) {
             return /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/.test(nombre);
+        }
+
+        function obtenerSexo(alumno) {
+            return alumno.sexo || alumno.genero || '';
+        }
+
+        function obtenerGradosAsignados() {
+            const grados = new Set();
+            if (usuarioActual.gradoEncargado) grados.add(usuarioActual.gradoEncargado);
+            (usuarioActual.materiasImpartidas || []).forEach(m => {
+                (m.grados || []).forEach(g => grados.add(g));
+            });
+            return Array.from(grados).sort();
+        }
+
+        function mostrarSelectorGrado(grados) {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            document.getElementById('contentGrid').style.display = 'none';
+            document.getElementById('gradoActual').textContent = 'Seleccionar grado';
+
+            const main = document.getElementById('mainContent');
+            const selectorHTML = `
+                <div class="page-header">
+                    <h1><i class="bi bi-people-fill"></i> Gestión de Alumnos</h1>
+                    <p class="subtitle">Selecciona el grado que deseas gestionar</p>
+                </div>
+                <div class="grado-selector-card">
+                    <h3 style="margin-bottom: 20px; font-size: 18px;"><i class="bi bi-list-check"></i> Tus grados asignados</h3>
+                    ${grados.map(g => `
+                        <button class="grado-btn" onclick="window.location.href='alumnos.html?grado=${encodeURIComponent(g)}'">
+                            <i class="bi bi-mortarboard-fill" style="color: var(--accent-primary);"></i>
+                            ${g}
+                        </button>
+                    `).join('')}
+                    <div style="margin-top: 25px; text-align: center;">
+                        <a href="dashboard.html" style="color: var(--text-secondary); text-decoration: none; font-size: 14px;">
+                            ← Volver al Dashboard
+                        </a>
+                    </div>
+                </div>
+            `;
+            main.innerHTML = selectorHTML;
+        }
+
+        function iniciarGestion(grado) {
+            gradoActual = grado;
+            document.getElementById('gradoActual').textContent = gradoActual;
+            document.getElementById('contentGrid').style.display = 'grid';
+            cargarAlumnosTiempoReal();
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }, 600);
         }
 
         onAuthStateChanged(auth, async (user) => {
@@ -420,7 +495,7 @@
 
             try {
                 const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-                
+
                 if (!userDoc.exists() || userDoc.data().rol !== 'docente') {
                     await signOut(auth);
                     window.location.href = 'index.html';
@@ -432,38 +507,54 @@
                     uid: user.uid,
                     nombre: data.nombre || data.nombreCompleto || 'Docente',
                     correo: data.correo,
-                    rol: 'docente'
+                    rol: 'docente',
+                    gradoEncargado: data.gradoEncargado || data.grado || '',
+                    materiasImpartidas: data.materiasImpartidas || []
                 };
 
                 localStorage.setItem('usuario', JSON.stringify(usuarioActual));
                 document.getElementById('userName').textContent = usuarioActual.nombre;
                 document.getElementById('userAvatar').textContent = usuarioActual.nombre.charAt(0).toUpperCase();
 
-                if (!gradoActual) {
-                    // Si no viene grado por URL, intentar usar el grado del docente
-                    gradoActual = data.gradoEncargado || data.grado || '';
-                }
+                const params = new URLSearchParams(window.location.search);
+                let gradoURL = params.get('grado') || '';
 
-                if (!gradoActual) {
-                    mostrarAlerta('No se especificó un grado. Vuelve al dashboard.', 'error');
-                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 2000);
+                if (gradoURL) {
+                    iniciarGestion(gradoURL);
                     return;
                 }
 
-                document.getElementById('gradoActual').textContent = gradoActual;
-                cargarAlumnosTiempoReal();
+                if (usuarioActual.gradoEncargado) {
+                    iniciarGestion(usuarioActual.gradoEncargado);
+                    return;
+                }
 
-                setTimeout(() => {
+                const grados = obtenerGradosAsignados();
+
+                if (grados.length === 0) {
                     document.getElementById('loadingOverlay').style.display = 'none';
-                }, 800);
+                    document.getElementById('gradoActual').textContent = 'Sin grado';
+                    mostrarAlerta('No tienes grados asignados. Configura tu perfil primero.', 'error');
+                    return;
+                }
+
+                if (grados.length === 1) {
+                    iniciarGestion(grados[0]);
+                    return;
+                }
+
+                mostrarSelectorGrado(grados);
 
             } catch (error) {
                 console.error('Error:', error);
+                document.getElementById('loadingOverlay').style.display = 'none';
                 mostrarAlerta('Error al cargar datos', 'error');
             }
         });
 
         function cargarAlumnosTiempoReal() {
+            if (unsubscribeAlumnos) unsubscribeAlumnos();
+
             const q = query(
                 collection(db, 'alumnos'),
                 where('grado', '==', gradoActual)
@@ -475,7 +566,7 @@
                     alumnos.push({ id: docSnap.id, ...docSnap.data() });
                 });
                 alumnos.sort((a, b) => a.nombre.localeCompare(b.nombre));
-                
+
                 actualizarEstadisticas();
                 renderizarLista(alumnos);
                 actualizarBotones();
@@ -485,16 +576,11 @@
             });
         }
 
-        function obtenerSexo(alumno) {
-            // Compatibilidad con ambos nombres de campo
-            return alumno.sexo || alumno.genero || '';
-        }
-
         function actualizarEstadisticas() {
             const total = alumnos.length;
             const male = alumnos.filter(a => obtenerSexo(a) === 'Masculino').length;
             const female = alumnos.filter(a => obtenerSexo(a) === 'Femenino').length;
-            
+
             document.getElementById('statTotal').textContent = total;
             document.getElementById('statMale').textContent = male;
             document.getElementById('statFemale').textContent = female;
@@ -568,7 +654,7 @@
             }
 
             if (!validarNombre(nombre)) {
-                mostrarAlerta('El nombre solo puede contener letras y espacios (sin números ni símbolos)', 'error');
+                mostrarAlerta('El nombre solo puede contener letras y espacios', 'error');
                 return;
             }
 
@@ -581,7 +667,7 @@
                         nombre: nombre,
                         nie: nie,
                         sexo: sexo,
-                        genero: sexo, // compatibilidad
+                        genero: sexo,
                         fechaActualizacion: new Date().toISOString()
                     });
                     mostrarAlerta('Alumno actualizado correctamente', 'success');
@@ -591,7 +677,7 @@
                         nombre: nombre,
                         nie: nie,
                         sexo: sexo,
-                        genero: sexo, // compatibilidad con asistencia
+                        genero: sexo,
                         grado: gradoActual,
                         docenteId: usuarioActual.uid,
                         fechaRegistro: new Date().toISOString()
@@ -632,7 +718,7 @@
 
         window.eliminarAlumno = async (id, nombre) => {
             if (!confirm(`¿Eliminar a "${nombre}"?\nEsta acción no se puede deshacer.`)) return;
-            
+
             try {
                 await deleteDoc(doc(db, 'alumnos', id));
                 mostrarAlerta('Alumno eliminado', 'success');
@@ -648,8 +734,6 @@
             renderizarLista(filtrados);
         });
 
-        // LISTA DE ASISTENCIA (estilo hoja física)
-
         window.generarListaAsistencia = function() {
             if (alumnos.length === 0) {
                 alert('No hay alumnos registrados en este grado');
@@ -660,8 +744,6 @@
             const fechaActual = new Date();
             const año = fechaActual.getFullYear();
             const mes = fechaActual.toLocaleString('es-ES', { month: 'long' }).toUpperCase();
-
-            // Generar 4 semanas de columnas L-M-M-J-V
             const dias = ['L', 'M', 'M', 'J', 'V'];
 
             let html = `
@@ -694,10 +776,7 @@
                     .nombre { text-align: left; padding-left: 6px; font-size: 9px; min-width: 220px; }
                     .dia { width: 22px; font-size: 8px; }
                     .fecha-header { font-size: 8px; }
-                    .footer {
-                        margin-top: 25px;
-                        font-size: 10px;
-                    }
+                    .footer { margin-top: 25px; font-size: 10px; }
                     .firmas {
                         display: flex;
                         justify-content: space-between;
@@ -761,7 +840,6 @@
                 `;
             });
 
-            // Filas vacías extra por si se agregan más alumnos a mano
             for (let i = alumnos.length; i < Math.max(alumnos.length + 3, 35); i++) {
                 html += `
                     <tr>
