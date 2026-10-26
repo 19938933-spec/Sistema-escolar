@@ -1,6 +1,4 @@
-// ============================================
-//  CONFIGURACIÓN DE FIREBASE
-// ============================================
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -21,14 +19,10 @@ const db = getFirestore(app);
 
 console.log("✅ Firebase inicializado en admin.js");
 
-// ============================================
-// 📊 VARIABLES GLOBALES
-// ============================================
+
 let todosLosUsuarios = [];
 
-// ============================================
-//  VERIFICACIÓN DE AUTENTICACIÓN
-// ============================================
+
 export function verificarSesionAdmin() {
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
@@ -65,9 +59,7 @@ export function verificarSesionAdmin() {
     });
 }
 
-// ============================================
-// 📥 CARGAR DATOS DEL SISTEMA
-// ============================================
+
 export async function cargarDatos() {
     try {
         console.log("🔄 Cargando datos del sistema...");
@@ -123,9 +115,7 @@ export async function cargarDatos() {
     }
 }
 
-// ============================================
-// 📋 RENDERIZAR TABLA DE USUARIOS
-// ============================================
+
 export function renderizarTabla(usuarios) {
     const tbody = document.getElementById('tablaUsuarios');
     
@@ -162,9 +152,7 @@ export function renderizarTabla(usuarios) {
     console.log(`📋 Tabla renderizada con ${usuarios.length} usuarios`);
 }
 
-// ============================================
-//  FUNCIÓN DE BÚSQUEDA
-// ============================================
+
 export function configurarBusqueda() {
     const searchInput = document.getElementById('searchInput');
     
@@ -193,9 +181,7 @@ export function configurarBusqueda() {
     });
 }
 
-// ============================================
-// 🚪 CERRAR SESIÓN
-// ============================================
+// cerrar sesion
 export function configurarLogout() {
     const btnLogout = document.getElementById('btnLogout');
     
@@ -220,9 +206,7 @@ export function configurarLogout() {
     });
 }
 
-// ============================================
-// 🚀 INICIALIZACIÓN
-// ============================================
+
 export function inicializarAdmin() {
     console.log("🚀 Inicializando panel administrativo...");
     
