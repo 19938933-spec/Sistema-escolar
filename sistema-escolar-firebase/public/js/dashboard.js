@@ -1,6 +1,4 @@
-// ============================================
-// 🔧 CONFIGURACIÓN DE FIREBASE
-// ============================================
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -21,14 +19,8 @@ const db = getFirestore(app);
 
 console.log("✅ Firebase inicializado en dashboard.js");
 
-// ============================================
-// 📊 VARIABLES GLOBALES
-// ============================================
 let usuarioActual = null;
 
-// ============================================
-// 🔐 VERIFICACIÓN DE AUTENTICACIÓN
-// ============================================
 export function verificarSesionDocente() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
         // 1. Si no hay usuario, ir al login
@@ -84,9 +76,7 @@ export function verificarSesionDocente() {
     });
 }
 
-// ============================================
-// 📈 CARGAR ESTADÍSTICAS DE ALUMNOS
-// ============================================
+
 export async function cargarEstadisticas(grado) {
     try {
         console.log("📊 Cargando estadísticas para el grado:", grado);
@@ -125,9 +115,6 @@ export async function cargarEstadisticas(grado) {
     }
 }
 
-// ============================================
-// 🔢 ANIMACIÓN DE CONTADORES
-// ============================================
 export function animarContador(elementId, target) {
     const element = document.getElementById(elementId);
     if (!element) return;
@@ -148,9 +135,6 @@ export function animarContador(elementId, target) {
     }, stepTime);
 }
 
-// ============================================
-//  CONFIGURAR CIERRE DE SESIÓN
-// ============================================
 export function configurarLogout() {
     const btnLogout = document.getElementById('btnLogout');
     
@@ -175,9 +159,7 @@ export function configurarLogout() {
     });
 }
 
-// ============================================
-// 🚀 INICIALIZACIÓN PRINCIPAL
-// ============================================
+
 export function inicializarDashboard() {
     console.log("🚀 Inicializando Panel Docente...");
     verificarSesionDocente();
