@@ -1,6 +1,4 @@
-// ============================================
-//  CONFIGURACIÓN DE FIREBASE
-// ============================================
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -21,16 +19,10 @@ const db = getFirestore(app);
 
 console.log("✅ Firebase inicializado en alumnos.js");
 
-// ============================================
-// 📊 VARIABLES GLOBALES
-// ============================================
 let usuarioActual = null;
 let alumnos = [];
 let editandoId = null;
 
-// ============================================
-// 🔐 VERIFICACIÓN DE AUTENTICACIÓN
-// ============================================
 function verificarSesionDocente() {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
         if (!user) {
@@ -74,9 +66,7 @@ function verificarSesionDocente() {
     });
 }
 
-// ============================================
-// 🔄 CARGAR ALUMNOS EN TIEMPO REAL
-// ============================================
+
 function cargarAlumnos() {
     console.log("🔄 Cargando alumnos del grado:", usuarioActual.grado);
     
@@ -103,9 +93,7 @@ function cargarAlumnos() {
     });
 }
 
-// ============================================
-// 📈 ACTUALIZAR ESTADÍSTICAS
-// ============================================
+
 function actualizarEstadisticas() {
     const total = alumnos.length;
     const male = alumnos.filter(a => a.genero === 'Masculino').length;
@@ -134,9 +122,6 @@ function animarContador(elementId, target) {
     }, 30);
 }
 
-// ============================================
-// 📋 RENDERIZAR LISTA DE ALUMNOS
-// ============================================
 function renderizarLista(lista) {
     const studentList = document.getElementById('studentList');
     if (!studentList) return;
@@ -181,9 +166,7 @@ function renderizarLista(lista) {
     `).join('');
 }
 
-// ============================================
-// ➕/✏️ GUARDAR O ACTUALIZAR ALUMNO
-// ============================================
+
 function configurarFormulario() {
     const form = document.getElementById('formAlumno');
     if (!form) return;
@@ -237,9 +220,7 @@ function configurarFormulario() {
     });
 }
 
-// ============================================
-// ✏️ EDITAR ALUMNO
-// ============================================
+//editar alumno
 window.editarAlumno = (id) => {
     const alumno = alumnos.find(a => a.id === id);
     if (!alumno) return;
@@ -279,9 +260,7 @@ function cancelarEdicion() {
     if (btnCancel) btnCancel.style.display = 'none';
 }
 
-// ============================================
-// 🗑️ ELIMINAR ALUMNO
-// ============================================
+
 window.eliminarAlumno = async (id, nombre) => {
     if (!confirm(`¿Estás seguro de eliminar a "${nombre}"?\nEsta acción no se puede deshacer.`)) {
         return;
@@ -296,9 +275,7 @@ window.eliminarAlumno = async (id, nombre) => {
     }
 };
 
-// ============================================
-// 🔍 BÚSQUEDA EN TIEMPO REAL
-// ============================================
+
 function configurarBusqueda() {
     const searchBox = document.getElementById('searchBox');
     if (!searchBox) return;
@@ -312,9 +289,7 @@ function configurarBusqueda() {
     });
 }
 
-// ============================================
-// 🔔 SISTEMA DE ALERTAS
-// ============================================
+
 function mostrarAlerta(mensaje, tipo) {
     const alerta = document.getElementById('alerta');
     if (!alerta) {
@@ -326,9 +301,7 @@ function mostrarAlerta(mensaje, tipo) {
     setTimeout(() => alerta.classList.remove('show'), 4000);
 }
 
-// ============================================
-// 🚪 CERRAR SESIÓN
-// ============================================
+
 function configurarLogout() {
     const btnLogout = document.getElementById('btnLogout');
     if (!btnLogout) return;
@@ -347,9 +320,7 @@ function configurarLogout() {
     });
 }
 
-// ============================================
-// 🚀 INICIALIZACIÓN PRINCIPAL
-// ============================================
+
 export function inicializarAlumnos() {
     console.log("🚀 Inicializando módulo de Alumnos...");
     verificarSesionDocente();
