@@ -597,6 +597,12 @@
                 showToast('Código de seguridad incorrecto', 'error');
                 return;
             }
+            
+            if (data.activo === false) {
+                await signOut(auth);
+                showToast('Tu cuenta está desactivada. Contacta al administrador.', 'error');
+                return;
+            }
 
             // UI Loading
             const btn = document.getElementById('btnSubmit');
