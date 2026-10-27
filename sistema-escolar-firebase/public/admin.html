@@ -182,6 +182,7 @@
             <button class="nav-tab-btn" data-tab="usuarios"><i class="bi bi-person-gear"></i> Control de acceso</button>
             <button class="nav-tab-btn" data-tab="periodos"><i class="bi bi-unlock-fill"></i> Períodos</button>
             <button class="nav-tab-btn" data-tab="reportes"><i class="bi bi-file-earmark-pdf"></i> Reportes</button>
+            <button class="nav-tab-btn" data-tab="editar-docente"><i class="bi bi-pencil-square"></i> Editar docente</button>
             <button class="nav-tab-btn" data-tab="grados"><i class="bi bi-arrow-left-right"></i> Remapear grados</button>
             <button class="nav-tab-btn" data-tab="perfil"><i class="bi bi-person-circle"></i> Mi perfil</button>
         </div>
@@ -334,6 +335,35 @@
         </div>
 
         
+        
+        <!-- EDITAR DOCENTE -->
+        <div class="tab-panel" id="tab-editar-docente">
+            <div class="data-card">
+                <h3><i class="bi bi-pencil-square"></i> Editar grados de un docente</h3>
+                <p class="text-muted" style="font-size:13px;margin-bottom:16px;">
+                    Desde aquí puedes asignar o corregir el <strong>grado a cargo</strong> y los <strong>grados de sus materias</strong> sin que el docente tenga que entrar a su perfil.
+                </p>
+                <div class="action-row mb-3">
+                    <div class="action-group">
+                        <label>Docente</label>
+                        <select id="editDocenteSelect"><option value="">Selecciona un docente...</option></select>
+                    </div>
+                    <div class="action-group">
+                        <label>Grado a cargo (Tutor)</label>
+                        <select id="editGradoEncargado"><option value="">Ninguno</option></select>
+                    </div>
+                </div>
+                <div id="editDocenteInfo" class="mb-3" style="display:none;">
+                    <p class="text-muted" style="font-size:13px;" id="editDocenteMaterias"></p>
+                    <label class="form-label" style="color:var(--text-secondary);font-size:12px;text-transform:uppercase;font-weight:600;">Grados que imparte (se aplican a todas sus materias)</label>
+                    <div class="grados-container" id="editGradosChecks" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;"></div>
+                    <button class="btn-action btn-success-custom mt-3" id="btnGuardarEditDocente">
+                        <i class="bi bi-check-circle-fill"></i> Guardar cambios del docente
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- REMAPEAR GRADOS -->
         <div class="tab-panel" id="tab-grados">
             <div class="data-card">
@@ -419,23 +449,22 @@
         let fotoBase64 = null;
 
         const gradosOficiales = [
-            'PARVULARIA 4 SECCIÓN "A"', 'PARVULARIA 4 SECCIÓN "B"',
-            'PARVULARIA 5 SECCIÓN "A"', 'PARVULARIA 5 SECCIÓN "B"',
-            'PARVULARIA 6 SECCIÓN "A"', 'PARVULARIA 6 SECCIÓN "B"',
-            '1º GRADO SECCIÓN A', '2º A', '3º A', '4º A', '5º A', '6º A', '7º A', '8º A', '9º A',
-            '1° GENERAL SECCIÓN "A"', '1° GENERAL SECCIÓN "B"',
-            '1° ADMINISTRATIVO CONTABLE A',
-            '1° SALUD Y BIENESTAR SOCIAL SECCIÓN "A"', '1° SALUD Y BIENESTAR SOCIAL SECCIÓN "B"',
-            '1° ITSI A',
-            '1° SISTEMAS ELÉCTRICOS Y ENERGÍAS RENOVABLES "A"', '1° SISTEMAS ELÉCTRICOS "B"',
-            '2° GENERAL A', '2° ADMINISTRATIVO CONTABLE',
-            '2° SALUD Y BIENESTAR SOCIAL SECCIÓN "A"', '2° SALUD Y BIENESTAR SOCIAL SECCIÓN "B"',
-            '2° ITSI A',
-            '2° SISTEMAS ELÉCTRICOS Y ENERGÍAS RENOVABLES "A"',
-            '2° SISTEMAS ELÉCTRICOS Y ENERGÍAS RENOVABLES "B"',
-            '3° ADMINISTRATIVO CONTABLE', '3° ITSI A',
-            '3° SISTEMAS ELÉCTRICOS "A"', '3° SISTEMAS ELÉCTRICOS "B"',
-            '3° ATENCIÓN PRIMARIA EN SALUD "A"', '3° ATENCIÓN PRIMARIA EN SALUD "B"'
+            "PARVULARIA 4 SECCIÓN A", "PARVULARIA 4 SECCIÓN B",
+            "PARVULARIA 5 SECCIÓN A", "PARVULARIA 5 SECCIÓN B",
+            "PARVULARIA 6 SECCIÓN A", "PARVULARIA 6 SECCIÓN B",
+            "1º GRADO SECCIÓN A", "2º A", "3º A", "4º A", "5º A", "6º A", "7º A", "8º A", "9º A",
+            "1° GENERAL SECCIÓN A", "1° GENERAL SECCIÓN B",
+            "1° ADMINISTRATIVO CONTABLE A",
+            "1° SALUD Y BIENESTAR SOCIAL SECCIÓN A", "1° SALUD Y BIENESTAR SOCIAL SECCIÓN B",
+            "1° ITSI A",
+            "1° SISTEMAS ELÉCTRICOS Y ENERGÍAS RENOVABLES A", "1° SISTEMAS ELÉCTRICOS B",
+            "2° GENERAL A", "2° ADMINISTRATIVO CONTABLE",
+            "2° SALUD Y BIENESTAR SOCIAL SECCIÓN A", "2° SALUD Y BIENESTAR SOCIAL SECCIÓN B",
+            "2° ITSI A",
+            "2° SISTEMAS ELÉCTRICOS Y ENERGÍAS RENOVABLES A", "2° SISTEMAS ELÉCTRICOS Y ENERGÍAS RENOVABLES B",
+            "3° ADMINISTRATIVO CONTABLE", "3° ITSI A",
+            "3° SISTEMAS ELÉCTRICOS A", "3° SISTEMAS ELÉCTRICOS B",
+            "3° ATENCIÓN PRIMARIA EN SALUD A", "3° ATENCIÓN PRIMARIA EN SALUD B"
         ];
 
         let heartbeatTimer = null;
@@ -564,6 +593,7 @@
 
                 renderOnline();
                 renderDocentesPorGrado(docentesLista);
+                try { llenarSelectEditDocente(); } catch(e) {}
                 renderTablaUsuarios(todosLosUsuarios);
                 llenarSelectores();
                 await cargarStatsExtra();
@@ -1092,6 +1122,122 @@
                 }
                 mostrarToast(n + ' alumno(s) actualizados a "' + nuevo + '"', 'success');
                 document.getElementById('btnCargarGradosBD').click();
+            } catch (e) {
+                mostrarToast('Error: ' + e.message, 'error');
+            }
+        });
+
+
+        
+        // ===== EDITAR DOCENTE DESDE ADMIN =====
+        function llenarSelectEditDocente() {
+            const sel = document.getElementById('editDocenteSelect');
+            const selGrado = document.getElementById('editGradoEncargado');
+            if (!sel || !selGrado) return;
+            const cur = sel.value;
+            sel.innerHTML = '<option value="">Selecciona un docente...</option>';
+            docentesLista.forEach(d => {
+                const o = document.createElement('option');
+                o.value = d.uid;
+                o.textContent = (d.nombre || d.nombreCompleto || 'Docente') + ' — ' + (d.gradoEncargado || d.grado || 'sin grado');
+                sel.appendChild(o);
+            });
+            if (cur) sel.value = cur;
+
+            if (selGrado.options.length <= 1) {
+                gradosOficiales.forEach(g => {
+                    const o = document.createElement('option');
+                    o.value = g; o.textContent = g;
+                    selGrado.appendChild(o);
+                });
+            }
+        }
+
+        // refrescar cuando carguen docentes
+        const _origLlenar = typeof llenarSelectores === 'function' ? llenarSelectores : null;
+        // call after snapshot via patching renderDocentes - hook into existing flow
+        setInterval(() => {
+            if (docentesLista.length && document.getElementById('editDocenteSelect') && document.getElementById('editDocenteSelect').options.length <= 1) {
+                llenarSelectEditDocente();
+            }
+        }, 2000);
+
+        document.getElementById('editDocenteSelect')?.addEventListener('change', () => {
+            const uid = document.getElementById('editDocenteSelect').value;
+            const info = document.getElementById('editDocenteInfo');
+            const checks = document.getElementById('editGradosChecks');
+            if (!uid) { info.style.display = 'none'; return; }
+            const d = docentesLista.find(x => x.uid === uid);
+            if (!d) return;
+            info.style.display = 'block';
+            document.getElementById('editGradoEncargado').value = d.gradoEncargado || d.grado || '';
+            const mats = d.materiasImpartidas || [];
+            document.getElementById('editDocenteMaterias').textContent = mats.length
+                ? 'Materias actuales: ' + mats.map(m => m.nombre === 'Módulo' ? ('Módulo ' + (m.numero||'') + ': ' + (m.nombrePersonalizado||'')) : m.nombre).join(', ')
+                : 'Sin materias registradas. Se guardará solo el grado a cargo.';
+
+            // grados ya asignados en cualquier materia
+            const ya = new Set();
+            if (d.gradoEncargado) ya.add(d.gradoEncargado);
+            if (d.grado) ya.add(d.grado);
+            mats.forEach(m => (m.grados || []).forEach(g => ya.add(g)));
+
+            checks.innerHTML = '';
+            gradosOficiales.forEach(g => {
+                const label = document.createElement('label');
+                label.className = 'grade-check';
+                label.style.cssText = 'display:inline-flex;cursor:pointer;user-select:none;';
+                const input = document.createElement('input');
+                input.type = 'checkbox';
+                input.value = g;
+                input.checked = ya.has(g);
+                input.style.display = 'none';
+                const span = document.createElement('span');
+                span.textContent = g;
+                span.style.cssText = 'display:inline-block;padding:8px 12px;background:rgba(15,23,42,0.7);border:2px solid var(--border);border-radius:20px;font-size:0.8rem;';
+                if (input.checked) span.style.cssText += 'background:var(--accent-primary);border-color:var(--accent-primary);color:white;font-weight:600;';
+                label.appendChild(input);
+                label.appendChild(span);
+                label.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    input.checked = !input.checked;
+                    span.style.background = input.checked ? 'var(--accent-primary)' : 'rgba(15,23,42,0.7)';
+                    span.style.borderColor = input.checked ? 'var(--accent-primary)' : 'var(--border)';
+                    span.style.color = input.checked ? 'white' : '';
+                    span.style.fontWeight = input.checked ? '600' : '';
+                });
+                checks.appendChild(label);
+            });
+            llenarSelectEditDocente();
+            document.getElementById('editDocenteSelect').value = uid;
+            document.getElementById('editGradoEncargado').value = d.gradoEncargado || d.grado || '';
+        });
+
+        document.getElementById('btnGuardarEditDocente')?.addEventListener('click', async () => {
+            const uid = document.getElementById('editDocenteSelect').value;
+            if (!uid) { mostrarToast('Selecciona un docente', 'error'); return; }
+            const gradoEncargado = document.getElementById('editGradoEncargado').value || null;
+            const gradosSel = [];
+            document.querySelectorAll('#editGradosChecks input:checked').forEach(cb => gradosSel.push(cb.value));
+            if (gradoEncargado && !gradosSel.includes(gradoEncargado)) gradosSel.push(gradoEncargado);
+
+            const d = docentesLista.find(x => x.uid === uid);
+            let materias = JSON.parse(JSON.stringify(d.materiasImpartidas || []));
+            if (materias.length === 0 && gradosSel.length > 0) {
+                // sin materias: solo grado a cargo
+            } else {
+                materias = materias.map(m => ({ ...m, grados: [...gradosSel] }));
+            }
+
+            if (!confirm('¿Guardar grado a cargo y grados de materias para este docente?')) return;
+            try {
+                await updateDoc(doc(db, 'usuarios', uid), {
+                    gradoEncargado: gradoEncargado,
+                    materiasImpartidas: materias,
+                    perfilConfigurado: true,
+                    fechaActualizacion: new Date().toISOString()
+                });
+                mostrarToast('Docente actualizado correctamente', 'success');
             } catch (e) {
                 mostrarToast('Error: ' + e.message, 'error');
             }
