@@ -27,7 +27,12 @@
         .navbar-brand-custom { display: flex; align-items: center; gap: 12px; color: var(--text-primary); font-weight: 700; font-size: 18px; text-decoration: none; }
         .navbar-brand-custom .logo-img { width: 42px; height: 42px; object-fit: contain; border-radius: 8px; }
         .user-info { display: flex; align-items: center; gap: 15px; }
-        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-primary), #8b5cf6); display: flex; align-items: center; justify-content: center; font-weight: 600; color: white; }
+        .user-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
+            display: flex; align-items: center; justify-content: center; font-weight: 600; color: white; overflow: hidden;
+        }
+        .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .user-name { font-weight: 600; color: var(--text-primary); }
         .user-role { font-size: 12px; color: var(--text-secondary); }
         .btn-logout { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; padding: 8px 16px; border-radius: 8px; font-size: 14px; transition: all 0.3s; cursor: pointer; }
@@ -78,6 +83,14 @@
         .module-description { color: var(--text-secondary); font-size: 14px; line-height: 1.5; margin-bottom: 15px; }
         .module-link { color: var(--accent-primary); font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 5px; }
         
+        .grados-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .grado-link-btn {
+            display: inline-block; padding: 8px 14px; background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 10px; color: #c7d2fe;
+            font-size: 13px; font-weight: 500; text-decoration: none; transition: all 0.2s;
+        }
+        .grado-link-btn:hover { background: rgba(99, 102, 241, 0.3); color: white; }
+        
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-primary); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s ease; }
         .loading-wave { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
         .loading-bar { width: 8px; height: 40px; background: linear-gradient(135deg, var(--accent-primary), #8b5cf6); border-radius: 4px; animation: wave 1s ease-in-out infinite; }
@@ -103,7 +116,6 @@
         </div>
         <p style="color: var(--text-secondary); font-size: 14px;">Cargando panel docente...</p>
     </div>
-
     <nav class="navbar-custom">
         <div class="container-fluid px-4">
             <div class="d-flex justify-content-between align-items-center">
@@ -125,7 +137,6 @@
             </div>
         </div>
     </nav>
-
     <div class="container-fluid px-4 main-content">
         <div class="welcome-banner">
             <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
@@ -144,7 +155,6 @@
                 </a>
             </div>
         </div>
-
         <div class="stats-grid">
             <div class="stat-card total">
                 <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
@@ -165,16 +175,18 @@
                 <div class="stat-sublabel">Estudiantes registradas</div>
             </div>
         </div>
-
         <div class="assignments-card" id="assignmentsSection">
             <h3><i class="bi bi-journal-bookmark-fill"></i> Mis Asignaciones Académicas</h3>
             <div id="subjectsList">
                 <p class="text-muted">Cargando asignaciones...</p>
             </div>
+            <div id="accesosRapidos" style="display:none; margin-top: 20px;">
+                <div class="section-title"><i class="bi bi-lightning-fill"></i> Acceso rápido a mis grados</div>
+                <div class="grados-links" id="gradosLinks"></div>
+            </div>
         </div>
-
         <div class="modules-grid">
-            <a href="alumnos.html" class="module-card alumnos">
+            <a href="alumnos.html" class="module-card alumnos" id="linkAlumnos">
                 <div class="module-icon"><i class="bi bi-people-fill"></i></div>
                 <div class="module-title">Gestión de Alumnos</div>
                 <div class="module-description">Administra el listado oficial de estudiantes de tus grados asignados.</div>
@@ -194,11 +206,10 @@
             </a>
         </div>
     </div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC1VnkczVVRwNDj6G1kPPdHNZXWNPy_JXA",
@@ -213,32 +224,51 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        setPersistence(auth, browserLocalPersistence).catch(() => {});
+
         let usuarioActual = null;
         let gradosAsignados = new Set();
+        let heartbeatTimer = null;
+
+        async function pingPresencia(uid) {
+            try {
+                await updateDoc(doc(db, 'usuarios', uid), {
+                    lastSeen: new Date().toISOString(),
+                    enLinea: true
+                });
+            } catch (e) {}
+        }
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = 'index.html';
                 return;
             }
-
             try {
-                // Carga eficiente: solo el documento del usuario actual
                 const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
                 
                 if (!userDoc.exists()) {
                     window.location.href = 'index.html';
                     return;
                 }
-
                 const userData = { uid: user.uid, ...userDoc.data() };
+
+                if (userData.activo === false) {
+                    await signOut(auth);
+                    alert('Tu cuenta está desactivada. Contacta al administrador.');
+                    window.location.href = 'index.html';
+                    return;
+                }
 
                 if (userData.rol !== 'docente') {
                     window.location.href = 'index.html';
                     return;
                 }
 
-                // Guardar en localStorage
+                // Presencia en tiempo real
+                await pingPresencia(user.uid);
+                heartbeatTimer = setInterval(() => pingPresencia(user.uid), 60000);
+
                 const usuarioParaGuardar = {
                     uid: userData.uid,
                     nombre: userData.nombre || userData.nombreCompleto || 'Docente',
@@ -247,17 +277,23 @@
                     grado: userData.gradoEncargado || '',
                     usuario: userData.usuario,
                     perfilConfigurado: userData.perfilConfigurado,
-                    materiasImpartidas: userData.materiasImpartidas || []
+                    materiasImpartidas: userData.materiasImpartidas || [],
+                    fotoPerfil: userData.fotoPerfil || null
                 };
-
                 localStorage.setItem('usuario', JSON.stringify(usuarioParaGuardar));
                 usuarioActual = usuarioParaGuardar;
 
-                // Actualizar UI
                 document.getElementById('userName').textContent = usuarioActual.nombre;
-                document.getElementById('userAvatar').textContent = usuarioActual.nombre.charAt(0).toUpperCase();
                 document.getElementById('welcomeName').textContent = usuarioActual.nombre;
                 document.getElementById('userEmail').textContent = usuarioActual.correo;
+
+                // Foto de perfil
+                const avatar = document.getElementById('userAvatar');
+                if (usuarioActual.fotoPerfil) {
+                    avatar.innerHTML = `<img src="${usuarioActual.fotoPerfil}" alt="">`;
+                } else {
+                    avatar.textContent = usuarioActual.nombre.charAt(0).toUpperCase();
+                }
 
                 if (usuarioActual.grado) {
                     document.getElementById('userGrade').textContent = usuarioActual.grado;
@@ -265,14 +301,16 @@
                     gradosAsignados.add(usuarioActual.grado);
                 }
 
+                // Si solo tiene un grado, el link de alumnos lleva directo con ?grado=
+                if (usuarioActual.grado) {
+                    document.getElementById('linkAlumnos').href = `alumnos.html?grado=${encodeURIComponent(usuarioActual.grado)}`;
+                }
+
                 renderizarAsignaciones();
                 await cargarEstadisticas();
-
             } catch (error) {
                 console.error('Error al cargar el panel:', error);
             }
-
-            // Ocultar loading
             setTimeout(() => {
                 const overlay = document.getElementById('loadingOverlay');
                 if (overlay) {
@@ -287,7 +325,6 @@
             const materias = usuarioActual.materiasImpartidas || [];
             let html = '';
 
-            // Grado a Cargo (Tutor)
             if (usuarioActual.grado) {
                 html += `<div class="section-title"><i class="bi bi-star-fill"></i> Grado a Cargo (Tutoría)</div>`;
                 html += `
@@ -298,7 +335,6 @@
                 `;
             }
 
-            // Materias que imparte
             if (materias.length > 0) {
                 html += `<div class="section-title"><i class="bi bi-book-fill"></i> Materias que Imparto</div>`;
                 
@@ -335,6 +371,8 @@
                         `;
                         otrosGrados.forEach(g => gradosAsignados.add(g));
                     }
+
+                    (asignacion.grados || []).forEach(g => gradosAsignados.add(g));
                 });
             }
 
@@ -346,8 +384,16 @@
                     </p>
                 `;
             }
-
             container.innerHTML = html;
+
+            // Accesos rápidos por grado (con nombre completo + sección)
+            const gradosArr = Array.from(gradosAsignados).filter(Boolean).sort((a, b) => a.localeCompare(b, 'es'));
+            if (gradosArr.length > 0) {
+                document.getElementById('accesosRapidos').style.display = 'block';
+                document.getElementById('gradosLinks').innerHTML = gradosArr.map(g =>
+                    `<a class="grado-link-btn" href="alumnos.html?grado=${encodeURIComponent(g)}"><i class="bi bi-people-fill"></i> ${g}</a>`
+                ).join('');
+            }
         }
 
         async function cargarEstadisticas() {
@@ -357,10 +403,8 @@
                 animarContador('statFemale', 0);
                 return;
             }
-
             try {
                 let total = 0, male = 0, female = 0;
-
                 for (const grado of gradosAsignados) {
                     const q = query(collection(db, 'alumnos'), where('grado', '==', grado));
                     const snapshot = await getDocs(q);
@@ -368,11 +412,11 @@
                     snapshot.forEach(docSnap => {
                         const data = docSnap.data();
                         total++;
-                        if (data.genero === 'Masculino') male++;
-                        else if (data.genero === 'Femenino') female++;
+                        const sexo = data.sexo || data.genero || '';
+                        if (sexo === 'Masculino') male++;
+                        else if (sexo === 'Femenino') female++;
                     });
                 }
-
                 animarContador('statTotal', total);
                 animarContador('statMale', male);
                 animarContador('statFemale', female);
@@ -384,13 +428,11 @@
         function animarContador(elementId, target) {
             const element = document.getElementById(elementId);
             if (!element) return;
-
             let current = 0;
             const duration = 1000;
             const steps = 30;
             const increment = target / steps;
             const stepTime = duration / steps;
-
             const timer = setInterval(() => {
                 current += increment;
                 if (current >= target) {
@@ -403,10 +445,23 @@
 
         document.getElementById('btnLogout').addEventListener('click', async () => {
             if (confirm('¿Cerrar sesión?')) {
+                try {
+                    if (usuarioActual?.uid) {
+                        await updateDoc(doc(db, 'usuarios', usuarioActual.uid), {
+                            enLinea: false,
+                            lastSeen: new Date().toISOString()
+                        });
+                    }
+                } catch (e) {}
+                if (heartbeatTimer) clearInterval(heartbeatTimer);
                 await signOut(auth);
                 localStorage.removeItem('usuario');
                 window.location.href = 'index.html';
             }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            if (heartbeatTimer) clearInterval(heartbeatTimer);
         });
     </script>
 </body>
