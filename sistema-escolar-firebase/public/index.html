@@ -597,12 +597,6 @@
                 showToast('Código de seguridad incorrecto', 'error');
                 return;
             }
-            
-            if (data.activo === false) {
-                await signOut(auth);
-                showToast('Tu cuenta está desactivada. Contacta al administrador.', 'error');
-                return;
-            }
 
             // UI Loading
             const btn = document.getElementById('btnSubmit');
@@ -640,6 +634,15 @@
                 
                 if (userDoc.exists()) {
                     const data = userDoc.data();
+
+                    if (data.activo === false) {
+                        await signOut(auth);
+                        showToast('Tu cuenta está desactivada. Contacta al administrador.', 'error');
+                        btn.disabled = false;
+                        btnText.classList.remove('d-none');
+                        btnLoader.classList.add('d-none');
+                        return;
+                    }
                     
                     // Guardar sesión local
                     localStorage.setItem('usuario', JSON.stringify({
@@ -710,6 +713,12 @@
                 if (userDoc.exists()) {
                     // ===== USUARIO YA REGISTRADO → ENTRAR =====
                     const data = userDoc.data();
+
+                    if (data.activo === false) {
+                        await signOut(auth);
+                        showToast('Tu cuenta está desactivada. Contacta al administrador.', 'error');
+                        return;
+                    }
 
                     localStorage.setItem('usuario', JSON.stringify({
                         uid: user.uid,
