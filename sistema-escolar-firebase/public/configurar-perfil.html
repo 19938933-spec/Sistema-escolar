@@ -31,7 +31,7 @@
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         
         .header-section { text-align: center; margin-bottom: 40px; }
-        .header-section img { width: 80px; height: 80px; object-fit: contain; margin-bottom: 15px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+        .header-section img.logo { width: 80px; height: 80px; object-fit: contain; margin-bottom: 15px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
         .header-section h1 { font-size: 2rem; font-weight: 700; margin-bottom: 10px; }
         .header-section p { color: var(--text-secondary); font-size: 1.1rem; }
         
@@ -48,6 +48,23 @@
             border-color: var(--accent-primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); background: rgba(15, 23, 42, 0.9); color: white; 
         }
         .form-label { font-weight: 500; margin-bottom: 8px; color: var(--text-secondary); }
+        
+        .photo-section { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .photo-preview {
+            width: 110px; height: 110px; border-radius: 50%; object-fit: cover;
+            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 40px; font-weight: 700; color: white; overflow: hidden;
+            border: 3px solid var(--border);
+        }
+        .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .btn-photo {
+            background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4);
+            color: #a5b4fc; padding: 10px 18px; border-radius: 10px; font-weight: 600; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 8px; min-height: 44px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-photo:hover { background: rgba(99, 102, 241, 0.35); color: white; }
         
         .subject-checkbox { 
             display: flex; align-items: center; gap: 14px; padding: 16px 18px; background: rgba(15, 23, 42, 0.5); 
@@ -135,11 +152,25 @@
     <div class="toast-container" id="toastContainer"></div>
     <div class="config-container">
         <div class="header-section">
-            <img src="img/fondos/logo.png" alt="Logo" onerror="this.src='https://via.placeholder.com/80?text=LOGO'">
+            <img src="img/fondos/logo.png" alt="Logo" class="logo" onerror="this.style.display='none'">
             <h1>Configura tu Perfil Docente</h1>
-            <p>Selecciona tu grado a cargo y las materias que impartirás este año</p>
+            <p>Foto, grado a cargo y materias que impartirás este año</p>
         </div>
         <form id="formConfiguracion">
+            <!-- Foto de perfil -->
+            <div class="config-card">
+                <h3><i class="bi bi-person-circle"></i> Foto de perfil</h3>
+                <div class="photo-section">
+                    <div class="photo-preview" id="photoPreview">D</div>
+                    <input type="file" id="inputFoto" accept="image/*" style="display:none;">
+                    <button type="button" class="btn-photo" id="btnElegirFoto">
+                        <i class="bi bi-camera-fill"></i> Elegir foto
+                    </button>
+                    <small style="color: var(--text-secondary);">Máximo 500 KB · JPG o PNG</small>
+                </div>
+            </div>
+
+            <!-- Grado a Cargo -->
             <div class="config-card">
                 <h3><i class="bi bi-person-badge-fill"></i> Grado a Cargo (Tutor/Encargado)</h3>
                 <p class="text-muted mb-3" style="font-size: 0.9rem;">Selecciona el grado del cual eres responsable administrativo. Si no eres encargado, deja "Ninguno".</p>
@@ -147,11 +178,15 @@
                     <option value="">Ninguno (Solo impartiré clases)</option>
                 </select>
             </div>
+
+            <!-- Materias Regulares -->
             <div class="config-card">
                 <h3><i class="bi bi-book-fill"></i> Materias que Impartes</h3>
                 <p class="text-muted mb-3" style="font-size: 0.9rem;">Toca la materia y luego selecciona los grados donde la impartes.</p>
                 <div id="listaMaterias"></div>
             </div>
+
+            <!-- Módulo Técnico -->
             <div class="config-card" style="border-color: var(--accent-primary);">
                 <h3><i class="bi bi-cpu-fill"></i> Módulo Técnico (Solo Bachillerato Técnico)</h3>
                 <p class="text-muted mb-3" style="font-size: 0.9rem;">Si impartes un módulo técnico, completa esta sección. 2 módulos por período, 8 módulos al año.</p>
@@ -184,6 +219,7 @@
                     <div class="grados-container" id="gradosModulo"></div>
                 </div>
             </div>
+
             <button type="submit" class="btn-save" id="btnGuardar">
                 <i class="bi bi-check-circle-fill me-2"></i> Guardar Configuración
             </button>
@@ -192,6 +228,7 @@
             </button>
         </form>
     </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -219,7 +256,6 @@
             "Inglés", "OPV", "Seminario", "Arte", "Educación Física"
         ];
 
-        // LISTA OFICIAL ACTUALIZADA
         const gradosDisponibles = [
             'PARVULARIA 4 SECCIÓN "A"',
             'PARVULARIA 4 SECCIÓN "B"',
@@ -260,6 +296,7 @@
         ];
 
         let usuarioActual = null;
+        let fotoBase64 = null;
 
         function mostrarToast(mensaje, tipo) {
             const container = document.getElementById('toastContainer');
@@ -315,7 +352,6 @@
                 `;
                 listaMaterias.appendChild(div);
 
-                // Toda el área de la materia es táctil
                 const box = div.querySelector('.subject-checkbox');
                 const check = div.querySelector('.check-materia');
                 box.addEventListener('click', (e) => {
@@ -327,7 +363,6 @@
                 });
             });
 
-            // Llenar grados en materias
             document.querySelectorAll('.grados-container').forEach(container => {
                 if (container.id === 'gradosModulo') return;
                 const materia = container.dataset.materia;
@@ -337,13 +372,11 @@
                 });
             });
 
-            // Llenar grados del módulo
             const gradosModulo = document.getElementById('gradosModulo');
             gradosDisponibles.forEach(grado => {
                 gradosModulo.appendChild(crearCheckboxGrado(grado, 'modulo'));
             });
 
-            // Seleccionar todos (materias)
             document.querySelectorAll('.select-all-container').forEach(box => {
                 if (box.id === 'selectAllModuloBox') return;
                 const targetId = box.dataset.target;
@@ -358,7 +391,6 @@
                 });
             });
 
-            // Módulo técnico
             const boxModulo = document.getElementById('boxModulo');
             const checkModulo = document.getElementById('checkModulo');
             boxModulo.addEventListener('click', (e) => {
@@ -369,7 +401,6 @@
                 else asignacion.classList.remove('active');
             });
 
-            // Seleccionar todos módulo
             const selectAllModuloBox = document.getElementById('selectAllModuloBox');
             const selectAllModulo = document.getElementById('selectAllModulo');
             selectAllModuloBox.addEventListener('click', (e) => {
@@ -382,11 +413,21 @@
         }
 
         function cargarDatosExistentes() {
-            if (!usuarioActual.materiasImpartidas) return;
+            const nombre = usuarioActual.nombre || usuarioActual.nombreCompleto || 'D';
+            const preview = document.getElementById('photoPreview');
+
+            if (usuarioActual.fotoPerfil) {
+                fotoBase64 = usuarioActual.fotoPerfil;
+                preview.innerHTML = `<img src="${usuarioActual.fotoPerfil}" alt="Foto">`;
+            } else {
+                preview.textContent = nombre.charAt(0).toUpperCase();
+            }
 
             if (usuarioActual.gradoEncargado || usuarioActual.grado) {
                 document.getElementById('gradoEncargado').value = usuarioActual.gradoEncargado || usuarioActual.grado;
             }
+
+            if (!usuarioActual.materiasImpartidas) return;
 
             usuarioActual.materiasImpartidas.forEach(asignacion => {
                 if (asignacion.nombre === "Módulo") {
@@ -415,12 +456,42 @@
             });
         }
 
+        // Foto
+        document.getElementById('btnElegirFoto').addEventListener('click', () => {
+            document.getElementById('inputFoto').click();
+        });
+
+        document.getElementById('inputFoto').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (file.size > 500 * 1024) {
+                mostrarToast('La imagen debe pesar menos de 500 KB', 'error');
+                e.target.value = '';
+                return;
+            }
+            if (!file.type.startsWith('image/')) {
+                mostrarToast('Solo se permiten imágenes', 'error');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = () => {
+                fotoBase64 = reader.result;
+                document.getElementById('photoPreview').innerHTML = `<img src="${fotoBase64}" alt="Foto">`;
+            };
+            reader.readAsDataURL(file);
+        });
+
         onAuthStateChanged(auth, async (user) => {
             if (!user) { window.location.href = 'index.html'; return; }
             try {
                 const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
                 if (!userDoc.exists()) { window.location.href = 'index.html'; return; }
-                usuarioActual = { uid: user.uid, ...userDoc.data() };
+                const data = userDoc.data();
+                if (data.activo === false) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                usuarioActual = { uid: user.uid, ...data };
                 inicializarUI();
                 cargarDatosExistentes();
             } catch (error) {
@@ -466,6 +537,11 @@
                             nombrePersonalizado: nombre,
                             grados: grados
                         });
+                    } else if (document.getElementById('checkModulo').checked && (!nombre || grados.length === 0)) {
+                        mostrarToast('Completa nombre y grados del módulo técnico', 'error');
+                        btn.disabled = false;
+                        btn.innerHTML = originalBtnText;
+                        return;
                     }
                 }
 
@@ -476,17 +552,24 @@
                     return;
                 }
 
-                await updateDoc(doc(db, 'usuarios', usuarioActual.uid), {
+                const datosUpdate = {
                     perfilConfigurado: true,
                     gradoEncargado: gradoEncargado,
                     materiasImpartidas: materiasImpartidas,
                     fechaActualizacion: new Date().toISOString()
-                });
+                };
+
+                if (fotoBase64) {
+                    datosUpdate.fotoPerfil = fotoBase64;
+                }
+
+                await updateDoc(doc(db, 'usuarios', usuarioActual.uid), datosUpdate);
 
                 const usuarioLocal = JSON.parse(localStorage.getItem('usuario') || '{}');
                 usuarioLocal.grado = gradoEncargado;
                 usuarioLocal.materiasImpartidas = materiasImpartidas;
                 usuarioLocal.perfilConfigurado = true;
+                if (fotoBase64) usuarioLocal.fotoPerfil = fotoBase64;
                 localStorage.setItem('usuario', JSON.stringify(usuarioLocal));
 
                 mostrarToast('¡Perfil actualizado exitosamente!', 'success');
