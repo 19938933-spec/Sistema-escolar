@@ -182,6 +182,7 @@
             <button class="nav-tab-btn" data-tab="usuarios"><i class="bi bi-person-gear"></i> Control de acceso</button>
             <button class="nav-tab-btn" data-tab="periodos"><i class="bi bi-unlock-fill"></i> Períodos</button>
             <button class="nav-tab-btn" data-tab="reportes"><i class="bi bi-file-earmark-pdf"></i> Reportes</button>
+            <button class="nav-tab-btn" data-tab="grados"><i class="bi bi-arrow-left-right"></i> Remapear grados</button>
             <button class="nav-tab-btn" data-tab="perfil"><i class="bi bi-person-circle"></i> Mi perfil</button>
         </div>
 
@@ -201,7 +202,7 @@
                 <div class="stat-card online">
                     <div class="stat-label">En línea ahora</div>
                     <div class="stat-value" id="statOnline">0</div>
-                    <div class="stat-sublabel">Últimos 3 minutos</div>
+                    <div class="stat-sublabel">Últimos 5 minutos</div>
                 </div>
                 <div class="stat-card alumnos">
                     <div class="stat-label">Alumnos</div>
@@ -332,6 +333,38 @@
             </div>
         </div>
 
+        
+        <!-- REMAPEAR GRADOS -->
+        <div class="tab-panel" id="tab-grados">
+            <div class="data-card">
+                <h3><i class="bi bi-arrow-left-right"></i> Remapear grados de alumnos</h3>
+                <p class="text-muted" style="font-size:13px;margin-bottom:16px;">
+                    Si cambiaste los nombres de los grados (ej. de "2 ITSI" a "2° ITSI"), los alumnos siguen con el nombre viejo y no aparecen.
+                    Aquí ves los grados que <strong>realmente existen</strong> en la base de datos y puedes renombrarlos al nombre oficial.
+                </p>
+                <button class="btn-action btn-primary-custom mb-3" id="btnCargarGradosBD"><i class="bi bi-arrow-clockwise"></i> Actualizar lista de grados en BD</button>
+                <div id="listaGradosBD"><p class="text-muted">Haz clic en actualizar para ver los grados guardados en alumnos.</p></div>
+            </div>
+            <div class="data-card">
+                <h3><i class="bi bi-pencil-square"></i> Cambiar nombre de un grado</h3>
+                <div class="action-row">
+                    <div class="action-group">
+                        <label>Grado actual (en la BD)</label>
+                        <select id="gradoViejo"><option value="">Carga la lista primero</option></select>
+                    </div>
+                    <div class="action-group">
+                        <label>Nuevo nombre (oficial)</label>
+                        <select id="gradoNuevo"><option value="">Selecciona...</option></select>
+                    </div>
+                    <div class="action-group" style="flex:0 0 auto;">
+                        <label>&nbsp;</label>
+                        <button class="btn-action btn-warning-custom" id="btnRemapear"><i class="bi bi-check2-all"></i> Remapear alumnos</button>
+                    </div>
+                </div>
+                <p class="text-muted mt-3" style="font-size:12px;">Esto actualiza el campo <code>grado</code> de todos los alumnos que tengan el nombre viejo. No borra alumnos.</p>
+            </div>
+        </div>
+
         <!-- PERFIL ADMIN -->
         <div class="tab-panel" id="tab-perfil">
             <div class="data-card" style="max-width:480px;">
@@ -384,9 +417,30 @@
         let chartAprobados = null;
         let chartDocentes = null;
         let fotoBase64 = null;
+
+        const gradosOficiales = [
+            'PARVULARIA 4 SECCIÓN "A"', 'PARVULARIA 4 SECCIÓN "B"',
+            'PARVULARIA 5 SECCIÓN "A"', 'PARVULARIA 5 SECCIÓN "B"',
+            'PARVULARIA 6 SECCIÓN "A"', 'PARVULARIA 6 SECCIÓN "B"',
+            '1º GRADO SECCIÓN A', '2º A', '3º A', '4º A', '5º A', '6º A', '7º A', '8º A', '9º A',
+            '1° GENERAL SECCIÓN "A"', '1° GENERAL SECCIÓN "B"',
+            '1° ADMINISTRATIVO CONTABLE A',
+            '1° SALUD Y BIENESTAR SOCIAL SECCIÓN "A"', '1° SALUD Y BIENESTAR SOCIAL SECCIÓN "B"',
+            '1° ITSI',
+            '1° SISTEMAS ELÉCTRICOS Y ENERGÍAS RENOVABLES "A"', '1° SISTEMAS ELÉCTRICOS "B"',
+            '2° GENERAL A', '2° ADMINISTRATIVO CONTABLE',
+            '2° SALUD Y BIENESTAR SOCIAL SECCIÓN "A"', '2° SALUD Y BIENESTAR SOCIAL SECCIÓN "B"',
+            '2° ITSI',
+            '2° SISTEMAS ELÉCTRICOS Y ENERGÍAS RENOVABLES "A"',
+            '2° SISTEMAS ELÉCTRICOS Y ENERGÍAS RENOVABLES "B"',
+            '3° ADMINISTRATIVO CONTABLE', '3° ITSI',
+            '3° SISTEMAS ELÉCTRICOS "A"', '3° SISTEMAS ELÉCTRICOS "B"',
+            '3° ATENCIÓN PRIMARIA EN SALUD "A"', '3° ATENCIÓN PRIMARIA EN SALUD "B"'
+        ];
+
         let heartbeatTimer = null;
 
-        const ONLINE_MS = 0.5 * 60 * 1000;
+        const ONLINE_MS = 5 * 60 * 1000;
 
         function mostrarToast(mensaje, tipo) {
             const container = document.getElementById('toastContainer');
@@ -962,6 +1016,87 @@
                 mostrarToast('Error al guardar foto: ' + e.message, 'error');
             }
         });
+
+        
+        // ===== REMAPEAR GRADOS =====
+        let gradosEnBD = [];
+
+        function llenarSelectGradosOficiales() {
+            const sel = document.getElementById('gradoNuevo');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">Selecciona nombre oficial...</option>';
+            gradosOficiales.forEach(g => {
+                const o = document.createElement('option');
+                o.value = g; o.textContent = g;
+                sel.appendChild(o);
+            });
+        }
+        llenarSelectGradosOficiales();
+
+        document.getElementById('btnCargarGradosBD')?.addEventListener('click', async () => {
+            const lista = document.getElementById('listaGradosBD');
+            lista.innerHTML = '<p class="text-muted">Cargando...</p>';
+            try {
+                const snap = await getDocs(collection(db, 'alumnos'));
+                const mapa = {};
+                snap.forEach(d => {
+                    const g = d.data().grado || '(sin grado)';
+                    mapa[g] = (mapa[g] || 0) + 1;
+                });
+                gradosEnBD = Object.keys(mapa).sort((a,b) => a.localeCompare(b, 'es'));
+                const selViejo = document.getElementById('gradoViejo');
+                selViejo.innerHTML = '<option value="">Selecciona grado actual...</option>';
+                gradosEnBD.forEach(g => {
+                    const o = document.createElement('option');
+                    o.value = g; o.textContent = g + ' (' + mapa[g] + ' alumno(s))';
+                    selViejo.appendChild(o);
+                });
+                if (gradosEnBD.length === 0) {
+                    lista.innerHTML = '<p class="text-muted">No hay alumnos en la base de datos.</p>';
+                } else {
+                    lista.innerHTML = '<div class="table-responsive"><table class="table"><thead><tr><th>Grado en BD</th><th>Alumnos</th><th>¿Coincide con oficial?</th></tr></thead><tbody>' +
+                        gradosEnBD.map(g => {
+                            const ok = gradosOficiales.includes(g);
+                            return '<tr><td>' + g + '</td><td>' + mapa[g] + '</td><td>' + (ok ? '<span class="badge-rol badge-activo">Sí</span>' : '<span class="badge-rol badge-inactivo">No — remapear</span>') + '</td></tr>';
+                        }).join('') + '</tbody></table></div>';
+                }
+                mostrarToast('Lista de grados actualizada', 'success');
+            } catch (e) {
+                lista.innerHTML = '<p class="text-danger">Error: ' + e.message + '</p>';
+            }
+        });
+
+        document.getElementById('btnRemapear')?.addEventListener('click', async () => {
+            const viejo = document.getElementById('gradoViejo').value;
+            const nuevo = document.getElementById('gradoNuevo').value;
+            if (!viejo || !nuevo) {
+                mostrarToast('Selecciona grado actual y nombre nuevo', 'error');
+                return;
+            }
+            if (viejo === nuevo) {
+                mostrarToast('Son el mismo nombre', 'error');
+                return;
+            }
+            if (!confirm('¿Cambiar todos los alumnos de:\n\n"' + viejo + '"\n\na:\n\n"' + nuevo + '"?')) return;
+            try {
+                const q = query(collection(db, 'alumnos'), where('grado', '==', viejo));
+                const snap = await getDocs(q);
+                if (snap.empty) {
+                    mostrarToast('No hay alumnos con ese grado', 'info');
+                    return;
+                }
+                let n = 0;
+                for (const d of snap.docs) {
+                    await updateDoc(d.ref, { grado: nuevo, fechaActualizacion: new Date().toISOString() });
+                    n++;
+                }
+                mostrarToast(n + ' alumno(s) actualizados a "' + nuevo + '"', 'success');
+                document.getElementById('btnCargarGradosBD').click();
+            } catch (e) {
+                mostrarToast('Error: ' + e.message, 'error');
+            }
+        });
+
 
         document.getElementById('btnLogout').addEventListener('click', async () => {
             if (!confirm('¿Cerrar sesión de administrador?')) return;
