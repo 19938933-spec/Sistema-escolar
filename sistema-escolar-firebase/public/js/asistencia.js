@@ -18,6 +18,55 @@ let asistencias = {};
 let gradoSeleccionado = '';
 let modalPDF = null;
 
+/** Normaliza texto de grado para comparar (quita comillas, espacios de más) */
+function normalizarGrado(g) {
+    return String(g || '')
+        .replace(/"/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+}
+
+/** Carga alumnos por grado exacto; si no hay, busca coincidencia normalizada */
+async function cargarAlumnosPorGrado(gradoBuscado) {
+    const gradoNorm = String(gradoBuscado || '').replace(/"/g, '').trim();
+    if (!gradoNorm) return [];
+
+    const lista = [];
+    try {
+        const q = query(collection(db, 'alumnos'), where('grado', '==', gradoNorm));
+        const snapshot = await getDocs(q);
+        snapshot.forEach(docSnap => lista.push({ id: docSnap.id, ...docSnap.data() }));
+    } catch (e) {
+        console.warn('Query exacta falló:', e.message);
+    }
+
+    if (lista.length === 0) {
+        // Intento con el valor original (por si tenía comillas guardadas)
+        try {
+            const q2 = query(collection(db, 'alumnos'), where('grado', '==', gradoBuscado));
+            const snap2 = await getDocs(q2);
+            snap2.forEach(docSnap => lista.push({ id: docSnap.id, ...docSnap.data() }));
+        } catch (e) {}
+    }
+
+    if (lista.length === 0) {
+        // Respaldo: recorrer y comparar normalizado
+        const todos = await getDocs(collection(db, 'alumnos'));
+        const objetivo = normalizarGrado(gradoNorm);
+        todos.forEach(docSnap => {
+            const data = docSnap.data();
+            if (normalizarGrado(data.grado) === objetivo) {
+                lista.push({ id: docSnap.id, ...data });
+            }
+        });
+    }
+
+    lista.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es'));
+    return lista;
+}
+
+
 const fechaInput = document.getElementById('fechaAsistencia');
 const attendanceList = document.getElementById('attendanceList');
 const alerta = document.getElementById('alerta');
@@ -72,7 +121,8 @@ onAuthStateChanged(auth, async (user) => {
             nombre: data.nombre || data.nombreCompleto,
             correo: data.correo,
             rol: data.rol,
-            grado: data.gradoEncargado || '',
+            grado: data.gradoEncargado || data.grado || '',
+            gradoEncargado: data.gradoEncargado || data.grado || '',
             usuario: data.usuario,
             materiasImpartidas: data.materiasImpartidas || []
         };
@@ -103,11 +153,16 @@ onAuthStateChanged(auth, async (user) => {
 
 function obtenerGradosAsignados() {
     const grados = new Set();
-    if (usuarioActual.grado) grados.add(usuarioActual.grado);
+    const add = (g) => {
+        const limpio = String(g || '').replace(/"/g, '').trim();
+        if (limpio) grados.add(limpio);
+    };
+    add(usuarioActual.grado);
+    add(usuarioActual.gradoEncargado);
     (usuarioActual.materiasImpartidas || []).forEach(m => {
-        (m.grados || []).forEach(g => grados.add(g));
+        (m.grados || []).forEach(add);
     });
-    return Array.from(grados).sort();
+    return Array.from(grados).sort((x, y) => x.localeCompare(y, 'es'));
 }
 
 function llenarSelectorGrados() {
@@ -124,7 +179,7 @@ function llenarSelectorGrados() {
     grados.forEach(g => {
         const opt = document.createElement('option');
         opt.value = g;
-        const esTutor = g === usuarioActual.grado;
+        const esTutor = normalizarGrado(g) === normalizarGrado(usuarioActual.gradoEncargado || usuarioActual.grado);
         opt.textContent = esTutor ? `⭐ ${g} (Tutor)` : g;
         selectGrado.appendChild(opt);
     });
@@ -196,12 +251,8 @@ if (fechaInput) {
 async function cargarAlumnos() {
     if (!gradoSeleccionado) return;
     try {
-        const q = query(collection(db, 'alumnos'), where('grado', '==', gradoSeleccionado));
-        const snapshot = await getDocs(q);
-        alumnos = [];
-        snapshot.forEach(docSnap => alumnos.push({ id: docSnap.id, ...docSnap.data() }));
-        alumnos.sort((a, b) => a.nombre.localeCompare(b.nombre));
-        
+        gradoSeleccionado = String(gradoSeleccionado).replace(/"/g, '').trim();
+        alumnos = await cargarAlumnosPorGrado(gradoSeleccionado);
         actualizarEstadisticas();
         renderizarLista();
     } catch (error) {
