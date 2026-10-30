@@ -33,37 +33,88 @@ function normalizarGrado(g) {
         .trim()
         .toLowerCase();
 }
+const gradosOficiales = [
+    "PARVULARIA 4 SECCIÓN A", "PARVULARIA 4 SECCIÓN B",
+    "PARVULARIA 5 SECCIÓN A", "PARVULARIA 5 SECCIÓN B",
+    "PARVULARIA 6 SECCIÓN A", "PARVULARIA 6 SECCIÓN B",
+    "1º GRADO SECCIÓN A", "2º A", "3º A", "4º A", "5º A", "6º A", "7º A", "8º A", "9º A",
+    "1° GENERAL SECCIÓN A", "1° GENERAL SECCIÓN B",
+    "1° ADMINISTRATIVO CONTABLE A",
+    "1° SALUD Y BIENESTAR SOCIAL SECCIÓN A", "1° SALUD Y BIENESTAR SOCIAL SECCIÓN B",
+    "1° ITSI A",
+    "1° SISTEMAS ELÉCTRICOS Y ENERGÍAS RENOVABLES A", "1° SISTEMAS ELÉCTRICOS B",
+    "2° GENERAL A", "2° ADMINISTRATIVO CONTABLE",
+    "2° SALUD Y BIENESTAR SOCIAL SECCIÓN A", "2° SALUD Y BIENESTAR SOCIAL SECCIÓN B",
+    "2° ITSI A",
+    "2° SISTEMAS ELÉCTRICOS Y ENERGÍAS RENOVABLES A", "2° SISTEMAS ELÉCTRICOS Y ENERGÍAS RENOVABLES B",
+    "3° ADMINISTRATIVO CONTABLE", "3° ITSI A",
+    "3° SISTEMAS ELÉCTRICOS A", "3° SISTEMAS ELÉCTRICOS B",
+    "3° ATENCIÓN PRIMARIA EN SALUD A", "3° ATENCIÓN PRIMARIA EN SALUD B"
+];
+
+/** Devuelve el/los grado(s) oficiales con sección a partir de un valor guardado */
+function resolverGradosConSeccion(valor) {
+    const limpio = String(valor || '').replace(/"/g, '').trim();
+    if (!limpio) return [];
+    const n = normalizarGrado(limpio);
+    // Coincidencia exacta
+    const exacto = gradosOficiales.find(o => normalizarGrado(o) === n);
+    if (exacto) return [exacto];
+    // Prefijo: "1° GENERAL" → todas las secciones oficiales de ese grado
+    const porPrefijo = gradosOficiales.filter(o => {
+        const no = normalizarGrado(o);
+        return no.startsWith(n + ' ') || no === n || no.startsWith(n);
+    });
+    // Evitar que "1°" matchee todo: exigir que el guardado tenga al menos 5 chars útiles
+    if (limpio.replace(/\s/g,'').length >= 5 && porPrefijo.length) {
+        // Si el valor ya trae A/B/sección y hay varios, preferir los que contienen esa letra
+        const letra = limpio.match(/\b([AB])\b/i) || limpio.match(/secci[oó]n\s*([AB])/i);
+        if (letra) {
+            const L = letra[1].toUpperCase();
+            const filtrados = porPrefijo.filter(o => new RegExp('\\b' + L + '\\b', 'i').test(o) || normalizarGrado(o).endsWith(' ' + L.toLowerCase()));
+            if (filtrados.length) return filtrados;
+        }
+        return porPrefijo;
+    }
+    // Si no hay match oficial, devolver el limpio (mejor que nada)
+    return [limpio];
+}
+
 
 /** Carga alumnos por grado exacto; si no hay, busca coincidencia normalizada */
 async function cargarAlumnosPorGrado(gradoBuscado) {
-    const gradoNorm = String(gradoBuscado || '').replace(/"/g, '').trim();
-    if (!gradoNorm) return [];
+    const candidatos = new Set();
+    const base = String(gradoBuscado || '').replace(/"/g, '').trim();
+    if (base) candidatos.add(base);
+    try {
+        resolverGradosConSeccion(base).forEach(g => candidatos.add(g));
+    } catch (e) {}
 
     const lista = [];
-    try {
-        const q = query(collection(db, 'alumnos'), where('grado', '==', gradoNorm));
-        const snapshot = await getDocs(q);
-        snapshot.forEach(docSnap => lista.push({ id: docSnap.id, ...docSnap.data() }));
-    } catch (e) {
-        console.warn('Query exacta falló:', e.message);
-    }
+    const ids = new Set();
 
-    if (lista.length === 0) {
-        // Intento con el valor original (por si tenía comillas guardadas)
+    for (const gradoNorm of candidatos) {
         try {
-            const q2 = query(collection(db, 'alumnos'), where('grado', '==', gradoBuscado));
-            const snap2 = await getDocs(q2);
-            snap2.forEach(docSnap => lista.push({ id: docSnap.id, ...docSnap.data() }));
-        } catch (e) {}
+            const q = query(collection(db, 'alumnos'), where('grado', '==', gradoNorm));
+            const snapshot = await getDocs(q);
+            snapshot.forEach(docSnap => {
+                if (ids.has(docSnap.id)) return;
+                ids.add(docSnap.id);
+                lista.push({ id: docSnap.id, ...docSnap.data() });
+            });
+        } catch (e) {
+            console.warn('Query grado', gradoNorm, e.message);
+        }
     }
 
     if (lista.length === 0) {
-        // Respaldo: recorrer y comparar normalizado
         const todos = await getDocs(collection(db, 'alumnos'));
-        const objetivo = normalizarGrado(gradoNorm);
+        const objetivos = new Set([...candidatos].map(normalizarGrado));
         todos.forEach(docSnap => {
             const data = docSnap.data();
-            if (normalizarGrado(data.grado) === objetivo) {
+            if (objetivos.has(normalizarGrado(data.grado))) {
+                if (ids.has(docSnap.id)) return;
+                ids.add(docSnap.id);
                 lista.push({ id: docSnap.id, ...data });
             }
         });
@@ -72,6 +123,10 @@ async function cargarAlumnosPorGrado(gradoBuscado) {
     lista.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es'));
     return lista;
 }
+
+
+
+
 
 
 function mostrarToast(mensaje, tipo) {
@@ -183,14 +238,18 @@ if (selectMateria) {
         const materias = usuarioActual.materiasImpartidas || [];
         const asignacion = materias[parseInt(index)];
         if (asignacion && asignacion.grados && asignacion.grados.length > 0) {
-            asignacion.grados.forEach(grado => {
-                grado = String(grado || '').replace(/"/g, '').trim();
-                if (!grado) return;
-                const option = document.createElement('option');
-                option.value = grado;
-                option.textContent = grado;
-                selectGrado.appendChild(option);
+            const gradosVistos = new Set();
+            (asignacion.grados || []).forEach(grado => {
+                resolverGradosConSeccion(grado).forEach(gFull => {
+                    if (gradosVistos.has(gFull)) return;
+                    gradosVistos.add(gFull);
+                    const option = document.createElement('option');
+                    option.value = gFull;
+                    option.textContent = gFull;
+                    selectGrado.appendChild(option);
+                });
             });
+            
             selectGrado.disabled = false;
         } else {
             selectGrado.innerHTML = '<option value="">Sin grados asignados para esta materia</option>';
