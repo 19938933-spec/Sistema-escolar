@@ -526,250 +526,241 @@
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { 
-            getAuth, 
-            signInWithEmailAndPassword, 
-            GoogleAuthProvider, 
-            signInWithPopup,
-            signOut
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<!-- Firebase SDK -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { 
+        getAuth, 
+        signInWithEmailAndPassword, 
+        GoogleAuthProvider, 
+        signInWithPopup,
+        signOut
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Configuración Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyC1VnkczVVRwNDj6G1kPPdHNZXWNPy_JXA",
-            authDomain: "sistema-escolar-8fcee.firebaseapp.com",
-            projectId: "sistema-escolar-8fcee",
-            storageBucket: "sistema-escolar-8fcee.firebasestorage.app",
-            messagingSenderId: "1017912885647",
-            appId: "1:1017912885647:web:ba6746d5605d281b1dcbfa"
-        };
+    // Configuración Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyCw67F3rEOSH5RaibMeE0gkLFbn9363opM",
+        authDomain: "educontrol-6c5aa.firebaseapp.com",
+        projectId: "educontrol-6c5aa",
+        storageBucket: "educontrol-6c5aa.firebasestorage.app",
+        messagingSenderId: "86350226997",
+        appId: "1:86350226997:web:b2104fd545d71faef9337c"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const googleProvider = new GoogleAuthProvider();
-        const CODIGO_SEGURIDAD = "CLASES26$COED";
+    // Inicialización de la app y conexión a la base de datos (Firestore)
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app); // Conexión a la base de datos
+    const googleProvider = new GoogleAuthProvider();
+    const CODIGO_SEGURIDAD = "CLASES26$COED";
 
-        // Ocultar loading screen
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const loadingScreen = document.getElementById('loadingScreen');
-                if (loadingScreen) {
-                    loadingScreen.style.opacity = '0';
-                    setTimeout(() => {
-                        loadingScreen.style.display = 'none';
-                    }, 500);
-                }
-            }, 1200);
-        });
+    // Ocultar loading screen
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+            }
+        }, 1200);
+    });
 
-        // Función para mostrar notificaciones
-        function showToast(msg, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            if (!container) return;
+    // Función para mostrar notificaciones
+    function showToast(msg, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
 
-            const toast = document.createElement('div');
-            toast.className = `custom-toast ${type}`;
-            const icon = type === 'error' ? 'x-circle-fill' : (type === 'success' ? 'check-circle-fill' : 'info-circle-fill');
-            toast.innerHTML = `<i class="bi bi-${icon}"></i> <span>${msg}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 4500);
-        }
+        const toast = document.createElement('div');
+        toast.className = `custom-toast ${type}`;
+        const icon = type === 'error' ? 'x-circle-fill' : (type === 'success' ? 'check-circle-fill' : 'info-circle-fill');
+        toast.innerHTML = `<i class="bi bi-${icon}"></i> <span>${msg}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 4500);
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const rawUser = document.getElementById('inputUser').value.trim();
-            const pass = document.getElementById('inputPass').value;
-            const code = document.getElementById('inputCode').value.trim();
+        const rawUser = document.getElementById('inputUser').value.trim();
+        const pass = document.getElementById('inputPass').value;
+        const code = document.getElementById('inputCode').value.trim();
 
-            // 1. Validaciones básicas
-            if (!rawUser || !pass || !code) {
-                showToast('Completa todos los campos', 'error');
-                return;
-            }
+        // 1. Validaciones básicas
+        if (!rawUser || !pass || !code) {
+            showToast('Completa todos los campos', 'error');
+            return;
+        }
 
-            if (code !== CODIGO_SEGURIDAD) {
-                showToast('Código de seguridad incorrecto', 'error');
-                return;
-            }
+        if (code !== CODIGO_SEGURIDAD) {
+            showToast('Código de seguridad incorrecto', 'error');
+            return;
+        }
 
-            // UI Loading
-            const btn = document.getElementById('btnSubmit');
-            const btnText = document.getElementById('btnText');
-            const btnLoader = document.getElementById('btnLoader');
-            btn.disabled = true;
-            btnText.classList.add('d-none');
-            btnLoader.classList.remove('d-none');
+        // UI Loading
+        const btn = document.getElementById('btnSubmit');
+        const btnText = document.getElementById('btnText');
+        const btnLoader = document.getElementById('btnLoader');
+        btn.disabled = true;
+        btnText.classList.add('d-none');
+        btnLoader.classList.remove('d-none');
 
-            try {
-                // 2. Determinar el correo real
-                let email = rawUser;
+        try {
+            // 2. Determinar el correo real
+            let email = rawUser;
 
-                // Si el usuario escribió solo el nombre de usuario (sin @)
-                if (!rawUser.includes('@')) {
-                    email = `${rawUser}@clases.edu.sv`;
-                } else {
-                    // Validación básica de formato de correo (acepta guiones)
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailRegex.test(rawUser)) {
-                        showToast('El formato del correo no es válido', 'error');
-                        btn.disabled = false;
-                        btnText.classList.remove('d-none');
-                        btnLoader.classList.add('d-none');
-                        return;
-                    }
-                }
-
-                // 3. Autenticar en Firebase
-                const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-                const user = userCredential.user;
-
-                // 4. Obtener datos de Firestore
-                const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
-                
-                if (userDoc.exists()) {
-                    const data = userDoc.data();
-
-                    if (data.activo === false) {
-                        await signOut(auth);
-                        showToast('Tu cuenta está desactivada. Contacta al administrador.', 'error');
-                        btn.disabled = false;
-                        btnText.classList.remove('d-none');
-                        btnLoader.classList.add('d-none');
-                        return;
-                    }
-                    
-                    // Guardar sesión local
-                    localStorage.setItem('usuario', JSON.stringify({
-                        uid: user.uid,
-                        nombre: data.nombre || data.nombreCompleto || 'Usuario',
-                        correo: data.correo || email,
-                        rol: data.rol,
-                        grado: data.gradoEncargado || data.grado || '',
-                        usuario: data.usuario || rawUser.split('@')[0],
-                        perfilConfigurado: data.perfilConfigurado
-                    }));
-
-                    showToast(`Bienvenido, ${data.nombre || data.usuario || 'Usuario'}`, 'success');
-
-                    // 5. Redirección según rol y configuración de perfil
-                    setTimeout(() => {
-                        if (data.rol === 'admin') {
-                            window.location.href = 'admin.html';
-                        } else if (data.rol === 'docente') {
-                            if (data.perfilConfigurado === false) {
-                                window.location.href = 'configurar-perfil.html';
-                            } else {
-                                window.location.href = 'dashboard.html';
-                            }
-                        } else {
-                            window.location.href = 'index.html';
-                        }
-                    }, 900);
-                } else {
-                    // Usuario autenticado en Auth pero no existe en Firestore
-                    await signOut(auth);
-                    showToast('Tu cuenta no está registrada en el sistema. Contacta al administrador.', 'error');
+            if (!rawUser.includes('@')) {
+                email = `${rawUser}@clases.edu.sv`;
+            } else {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(rawUser)) {
+                    showToast('El formato del correo no es válido', 'error');
                     btn.disabled = false;
                     btnText.classList.remove('d-none');
                     btnLoader.classList.add('d-none');
+                    return;
                 }
-
-            } catch (error) {
-                console.error("Error de login:", error);
-
-                let msg = "Error al iniciar sesión";
-                if (error.code === 'auth/user-not-found' || 
-                    error.code === 'auth/wrong-password' || 
-                    error.code === 'auth/invalid-credential' ||
-                    error.code === 'auth/invalid-email') {
-                    msg = "Usuario o contraseña incorrectos";
-                } else if (error.code === 'auth/too-many-requests') {
-                    msg = "Demasiados intentos fallidos. Intenta más tarde";
-                } else if (error.code === 'auth/network-request-failed') {
-                    msg = "Error de conexión. Verifica tu internet";
-                }
-
-                showToast(msg, 'error');
-                btn.disabled = false;
-                btnText.classList.remove('d-none');
-                btnLoader.classList.add('d-none');
             }
-        });
 
-        document.getElementById('btnGoogle').addEventListener('click', async () => {
-            try {
-                const result = await signInWithPopup(auth, googleProvider);
-                const user = result.user;
+            // 3. Autenticar en Firebase
+            const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+            const user = userCredential.user;
 
-                // Verificar si el usuario existe en Firestore
-                const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
+            // 4. Obtener datos de Firestore
+            const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
+            
+            if (userDoc.exists()) {
+                const data = userDoc.data();
 
-                if (userDoc.exists()) {
-                    // ===== USUARIO YA REGISTRADO → ENTRAR =====
-                    const data = userDoc.data();
+                if (data.activo === false) {
+                    await signOut(auth);
+                    showToast('Tu cuenta está desactivada. Contacta al administrador.', 'error');
+                    btn.disabled = false;
+                    btnText.classList.remove('d-none');
+                    btnLoader.classList.add('d-none');
+                    return;
+                }
+                
+                // Guardar sesión local
+                localStorage.setItem('usuario', JSON.stringify({
+                    uid: user.uid,
+                    nombre: data.nombre || data.nombreCompleto || 'Usuario',
+                    correo: data.correo || email,
+                    rol: data.rol,
+                    grado: data.gradoEncargado || data.grado || '',
+                    usuario: data.usuario || rawUser.split('@')[0],
+                    perfilConfigurado: data.perfilConfigurado
+                }));
 
-                    if (data.activo === false) {
-                        await signOut(auth);
-                        showToast('Tu cuenta está desactivada. Contacta al administrador.', 'error');
-                        return;
-                    }
+                showToast(`Bienvenido, ${data.nombre || data.usuario || 'Usuario'}`, 'success');
 
-                    localStorage.setItem('usuario', JSON.stringify({
-                        uid: user.uid,
-                        nombre: data.nombre || data.nombreCompleto || user.displayName,
-                        correo: data.correo || user.email,
-                        rol: data.rol,
-                        grado: data.gradoEncargado || '',
-                        usuario: data.usuario || user.email.split('@')[0],
-                        perfilConfigurado: data.perfilConfigurado
-                    }));
-
-                    showToast(`Bienvenido, ${data.nombre || data.nombreCompleto || 'Usuario'}`, 'success');
-
-                    setTimeout(() => {
-                        if (data.rol === 'admin') {
-                            window.location.href = 'admin.html';
-                        } else if (data.perfilConfigurado === false) {
+                // 5. Redirección según rol y configuración de perfil
+                setTimeout(() => {
+                    if (data.rol === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else if (data.rol === 'docente') {
+                        if (data.perfilConfigurado === false) {
                             window.location.href = 'configurar-perfil.html';
                         } else {
                             window.location.href = 'dashboard.html';
                         }
-                    }, 1000);
-
-                } else {
-                    // ===== USUARIO NO REGISTRADO =====
-                    // Eliminamos la cuenta que Firebase acaba de crear en Authentication
-                    try {
-                        await user.delete();
-                    } catch (deleteError) {
-                        console.error("No se pudo eliminar la cuenta temporal:", deleteError);
-                        // Aun así cerramos sesión por seguridad
-                        await signOut(auth);
+                    } else {
+                        window.location.href = 'index.html';
                     }
-
-                    showToast('Tu correo no está registrado. Debes registrarte primero.', 'error');
-                }
-
-            } catch (error) {
-                console.error("Error de Google Login:", error);
-
-                if (error.code === 'auth/popup-closed-by-user') {
-                    showToast('Ventana de Google cerrada', 'info');
-                } else if (error.code === 'auth/popup-blocked') {
-                    showToast('Popup bloqueado. Permite popups para este sitio', 'error');
-                } else if (error.code === 'auth/unauthorized-domain') {
-                    showToast('Dominio no autorizado en Firebase', 'error');
-                } else {
-                    showToast('Error al iniciar sesión con Google', 'error');
-                }
+                }, 900);
+            } else {
+                await signOut(auth);
+                showToast('Tu cuenta no está registrada en el sistema. Contacta al administrador.', 'error');
+                btn.disabled = false;
+                btnText.classList.remove('d-none');
+                btnLoader.classList.add('d-none');
             }
-        });
-    </script>
-</body>
-</html>
+
+        } catch (error) {
+            console.error("Error de login:", error);
+
+            let msg = "Error al iniciar sesión";
+            if (error.code === 'auth/user-not-found' || 
+                error.code === 'auth/wrong-password' || 
+                error.code === 'auth/invalid-credential' ||
+                error.code === 'auth/invalid-email') {
+                msg = "Usuario o contraseña incorrectos";
+            } else if (error.code === 'auth/too-many-requests') {
+                msg = "Demasiados intentos fallidos. Intenta más tarde";
+            } else if (error.code === 'auth/network-request-failed') {
+                msg = "Error de conexión. Verifica tu internet";
+            }
+
+            showToast(msg, 'error');
+            btn.disabled = false;
+            btnText.classList.remove('d-none');
+            btnLoader.classList.add('d-none');
+        }
+    });
+
+    document.getElementById('btnGoogle').addEventListener('click', async () => {
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            const user = result.user;
+
+            const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
+
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+
+                if (data.activo === false) {
+                    await signOut(auth);
+                    showToast('Tu cuenta está desactivada. Contacta al administrador.', 'error');
+                    return;
+                }
+
+                localStorage.setItem('usuario', JSON.stringify({
+                    uid: user.uid,
+                    nombre: data.nombre || data.nombreCompleto || user.displayName,
+                    correo: data.correo || user.email,
+                    rol: data.rol,
+                    grado: data.gradoEncargado || '',
+                    usuario: data.usuario || user.email.split('@')[0],
+                    perfilConfigurado: data.perfilConfigurado
+                }));
+
+                showToast(`Bienvenido, ${data.nombre || data.nombreCompleto || 'Usuario'}`, 'success');
+
+                setTimeout(() => {
+                    if (data.rol === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else if (data.perfilConfigurado === false) {
+                        window.location.href = 'configurar-perfil.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                }, 1000);
+
+            } else {
+                try {
+                    await user.delete();
+                } catch (deleteError) {
+                    console.error("No se pudo eliminar la cuenta temporal:", deleteError);
+                    await signOut(auth);
+                }
+
+                showToast('Tu correo no está registrado. Debes registrarte primero.', 'error');
+            }
+
+        } catch (error) {
+            console.error("Error de Google Login:", error);
+
+            if (error.code === 'auth/popup-closed-by-user') {
+                showToast('Ventana de Google cerrada', 'info');
+            } else if (error.code === 'auth/popup-blocked') {
+                showToast('Popup bloqueado. Permite popups para este sitio', 'error');
+            } else if (error.code === 'auth/unauthorized-domain') {
+                showToast('Dominio no autorizado en Firebase', 'error');
+            } else {
+                showToast('Error al iniciar sesión con Google', 'error');
+            }
+        }
+    });
+</script>
