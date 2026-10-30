@@ -25,6 +25,55 @@ let periodoCerrado = false;
 let modalActividad = null;
 let documentoPeriodoCerradoId = null;
 
+/** Normaliza texto de grado para comparar (quita comillas, espacios de más) */
+function normalizarGrado(g) {
+    return String(g || '')
+        .replace(/"/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+}
+
+/** Carga alumnos por grado exacto; si no hay, busca coincidencia normalizada */
+async function cargarAlumnosPorGrado(gradoBuscado) {
+    const gradoNorm = String(gradoBuscado || '').replace(/"/g, '').trim();
+    if (!gradoNorm) return [];
+
+    const lista = [];
+    try {
+        const q = query(collection(db, 'alumnos'), where('grado', '==', gradoNorm));
+        const snapshot = await getDocs(q);
+        snapshot.forEach(docSnap => lista.push({ id: docSnap.id, ...docSnap.data() }));
+    } catch (e) {
+        console.warn('Query exacta falló:', e.message);
+    }
+
+    if (lista.length === 0) {
+        // Intento con el valor original (por si tenía comillas guardadas)
+        try {
+            const q2 = query(collection(db, 'alumnos'), where('grado', '==', gradoBuscado));
+            const snap2 = await getDocs(q2);
+            snap2.forEach(docSnap => lista.push({ id: docSnap.id, ...docSnap.data() }));
+        } catch (e) {}
+    }
+
+    if (lista.length === 0) {
+        // Respaldo: recorrer y comparar normalizado
+        const todos = await getDocs(collection(db, 'alumnos'));
+        const objetivo = normalizarGrado(gradoNorm);
+        todos.forEach(docSnap => {
+            const data = docSnap.data();
+            if (normalizarGrado(data.grado) === objetivo) {
+                lista.push({ id: docSnap.id, ...data });
+            }
+        });
+    }
+
+    lista.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es'));
+    return lista;
+}
+
+
 function mostrarToast(mensaje, tipo) {
     const container = document.getElementById('toastContainer');
     if (!container) return alert(mensaje);
@@ -52,7 +101,8 @@ onAuthStateChanged(auth, async (user) => {
             nombre: data.nombre || data.nombreCompleto || 'Docente',
             correo: data.correo,
             rol: data.rol,
-            grado: data.gradoEncargado || '',
+            grado: data.gradoEncargado || data.grado || '',
+            gradoEncargado: data.gradoEncargado || data.grado || '',
             usuario: data.usuario,
             perfilConfigurado: data.perfilConfigurado,
             materiasImpartidas: data.materiasImpartidas || []
@@ -134,6 +184,8 @@ if (selectMateria) {
         const asignacion = materias[parseInt(index)];
         if (asignacion && asignacion.grados && asignacion.grados.length > 0) {
             asignacion.grados.forEach(grado => {
+                grado = String(grado || '').replace(/"/g, '').trim();
+                if (!grado) return;
                 const option = document.createElement('option');
                 option.value = grado;
                 option.textContent = grado;
@@ -167,11 +219,8 @@ if (selectGrado) {
 async function cargarAlumnos() {
     if (!gradoActual) return;
     try {
-        const q = query(collection(db, 'alumnos'), where('grado', '==', gradoActual));
-        const snapshot = await getDocs(q);
-        alumnos = [];
-        snapshot.forEach(d => alumnos.push({ id: d.id, ...d.data() }));
-        alumnos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+        gradoActual = String(gradoActual).replace(/"/g, '').trim();
+        alumnos = await cargarAlumnosPorGrado(gradoActual);
     } catch (error) {
         console.error('Error cargando alumnos:', error);
         mostrarToast('Error al cargar alumnos', 'error');
