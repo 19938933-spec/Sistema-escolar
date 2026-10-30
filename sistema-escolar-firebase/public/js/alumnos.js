@@ -1,156 +1,231 @@
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const firebaseConfig = {
-    apiKey: "AIzaSyC1VnkczVVRwNDj6G1kPPdHNZXWNPy_JXA",
-    authDomain: "sistema-escolar-8fcee.firebaseapp.com",
-    projectId: "sistema-escolar-8fcee",
-    storageBucket: "sistema-escolar-8fcee.firebasestorage.app",
-    messagingSenderId: "1017912885647",
-    appId: "1:1017912885647:web:ba6746d5605d281b1dcbfa"
-};
-
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-console.log("✅ Firebase inicializado en alumnos.js");
+import { 
+    auth, 
+    db, 
+    doc, 
+    getDoc, 
+    collection, 
+    addDoc, 
+    updateDoc, 
+    deleteDoc, 
+    query, 
+    where, 
+    onSnapshot, 
+    signOut, 
+    onAuthStateChanged 
+} from './firebase-config.js';
 
 let usuarioActual = null;
 let alumnos = [];
 let editandoId = null;
+let gradoActual = '';
+let unsubscribeAlumnos = null;
 
-function verificarSesionDocente() {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-        if (!user) {
+const form = document.getElementById('formAlumno');
+const alerta = document.getElementById('alerta');
+const studentList = document.getElementById('studentList');
+const searchBox = document.getElementById('searchBox');
+const btnCancelar = document.getElementById('btnCancelar');
+
+function mostrarAlerta(mensaje, tipo) {
+    alerta.textContent = mensaje;
+    alerta.className = `alert-custom ${tipo} show`;
+    setTimeout(() => alerta.classList.remove('show'), 3500);
+}
+
+function validarNombre(nombre) {
+    return /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s]+$/.test(nombre);
+}
+
+function obtenerSexo(alumno) {
+    return alumno.sexo || alumno.genero || '';
+}
+
+function obtenerGradosAsignados() {
+    const grados = new Set();
+    if (usuarioActual.gradoEncargado) grados.add(usuarioActual.gradoEncargado);
+    (usuarioActual.materiasImpartidas || []).forEach(m => {
+        (m.grados || []).forEach(g => grados.add(g));
+    });
+    return Array.from(grados).sort();
+}
+
+function mostrarSelectorGrado(grados) {
+    document.getElementById('loadingOverlay').style.display = 'none';
+    document.getElementById('contentGrid').style.display = 'none';
+    document.getElementById('gradoActual').textContent = 'Seleccionar grado';
+
+    const main = document.getElementById('mainContent');
+    main.innerHTML = `
+        <div class="page-header">
+            <h1><i class="bi bi-people-fill"></i> Gestión de Alumnos</h1>
+            <p class="subtitle">Selecciona el grado que deseas gestionar</p>
+        </div>
+        <div class="grado-selector-card">
+            <h3 style="margin-bottom: 20px; font-size: 18px;"><i class="bi bi-list-check"></i> Tus grados asignados</h3>
+            ${grados.map(g => `
+                <button class="grado-btn" onclick="window.location.href='alumnos.html?grado=${encodeURIComponent(g)}'">
+                    <i class="bi bi-mortarboard-fill" style="color: var(--accent-primary);"></i>
+                    ${g}
+                </button>
+            `).join('')}
+            <div style="margin-top: 25px; text-align: center;">
+                <a href="dashboard.html" style="color: var(--text-secondary); text-decoration: none; font-size: 14px;">
+                    ← Volver al Dashboard
+                </a>
+            </div>
+        </div>
+    `;
+}
+
+function iniciarGestion(grado) {
+    gradoActual = grado;
+    document.getElementById('gradoActual').textContent = gradoActual;
+    document.getElementById('contentGrid').style.display = 'grid';
+    cargarAlumnosTiempoReal();
+    setTimeout(() => {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }, 600);
+}
+
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    try {
+        const userDoc = await getDoc(doc(db, 'usuarios', user.uid));
+
+        if (!userDoc.exists() || userDoc.data().rol !== 'docente') {
+            await signOut(auth);
             window.location.href = 'index.html';
             return;
         }
 
-        usuarioActual = JSON.parse(localStorage.getItem('usuario'));
-        
-        if (!usuarioActual || usuarioActual.rol !== 'docente') {
-            window.location.href = 'admin.html';
+        const data = userDoc.data();
+        usuarioActual = {
+            uid: user.uid,
+            nombre: data.nombre || data.nombreCompleto || 'Docente',
+            correo: data.correo,
+            rol: 'docente',
+            gradoEncargado: data.gradoEncargado || data.grado || '',
+            materiasImpartidas: data.materiasImpartidas || []
+        };
+
+        localStorage.setItem('usuario', JSON.stringify(usuarioActual));
+        document.getElementById('userName').textContent = usuarioActual.nombre;
+        document.getElementById('userAvatar').textContent = usuarioActual.nombre.charAt(0).toUpperCase();
+
+        const params = new URLSearchParams(window.location.search);
+        let gradoURL = params.get('grado') || '';
+
+        if (gradoURL) {
+            iniciarGestion(gradoURL);
             return;
         }
 
-        console.log("✅ Docente autenticado en módulo Alumnos:", usuarioActual.nombre);
-
-        // Actualizar UI del Navbar
-        document.getElementById('userName').textContent = usuarioActual.nombre;
-        document.getElementById('userAvatar').textContent = usuarioActual.nombre.charAt(0).toUpperCase();
-        
-        const gradoElement = document.getElementById('userGrade');
-        if (gradoElement) gradoElement.textContent = usuarioActual.grado || 'Sin grado asignado';
-
-        const gradoInput = document.getElementById('gradoAlumno');
-        if (gradoInput) gradoInput.value = usuarioActual.grado || '';
-
-        // Verificar si tiene grado asignado
-        if (!usuarioActual.grado || usuarioActual.grado === 'Sin grado asignado') {
-            mostrarAlerta('⚠️ No tienes un grado asignado. Contacta al administrador.', 'error');
-        } else {
-            cargarAlumnos();
+        if (usuarioActual.gradoEncargado) {
+            iniciarGestion(usuarioActual.gradoEncargado);
+            return;
         }
 
-        // Ocultar loading
-        setTimeout(() => {
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            if (loadingOverlay) loadingOverlay.style.display = 'none';
-        }, 800);
+        const grados = obtenerGradosAsignados();
 
-        unsubscribe();
-    });
-}
+        if (grados.length === 0) {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            document.getElementById('gradoActual').textContent = 'Sin grado';
+            mostrarAlerta('No tienes grados asignados. Configura tu perfil primero.', 'error');
+            return;
+        }
 
+        if (grados.length === 1) {
+            iniciarGestion(grados[0]);
+            return;
+        }
 
-function cargarAlumnos() {
-    console.log("🔄 Cargando alumnos del grado:", usuarioActual.grado);
-    
+        mostrarSelectorGrado(grados);
+
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('loadingOverlay').style.display = 'none';
+        mostrarAlerta('Error al cargar datos', 'error');
+    }
+});
+
+function cargarAlumnosTiempoReal() {
+    if (unsubscribeAlumnos) unsubscribeAlumnos();
+
     const q = query(
         collection(db, 'alumnos'),
-        where('grado', '==', usuarioActual.grado)
+        where('grado', '==', gradoActual)
     );
 
-    onSnapshot(q, (snapshot) => {
+    unsubscribeAlumnos = onSnapshot(q, (snapshot) => {
         alumnos = [];
-        snapshot.forEach(doc => {
-            alumnos.push({ id: doc.id, ...doc.data() });
+        snapshot.forEach(docSnap => {
+            alumnos.push({ id: docSnap.id, ...docSnap.data() });
         });
-
-        // Ordenar alfabéticamente
         alumnos.sort((a, b) => a.nombre.localeCompare(b.nombre));
 
-        console.log(`📊 ${alumnos.length} alumnos cargados en tiempo real`);
         actualizarEstadisticas();
         renderizarLista(alumnos);
+        actualizarBotones();
     }, (error) => {
-        console.error("❌ Error al escuchar alumnos:", error);
-        mostrarAlerta('Error al cargar alumnos: ' + error.message, 'error');
+        console.error('Error:', error);
+        mostrarAlerta('Error al cargar alumnos', 'error');
     });
 }
-
 
 function actualizarEstadisticas() {
     const total = alumnos.length;
-    const male = alumnos.filter(a => a.genero === 'Masculino').length;
-    const female = alumnos.filter(a => a.genero === 'Femenino').length;
+    const male = alumnos.filter(a => obtenerSexo(a) === 'Masculino').length;
+    const female = alumnos.filter(a => obtenerSexo(a) === 'Femenino').length;
 
-    animarContador('statTotal', total);
-    animarContador('statMale', male);
-    animarContador('statFemale', female);
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statMale').textContent = male;
+    document.getElementById('statFemale').textContent = female;
 }
 
-function animarContador(elementId, target) {
-    const element = document.getElementById(elementId);
-    if (!element) return;
-
-    let current = parseInt(element.textContent) || 0;
-    if (current === target) return;
-
-    const increment = (target - current) / 20;
-    const timer = setInterval(() => {
-        current += increment;
-        if ((increment > 0 && current >= target) || (increment < 0 && current <= target)) {
-            current = target;
-            clearInterval(timer);
-        }
-        element.textContent = Math.floor(current);
-    }, 30);
+function actualizarBotones() {
+    const btnDescargar = document.getElementById('btnDescargarLista');
+    const btnCSV = document.getElementById('btnExportarCSV');
+    if (alumnos.length > 0) {
+        btnDescargar.style.display = 'flex';
+        btnCSV.style.display = 'flex';
+    } else {
+        btnDescargar.style.display = 'none';
+        btnCSV.style.display = 'none';
+    }
 }
 
 function renderizarLista(lista) {
-    const studentList = document.getElementById('studentList');
-    if (!studentList) return;
-
     if (lista.length === 0) {
         studentList.innerHTML = `
             <div class="empty-state">
                 <i class="bi bi-inbox"></i>
                 <h4>No hay alumnos registrados</h4>
-                <p>Comienza agregando el primer estudiante</p>
+                <p>Comienza agregando el primer estudiante de ${gradoActual}</p>
             </div>
         `;
         return;
     }
 
-    studentList.innerHTML = lista.map((alumno, index) => `
-        <div class="student-item" style="animation-delay: ${index * 0.05}s">
+    studentList.innerHTML = lista.map((alumno, index) => {
+        const sexo = obtenerSexo(alumno);
+        return `
+        <div class="student-item" style="animation-delay: ${index * 0.03}s">
             <div class="student-info">
-                <div class="student-avatar ${alumno.genero === 'Masculino' ? 'male' : 'female'}">
+                <div class="student-avatar ${sexo === 'Masculino' ? 'male' : 'female'}">
                     ${alumno.nombre.charAt(0).toUpperCase()}
                 </div>
                 <div class="student-details">
                     <div class="student-name">${alumno.nombre}</div>
                     <div class="student-meta">
-                        <span class="gender-badge ${alumno.genero === 'Masculino' ? 'male' : 'female'}">
-                            <i class="bi bi-${alumno.genero === 'Masculino' ? 'gender-male' : 'gender-female'}"></i>
-                            ${alumno.genero}
+                        ${alumno.nie ? `<span class="me-2"><i class="bi bi-card-text"></i> ${alumno.nie}</span>` : ''}
+                        <span class="gender-badge ${sexo === 'Masculino' ? 'male' : 'female'}">
+                            <i class="bi bi-${sexo === 'Masculino' ? 'gender-male' : 'gender-female'}"></i>
+                            ${sexo}
                         </span>
-                        <span><i class="bi bi-book"></i> ${alumno.grado}</span>
                     </div>
                 </div>
             </div>
@@ -163,28 +238,24 @@ function renderizarLista(lista) {
                 </button>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
-
-function configurarFormulario() {
-    const form = document.getElementById('formAlumno');
-    if (!form) return;
-
+if (form) {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const nombre = document.getElementById('nombreAlumno').value.trim();
-        const genero = document.getElementById('generoAlumno').value;
-        const grado = document.getElementById('gradoAlumno').value;
+        const nie = document.getElementById('nieAlumno').value.trim();
+        const sexo = document.getElementById('sexoAlumno').value;
 
-        if (!nombre || !genero || !grado) {
-            mostrarAlerta('❌ Completa todos los campos', 'error');
+        if (!nombre || !sexo) {
+            mostrarAlerta('Completa nombre y sexo', 'error');
             return;
         }
 
-        if (!usuarioActual.grado) {
-            mostrarAlerta('⚠️ No tienes un grado asignado', 'error');
+        if (!validarNombre(nombre)) {
+            mostrarAlerta('El nombre solo puede contener letras y espacios', 'error');
             return;
         }
 
@@ -193,151 +264,240 @@ function configurarFormulario() {
 
         try {
             if (editandoId) {
-                console.log("✏️ Actualizando alumno:", editandoId);
                 await updateDoc(doc(db, 'alumnos', editandoId), {
-                    nombre, genero, grado,
+                    nombre: nombre,
+                    nie: nie,
+                    sexo: sexo,
+                    genero: sexo,
                     fechaActualizacion: new Date().toISOString()
                 });
-                mostrarAlerta('✅ Alumno actualizado correctamente', 'success');
+                mostrarAlerta('Alumno actualizado correctamente', 'success');
                 cancelarEdicion();
             } else {
-                console.log("➕ Creando nuevo alumno...");
                 await addDoc(collection(db, 'alumnos'), {
-                    nombre, genero, grado,
+                    nombre: nombre,
+                    nie: nie,
+                    sexo: sexo,
+                    genero: sexo,
+                    grado: gradoActual,
                     docenteId: usuarioActual.uid,
                     fechaRegistro: new Date().toISOString()
                 });
-                mostrarAlerta('✅ Alumno registrado correctamente', 'success');
+                mostrarAlerta('Alumno registrado correctamente', 'success');
                 form.reset();
-                document.getElementById('gradoAlumno').value = grado;
             }
         } catch (error) {
-            console.error("❌ Error al guardar:", error);
-            mostrarAlerta('❌ Error al guardar: ' + error.message, 'error');
+            console.error('Error:', error);
+            mostrarAlerta('Error: ' + error.message, 'error');
         }
 
         btnSubmit.disabled = false;
     });
 }
 
-//editar alumno
 window.editarAlumno = (id) => {
     const alumno = alumnos.find(a => a.id === id);
     if (!alumno) return;
 
     editandoId = id;
     document.getElementById('nombreAlumno').value = alumno.nombre;
-    document.getElementById('generoAlumno').value = alumno.genero;
-    document.getElementById('gradoAlumno').value = alumno.grado;
-
-    const formTitle = document.getElementById('formTitle');
-    const btnText = document.getElementById('btnText');
-    const btnCancel = document.getElementById('btnCancel');
-
-    if (formTitle) formTitle.textContent = 'Editar Alumno';
-    if (btnText) btnText.textContent = 'Actualizar Alumno';
-    if (btnCancel) btnCancel.style.display = 'flex';
-
-    if (window.innerWidth <= 992) {
-        document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth' });
-    }
+    document.getElementById('nieAlumno').value = alumno.nie || '';
+    document.getElementById('sexoAlumno').value = obtenerSexo(alumno);
+    document.getElementById('formTitle').textContent = 'Editar Alumno';
+    document.getElementById('btnText').textContent = 'Actualizar Alumno';
+    btnCancelar.style.display = 'flex';
 };
 
 function cancelarEdicion() {
     editandoId = null;
-    const form = document.getElementById('formAlumno');
-    if (form) form.reset();
-    
-    const gradoInput = document.getElementById('gradoAlumno');
-    if (gradoInput) gradoInput.value = usuarioActual.grado || '';
-
-    const formTitle = document.getElementById('formTitle');
-    const btnText = document.getElementById('btnText');
-    const btnCancel = document.getElementById('btnCancel');
-
-    if (formTitle) formTitle.textContent = 'Registrar Alumno';
-    if (btnText) btnText.textContent = 'Registrar Alumno';
-    if (btnCancel) btnCancel.style.display = 'none';
+    form.reset();
+    document.getElementById('formTitle').textContent = 'Nuevo Alumno';
+    document.getElementById('btnText').textContent = 'Agregar Alumno';
+    btnCancelar.style.display = 'none';
 }
 
+if (btnCancelar) btnCancelar.addEventListener('click', cancelarEdicion);
 
 window.eliminarAlumno = async (id, nombre) => {
-    if (!confirm(`¿Estás seguro de eliminar a "${nombre}"?\nEsta acción no se puede deshacer.`)) {
-        return;
-    }
+    if (!confirm(`¿Eliminar a "${nombre}"?\nEsta acción no se puede deshacer.`)) return;
 
     try {
         await deleteDoc(doc(db, 'alumnos', id));
-        mostrarAlerta('🗑️ Alumno eliminado correctamente', 'success');
+        mostrarAlerta('Alumno eliminado', 'success');
     } catch (error) {
-        console.error(" Error al eliminar:", error);
-        mostrarAlerta('❌ Error al eliminar: ' + error.message, 'error');
+        console.error('Error:', error);
+        mostrarAlerta('Error al eliminar', 'error');
     }
 };
 
-
-function configurarBusqueda() {
-    const searchBox = document.getElementById('searchBox');
-    if (!searchBox) return;
-
+if (searchBox) {
     searchBox.addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase();
-        const filtrados = alumnos.filter(a => 
-            a.nombre.toLowerCase().includes(query)
-        );
+        const q = e.target.value.toLowerCase();
+        const filtrados = alumnos.filter(a => a.nombre.toLowerCase().includes(q));
         renderizarLista(filtrados);
     });
 }
 
-
-function mostrarAlerta(mensaje, tipo) {
-    const alerta = document.getElementById('alerta');
-    if (!alerta) {
-        alert(mensaje); // Fallback si no existe el elemento
+window.generarListaAsistencia = function() {
+    if (alumnos.length === 0) {
+        alert('No hay alumnos registrados en este grado');
         return;
     }
-    alerta.textContent = mensaje;
-    alerta.className = `alert-custom ${tipo} show`;
-    setTimeout(() => alerta.classList.remove('show'), 4000);
-}
 
+    const ventana = window.open('', '_blank');
+    const fechaActual = new Date();
+    const año = fechaActual.getFullYear();
+    const mes = fechaActual.toLocaleString('es-ES', { month: 'long' }).toUpperCase();
+    const dias = ['L', 'M', 'M', 'J', 'V'];
 
-function configurarLogout() {
-    const btnLogout = document.getElementById('btnLogout');
-    if (!btnLogout) return;
+    let html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Lista de Asistencia - ${gradoActual}</title>
+        <style>
+            @page { size: letter landscape; margin: 0.8cm; }
+            body { font-family: Arial, sans-serif; font-size: 9px; margin: 0; padding: 12px; color: #000; }
+            .header { text-align: center; margin-bottom: 12px; border-bottom: 2px solid #000; padding-bottom: 8px; }
+            .header h1 { margin: 0; font-size: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
+            .header h2 { margin: 4px 0 0; font-size: 13px; font-weight: normal; }
+            .info-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 11px; font-weight: bold; }
+            .logo { width: 55px; height: 55px; float: left; margin-right: 12px; object-fit: contain; }
+            table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+            th, td { border: 1px solid #000; padding: 3px 4px; text-align: center; vertical-align: middle; }
+            th { background-color: #e8e8e8; font-weight: bold; font-size: 9px; }
+            .numero { width: 28px; font-weight: bold; }
+            .nie { width: 75px; font-size: 8px; }
+            .nombre { text-align: left; padding-left: 6px; font-size: 9px; min-width: 220px; }
+            .dia { width: 22px; font-size: 8px; }
+            .fecha-header { font-size: 8px; }
+            .footer { margin-top: 25px; font-size: 10px; }
+            .firmas { display: flex; justify-content: space-between; margin-top: 35px; padding: 0 40px; }
+            .firma-box { text-align: center; width: 40%; }
+            .firma-linea { border-top: 1px solid #000; margin-top: 40px; padding-top: 5px; }
+            @media print { button { display: none !important; } body { padding: 0; } }
+        </style>
+    </head>
+    <body>
+        <button onclick="window.print()" style="position: fixed; top: 10px; right: 10px; padding: 10px 16px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; z-index: 1000; font-size: 14px;">
+            🖨️ Imprimir / Guardar PDF
+        </button>
 
+        <div class="header">
+            <img src="img/fondos/logo.png" alt="Logo" class="logo" onerror="this.style.display='none'">
+            <h1>COMPLEJO EDUCATIVO THOMAS JEFFERSON</h1>
+            <h2>LISTAS DE ASISTENCIA</h2>
+            <div class="info-row">
+                <div>MES: ${mes}</div>
+                <div>AÑO: ${año}</div>
+                <div>${gradoActual}</div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2" class="numero">N°</th>
+                    <th rowspan="2" class="nie">NIE</th>
+                    <th rowspan="2" class="nombre">NOMBRES</th>
+                    <th colspan="5" class="fecha-header">SEMANA 1</th>
+                    <th colspan="5" class="fecha-header">SEMANA 2</th>
+                    <th colspan="5" class="fecha-header">SEMANA 3</th>
+                    <th colspan="5" class="fecha-header">SEMANA 4</th>
+                </tr>
+                <tr>
+                    ${[1,2,3,4].map(() => dias.map(d => `<th class="dia">${d}</th>`).join('')).join('')}
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    alumnos.forEach((alumno, index) => {
+        html += `
+            <tr>
+                <td class="numero">${index + 1}</td>
+                <td class="nie">${alumno.nie || ''}</td>
+                <td class="nombre">${alumno.nombre.toUpperCase()}</td>
+                ${Array(20).fill('<td class="dia" style="height: 22px;"></td>').join('')}
+            </tr>
+        `;
+    });
+
+    for (let i = alumnos.length; i < Math.max(alumnos.length + 3, 35); i++) {
+        html += `
+            <tr>
+                <td class="numero">${i + 1}</td>
+                <td class="nie"></td>
+                <td class="nombre"></td>
+                ${Array(20).fill('<td class="dia" style="height: 22px;"></td>').join('')}
+            </tr>
+        `;
+    }
+
+    html += `
+            </tbody>
+        </table>
+
+        <div class="footer">
+            <p><strong>Observaciones:</strong> _______________________________________________________________________________</p>
+            <p>_________________________________________________________________________________________________</p>
+
+            <div class="firmas">
+                <div class="firma-box">
+                    <div class="firma-linea">Firma del Docente</div>
+                </div>
+                <div class="firma-box">
+                    <div class="firma-linea">Vo. Bo. Coordinación</div>
+                </div>
+            </div>
+
+            <p style="margin-top: 18px; font-size: 8px; text-align: center; color: #555;">
+                Generado el: ${new Date().toLocaleString('es-SV')} — Sistema Escolar Thomas Jefferson
+            </p>
+        </div>
+    </body>
+    </html>
+    `;
+
+    ventana.document.write(html);
+    ventana.document.close();
+};
+
+window.exportarCSV = function() {
+    if (alumnos.length === 0) {
+        alert('No hay alumnos registrados');
+        return;
+    }
+
+    let csv = 'N°,NIE,Nombre,Sexo\n';
+    alumnos.forEach((alumno, index) => {
+        csv += `${index + 1},${alumno.nie || ''},"${alumno.nombre}",${obtenerSexo(alumno)}\n`;
+    });
+
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `alumnos_${gradoActual.replace(/[^a-zA-Z0-9]/g, '_')}.csv`;
+    link.click();
+};
+
+const btnDescargar = document.getElementById('btnDescargarLista');
+const btnCSV = document.getElementById('btnExportarCSV');
+if (btnDescargar) btnDescargar.addEventListener('click', window.generarListaAsistencia);
+if (btnCSV) btnCSV.addEventListener('click', window.exportarCSV);
+
+const btnLogout = document.getElementById('btnLogout');
+if (btnLogout) {
     btnLogout.addEventListener('click', async () => {
-        if (confirm('¿Estás seguro que deseas cerrar sesión?')) {
-            try {
-                await signOut(auth);
-                localStorage.removeItem('usuario');
-                window.location.href = 'index.html';
-            } catch (error) {
-                console.error('Error al cerrar sesión:', error);
-                alert('Error al cerrar sesión: ' + error.message);
-            }
+        if (confirm('¿Cerrar sesión?')) {
+            await signOut(auth);
+            localStorage.removeItem('usuario');
+            window.location.href = 'index.html';
         }
     });
 }
 
-
-export function inicializarAlumnos() {
-    console.log("🚀 Inicializando módulo de Alumnos...");
-    verificarSesionDocente();
-    configurarFormulario();
-    configurarBusqueda();
-    configurarLogout();
-
-    // Configurar botón de cancelar edición
-    const btnCancel = document.getElementById('btnCancel');
-    if (btnCancel) {
-        btnCancel.addEventListener('click', cancelarEdicion);
-    }
-}
-
-// Ejecutar cuando el DOM esté listo
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', inicializarAlumnos);
-} else {
-    inicializarAlumnos();
-}
+window.addEventListener('beforeunload', () => {
+    if (unsubscribeAlumnos) unsubscribeAlumnos();
+});
