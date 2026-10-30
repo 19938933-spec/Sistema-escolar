@@ -42,11 +42,16 @@ function obtenerSexo(alumno) {
 
 function obtenerGradosAsignados() {
     const grados = new Set();
-    if (usuarioActual.gradoEncargado) grados.add(usuarioActual.gradoEncargado);
+    const add = (g) => {
+        const limpio = String(g || '').replace(/"/g, '').trim();
+        if (limpio) grados.add(limpio);
+    };
+    add(usuarioActual.gradoEncargado);
+    add(usuarioActual.grado);
     (usuarioActual.materiasImpartidas || []).forEach(m => {
-        (m.grados || []).forEach(g => grados.add(g));
+        (m.grados || []).forEach(add);
     });
-    return Array.from(grados).sort();
+    return Array.from(grados).sort((x, y) => x.localeCompare(y, 'es'));
 }
 
 function mostrarSelectorGrado(grados) {
@@ -279,7 +284,7 @@ if (form) {
                     nie: nie,
                     sexo: sexo,
                     genero: sexo,
-                    grado: gradoActual,
+                    grado: String(gradoActual || '').replace(/"/g, '').trim(),
                     docenteId: usuarioActual.uid,
                     fechaRegistro: new Date().toISOString()
                 });
