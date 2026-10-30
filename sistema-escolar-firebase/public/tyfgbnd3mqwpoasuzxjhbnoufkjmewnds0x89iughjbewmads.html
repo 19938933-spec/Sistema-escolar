@@ -139,40 +139,69 @@ body{font-family:Inter,system-ui,sans-serif;background:linear-gradient(145deg,#0
 </div>
 
 <script>
-/* Configura tu API key de Gemini (nueva, con restricción de dominio en AI Studio). */
+/* API key*/
 const GEMINI_API_KEY = "AQ.Ab8RN6JwG5Xu-zZ5xJjcustamlbGyTL_godnO5z-4w0_ep9MNQ";
-const GEMINI_MODEL = "gemini-2.0-flash";
+/* Modelos a probar en orden  */
+const GEMINI_MODELS = [
+  "gemini-2.0-flash",
+  "gemini-1.5-pro",
+  "gemini-1.5-flash",
+  "gemini-1.5-flash-latest"
+];
 
-const MANUAL_CONTEXT = `Eres el asistente oficial de Edu.Control (Complejo Educativo Thomas Jefferson, Sonsonate).
-Responde en español, claro y breve. Solo sobre Edu.Control.
-Sistema web: asistencia, calificaciones, alumnos y periodos. HTML/CSS/JS + Bootstrap, Firebase Auth + Firestore, Vercel, PDF con jsPDF.
-Roles: admin y docente.
-Login: URL del sistema → correo/contraseña o Google → primer acceso completa grado/sección y materias.
-Docente: alumnos, asistencia por fecha, calificaciones por materia/periodo, cerrar periodos, descargar PDF.
-Admin: activar/desactivar cuentas, reportes globales, PDF por grado.
-Tips: nombres oficiales de grados (ej. 2° ITSI A), guardar asistencia del día, cerrar sesión en PCs compartidas.
-Si piden abrir pantalla, responde y al final escribe exactamente uno de: [[NAV:index.html]] [[NAV:dashboard.html]] [[NAV:alumnos.html]] [[NAV:asistencia.html]] [[NAV:calificaciones.html]] [[NAV:admin.html]] [[NAV:configurar-perfil.html]]`;
+const SYSTEM_PROMPT = `Eres el asistente oficial de Edu.Control, sistema web del Complejo Educativo Thomas Jefferson (Sonsonate, El Salvador).
+Responde SIEMPRE en español, amable y claro. Sé conversacional: si te saludan, saluda y ofrece ayuda.
+Habla solo de Edu.Control salvo saludos o cortesía breve.
+
+Qué es: app web para asistencia, calificaciones, alumnos y periodos escolares.
+Tecnología: HTML, CSS, Bootstrap 5, JavaScript, Firebase Auth, Cloud Firestore, Vercel, PDF con jsPDF.
+Roles: administrador y docente.
+
+Login: abrir el sitio → correo y contraseña (o Google si está autorizado) → en el primer acceso completar grado/sección y materias.
+Docente: gestionar alumnos del grado, pasar asistencia por fecha, registrar notas por materia y periodo, cerrar/reabrir periodos, descargar PDF.
+Admin: activar/desactivar cuentas, reportes globales, PDF de notas por grado y periodo.
+
+Tips: usar nombres oficiales de grados (ej. 2° ITSI A); guardar asistencia del día; cerrar sesión en PCs compartidas; si no ves alumnos, revisa el perfil.
+
+Si el usuario pide abrir una pantalla, responde en español y al FINAL del mensaje escribe exactamente uno de estos marcadores (sin texto después):
+[[NAV:index.html]]
+[[NAV:dashboard.html]]
+[[NAV:alumnos.html]]
+[[NAV:asistencia.html]]
+[[NAV:calificaciones.html]]
+[[NAV:admin.html]]
+[[NAV:configurar-perfil.html]]`;
 
 const FAQ = [
-  {keys:["login","iniciar sesion","entrar","ingresar"],answer:"Para iniciar sesión:\n1) Abre la página principal del sistema.\n2) Ingresa tu correo y contraseña (o Google si está permitido).\n3) Si es tu primer acceso, completa grado/sección y materias.",nav:"index.html"},
-  {keys:["asistencia","pasar lista","presente","ausente"],answer:"Para pasar asistencia:\n1) Entra como docente.\n2) Ve a Asistencia.\n3) Elige la fecha.\n4) Marca presente o ausente.\n5) Pulsa Guardar.\nTu perfil debe tener el grado y sección correctos."},
-  {keys:["calific","nota","notas","periodo"],answer:"Para registrar calificaciones:\n1) Entra a Calificaciones.\n2) Elige materia, grado y periodo.\n3) Captura las notas por actividad y guarda.\nAl terminar el ciclo puedes cerrar el periodo."},
-  {keys:["admin","administrador"],answer:"El administrador puede:\n• Activar o desactivar cuentas de docentes.\n• Ver reportes globales.\n• Generar PDF de notas por grado y periodo.\n• Supervisar el uso general del sistema."},
-  {keys:["alumno","estudiantes","registrar alumno"],answer:"En Gestión de Alumnos puedes registrar, editar o eliminar alumnos de tu grado. El grado/sección debe coincidir con tu perfil."},
-  {keys:["tip","consejo","recomienda","buena practica"],answer:"Tips rápidos:\n• Usa nombres oficiales de grados (ej. 2° ITSI A).\n• Guarda la asistencia el mismo día.\n• Cierra el periodo de notas al terminar el ciclo.\n• Cierra sesión en equipos compartidos.\n• Si no ves alumnos, revisa tu perfil."},
-  {keys:["abrir login","abre login","pantalla de login","pagina de login"],answer:"Te abro la pantalla de login.",nav:"index.html"},
-  {keys:["abrir panel","abre panel","pantalla principal","dashboard","panel principal"],answer:"Te abro el panel principal. Si no has iniciado sesión, el sistema te pedirá entrar.",nav:"dashboard.html"},
-  {keys:["abre asistencia","abrir asistencia"],answer:"Te llevo al módulo de asistencia.",nav:"asistencia.html"},
-  {keys:["abre calificaciones","abrir notas","abrir calificaciones"],answer:"Te llevo a calificaciones.",nav:"calificaciones.html"},
-  {keys:["abre alumnos","abrir alumnos","gestion de alumnos"],answer:"Te llevo a gestión de alumnos.",nav:"alumnos.html"}
+  {keys:["hola","buenas","buenos dias","buenas tardes","buenas noches","hey","saludos","que tal","qué tal","como estas","cómo estás"],
+   answer:"¡Hola! Soy el asistente de Edu.Control.\nPuedo ayudarte con login, asistencia, calificaciones, alumnos, el panel admin y tips de uso.\nTambién puedo abrirte pantallas del sistema si me lo pides.\n¿Qué necesitas?"},
+  {keys:["gracias","thank"], answer:"Con gusto. Si necesitas otra cosa del sistema, aquí estoy."},
+  {keys:["login","iniciar sesion","entrar","ingresar"],
+   answer:"Para iniciar sesión:\n1) Abre la página principal del sistema.\n2) Ingresa tu correo y contraseña (o Google si está permitido).\n3) Si es tu primer acceso, completa grado/sección y materias.", nav:"index.html"},
+  {keys:["asistencia","pasar lista","presente","ausente"],
+   answer:"Para pasar asistencia:\n1) Entra como docente.\n2) Ve a Asistencia.\n3) Elige la fecha.\n4) Marca presente o ausente.\n5) Pulsa Guardar.\nTu perfil debe tener el grado y sección correctos."},
+  {keys:["calific","nota","notas","periodo"],
+   answer:"Para registrar calificaciones:\n1) Entra a Calificaciones.\n2) Elige materia, grado y periodo.\n3) Captura las notas por actividad y guarda.\nAl terminar el ciclo puedes cerrar el periodo."},
+  {keys:["admin","administrador"],
+   answer:"El administrador puede:\n• Activar o desactivar cuentas de docentes.\n• Ver reportes globales.\n• Generar PDF de notas por grado y periodo.\n• Supervisar el uso general del sistema."},
+  {keys:["alumno","estudiantes","registrar alumno"],
+   answer:"En Gestión de Alumnos puedes registrar, editar o eliminar alumnos de tu grado. El grado/sección debe coincidir con tu perfil."},
+  {keys:["tip","consejo","recomienda","buena practica"],
+   answer:"Tips rápidos:\n• Usa nombres oficiales de grados (ej. 2° ITSI A).\n• Guarda la asistencia el mismo día.\n• Cierra el periodo de notas al terminar el ciclo.\n• Cierra sesión en equipos compartidos.\n• Si no ves alumnos, revisa tu perfil."},
+  {keys:["abrir login","abre login","pantalla de login","pagina de login"], answer:"Te abro la pantalla de login.", nav:"index.html"},
+  {keys:["abrir panel","abre panel","pantalla principal","dashboard","panel principal"], answer:"Te abro el panel principal. Si no has iniciado sesión, el sistema te pedirá entrar.", nav:"dashboard.html"},
+  {keys:["abre asistencia","abrir asistencia"], answer:"Te llevo al módulo de asistencia.", nav:"asistencia.html"},
+  {keys:["abre calificaciones","abrir notas","abrir calificaciones"], answer:"Te llevo a calificaciones.", nav:"calificaciones.html"},
+  {keys:["abre alumnos","abrir alumnos","gestion de alumnos"], answer:"Te llevo a gestión de alumnos.", nav:"alumnos.html"}
 ];
 
 const messagesEl = document.getElementById("messages");
 const inputEl = document.getElementById("input");
 const btnSend = document.getElementById("btnSend");
 const typingRow = document.getElementById("typingRow");
+const history = []; // {role:'user'|'model', text:string}
 
-function norm(s){return (s||"").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu,"");}
+function norm(s){ return (s||"").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu,""); }
 
 function addMsg(text, who, navUrl){
   const div = document.createElement("div");
@@ -205,6 +234,10 @@ function localAnswer(q){
   for(const item of FAQ){
     if(item.keys.some(k => t.includes(norm(k)))) return item;
   }
+  // si es muy corto / saludo residual
+  if(t.length < 12) {
+    return {answer:"¡Hola! Dime qué necesitas de Edu.Control: login, asistencia, notas, alumnos, admin o abrir una pantalla."};
+  }
   return {answer:"Puedo ayudarte con login, asistencia, calificaciones, alumnos, roles, tips y abrir pantallas del sistema.\n¿Qué necesitas?"};
 }
 
@@ -226,63 +259,109 @@ function detectNavIntent(q){
   return null;
 }
 
-async function askGemini(userText){
-  if(!GEMINI_API_KEY || GEMINI_API_KEY.includes("PEGA_AQUI")) throw new Error("no_key");
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
-  const res = await fetch(url,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      system_instruction:{parts:[{text:MANUAL_CONTEXT}]},
-      contents:[{role:"user",parts:[{text:userText}]}],
-      generationConfig:{temperature:0.4,maxOutputTokens:512}
-    })
+async function callModel(model, contents){
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
+  const body = {
+    system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+    contents,
+    generationConfig: { temperature: 0.5, maxOutputTokens: 700 }
+  };
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
   });
-  if(!res.ok) throw new Error("http");
-  const data = await res.json();
-  const text = (data?.candidates?.[0]?.content?.parts||[]).map(p=>p.text||"").join("").trim();
-  if(!text) throw new Error("empty");
+  const raw = await res.text();
+  let data;
+  try { data = JSON.parse(raw); } catch { data = {}; }
+  if(!res.ok){
+    // reintento sin system_instruction (algunas keys/modelos fallan con ese campo)
+    const body2 = {
+      contents: [
+        { role: "user", parts: [{ text: SYSTEM_PROMPT + "\n\n---\nConversación:\n" + contents.map(c => (c.role==="user"?"Usuario: ":"Asistente: ")+(c.parts[0].text||"")).join("\n") }] }
+      ],
+      generationConfig: { temperature: 0.5, maxOutputTokens: 700 }
+    };
+    const res2 = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body2)
+    });
+    const raw2 = await res2.text();
+    let data2; try { data2 = JSON.parse(raw2); } catch { data2 = {}; }
+    if(!res2.ok) throw new Error((data.error && data.error.message) || (data2.error && data2.error.message) || ("HTTP "+res.status));
+    data = data2;
+  }
+  const text = (data?.candidates?.[0]?.content?.parts || []).map(p => p.text || "").join("").trim();
+  if(!text) throw new Error("Respuesta vacía");
   return text;
 }
 
+async function askGemini(userText){
+  if(!GEMINI_API_KEY || GEMINI_API_KEY.includes("PEGA_AQUI")) throw new Error("Sin API key");
+
+  const contents = [];
+  // historial reciente (últimos 8 turnos)
+  const slice = history.slice(-8);
+  for(const h of slice){
+    contents.push({ role: h.role === "user" ? "user" : "model", parts: [{ text: h.text }] });
+  }
+  contents.push({ role: "user", parts: [{ text: userText }] });
+
+  let lastErr;
+  for(const model of GEMINI_MODELS){
+    try {
+      return await callModel(model, contents);
+    } catch(e) {
+      lastErr = e;
+      console.warn("Modelo falló:", model, e.message);
+    }
+  }
+  throw lastErr || new Error("No se pudo contactar la IA");
+}
+
 async function handleSend(text){
-  const q = (text||"").trim();
+  const q = (text || "").trim();
   if(!q) return;
-  addMsg(q,"user");
+  addMsg(q, "user");
   inputEl.value = "";
   btnSend.disabled = true;
   setTyping(true);
 
   let reply = "";
   let nav = detectNavIntent(q);
-  try{
+  try {
     reply = await askGemini(q);
+    history.push({ role: "user", text: q });
+    history.push({ role: "model", text: reply });
     const n = extractNav(reply);
     if(n) nav = n;
-  }catch(_e){
+  } catch (e) {
+    console.warn("Fallback local:", e.message);
     const local = localAnswer(q);
     reply = local.answer;
     if(local.nav) nav = local.nav;
+    history.push({ role: "user", text: q });
+    history.push({ role: "model", text: reply });
   }
 
-  // pequeña pausa para que se note la animación
-  await new Promise(r => setTimeout(r, 350));
+  await new Promise(r => setTimeout(r, 280));
   setTyping(false);
-  addMsg(reply,"bot",nav);
+  addMsg(reply, "bot", nav);
   btnSend.disabled = false;
   inputEl.focus();
 }
 
 function generarManualPDF(){
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({unit:"pt",format:"letter"});
+  const doc = new jsPDF({ unit: "pt", format: "letter" });
   const margin = 48;
   let y = margin;
-  const line = (t, size=11, bold=false)=>{
-    doc.setFont("times", bold?"bold":"normal");
+  const line = (t, size=11, bold=false) => {
+    doc.setFont("times", bold ? "bold" : "normal");
     doc.setFontSize(size);
-    const lines = doc.splitTextToSize(t, 612 - margin*2);
-    lines.forEach(l=>{
+    const lines = doc.splitTextToSize(t, 612 - margin * 2);
+    lines.forEach(l => {
       if(y > 740){ doc.addPage(); y = margin; }
       doc.text(l, margin, y);
       y += size + 4;
@@ -310,19 +389,19 @@ function generarManualPDF(){
   doc.save("Manual_EduControl.pdf");
 }
 
-btnSend.addEventListener("click",()=>handleSend(inputEl.value));
-inputEl.addEventListener("keydown",e=>{
-  if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); handleSend(inputEl.value); }
+btnSend.addEventListener("click", () => handleSend(inputEl.value));
+inputEl.addEventListener("keydown", e => {
+  if(e.key === "Enter" && !e.shiftKey){ e.preventDefault(); handleSend(inputEl.value); }
 });
-document.querySelectorAll(".quick button").forEach(btn=>{
-  btn.addEventListener("click",()=>handleSend(btn.getAttribute("data-q")));
+document.querySelectorAll(".quick button").forEach(btn => {
+  btn.addEventListener("click", () => handleSend(btn.getAttribute("data-q")));
 });
 document.getElementById("btnPdf").addEventListener("click", generarManualPDF);
 
-addMsg("Hola. Soy el asistente de Edu.Control.\nPuedo explicarte login, asistencia, notas, roles y tips. También puedo abrirte pantallas del sistema si me lo pides (por ejemplo: «abre el login»).\n¿En qué te ayudo?","bot");
+addMsg("Hola. Soy el asistente de Edu.Control.\nPuedo explicarte login, asistencia, notas, roles y tips. También puedo abrirte pantallas del sistema si me lo pides (por ejemplo: «abre el login»).\n¿En qué te ayudo?", "bot");
 
-window.addEventListener("load",()=>{
-  setTimeout(()=>document.getElementById("loader").classList.add("hide"), 900);
+window.addEventListener("load", () => {
+  setTimeout(() => document.getElementById("loader").classList.add("hide"), 900);
 });
 </script>
 </body>
