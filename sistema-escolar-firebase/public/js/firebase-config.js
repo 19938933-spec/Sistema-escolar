@@ -1,19 +1,27 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { 
-    getAuth, 
-    signInWithEmailAndPassword, 
+import {
+    getAuth,
+    signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
-    GoogleAuthProvider, 
-    signInWithPopup, 
-    signOut 
+    GoogleAuthProvider,
+    signInWithPopup,
+    signOut,
+    onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { 
-    getFirestore, 
-    doc, 
-    getDoc, 
-    setDoc, 
-    addDoc, 
-    collection 
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    collection,
+    getDocs,
+    query,
+    where,
+    onSnapshot,
+    writeBatch
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -25,21 +33,27 @@ const firebaseConfig = {
     appId: "1:86350226997:web:b2104fd545d71faef9337c"
 };
 
-// Inicializar instancias
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
 
-// Exportar métodos comunes de Firebase
-export { 
-    signInWithEmailAndPassword, 
+export {
+    signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
-    signInWithPopup, 
-    signOut, 
-    doc, 
-    getDoc, 
-    setDoc, 
-    addDoc, 
-    collection 
+    signInWithPopup,
+    signOut,
+    onAuthStateChanged,
+    doc,
+    getDoc,
+    setDoc,
+    addDoc,
+    updateDoc,
+    deleteDoc,
+    collection,
+    getDocs,
+    query,
+    where,
+    onSnapshot,
+    writeBatch
 };
