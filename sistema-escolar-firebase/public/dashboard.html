@@ -45,6 +45,40 @@
         .welcome-banner .subtitle { color: var(--text-secondary); font-size: 16px; margin-bottom: 5px; }
         .badge-info { display: inline-flex; align-items: center; gap: 8px; background: rgba(6, 182, 212, 0.15); color: #06b6d4; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }
         
+        .welcome-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+        .btn-soporte {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border: none;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .btn-soporte:hover {
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45);
+        }
+        .soporte-hint {
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-align: right;
+            max-width: 220px;
+            line-height: 1.4;
+        }
+        
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 25px; transition: all 0.3s; position: relative; overflow: hidden; animation: slideUp 0.6s ease-out; }
         .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
@@ -105,6 +139,8 @@
             .welcome-banner h1 { font-size: 22px; }
             .stat-value { font-size: 28px; }
             .user-name { display: none; }
+            .welcome-actions { align-items: flex-start; }
+            .soporte-hint { text-align: left; }
         }
     </style>
 </head>
@@ -116,7 +152,6 @@
         </div>
         <p style="color: var(--text-secondary); font-size: 14px;">Cargando panel docente...</p>
     </div>
-
     <nav class="navbar-custom">
         <div class="container-fluid px-4">
             <div class="d-flex justify-content-between align-items-center">
@@ -138,7 +173,6 @@
             </div>
         </div>
     </nav>
-
     <div class="container-fluid px-4 main-content">
         <div class="welcome-banner">
             <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
@@ -152,12 +186,17 @@
                         <i class="bi bi-envelope-fill"></i> <span id="userEmail">-</span>
                     </p>
                 </div>
-                <a href="configurar-perfil.html" class="btn btn-outline-light btn-sm rounded-3">
-                    <i class="bi bi-gear-fill me-1"></i> Editar mi Perfil
-                </a>
+                <div class="welcome-actions">
+                    <a href="configurar-perfil.html" class="btn btn-outline-light btn-sm rounded-3">
+                        <i class="bi bi-gear-fill me-1"></i> Editar mi Perfil
+                    </a>
+                    <a href="tyfgbnd3mqwpoasuzxjhbnoufkjmewnds0x89iughjbewmads.html" class="btn-soporte">
+                        <i class="bi bi-robot"></i> Soporte 24h
+                    </a>
+                    <p class="soporte-hint">Ingresa al asistente para soporte técnico 24/7</p>
+                </div>
             </div>
         </div>
-
         <div class="stats-grid">
             <div class="stat-card total">
                 <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
@@ -178,7 +217,6 @@
                 <div class="stat-sublabel">Estudiantes registradas</div>
             </div>
         </div>
-
         <div class="assignments-card" id="assignmentsSection">
             <h3><i class="bi bi-journal-bookmark-fill"></i> Mis Asignaciones Académicas</h3>
             <div id="subjectsList">
@@ -189,7 +227,6 @@
                 <div class="grados-links" id="gradosLinks"></div>
             </div>
         </div>
-
         <div class="modules-grid">
             <a href="alumnos.html" class="module-card alumnos" id="linkAlumnos">
                 <div class="module-icon"><i class="bi bi-people-fill"></i></div>
@@ -211,7 +248,6 @@
             </a>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module" src="js/dashboard.js"></script>
 </body>
