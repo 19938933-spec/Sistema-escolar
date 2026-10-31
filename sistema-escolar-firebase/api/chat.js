@@ -7,85 +7,145 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: "Método no permitido" });
 
-  const { message, history = [] } = req.body;
-  if (!message) return res.status(400).json({ error: "Mensaje vacío" });
+  try {
+    const { message, history = [] } = req.body;
+    if (!message) return res.status(400).json({ error: "Mensaje vacío" });
 
-  // 1. Mapeo de historial para Gemini
-  const geminiHistory = history.map(h => ({
-    role: h.role,
-    parts: [{ text: h.parts[0].text }]
-  }));
+    // 1. Mapeo de historial para Gemini
+    const geminiHistory = history.map(h => ({
+      role: h.role,
+      parts: [{ text: h.parts?.[0]?.text || "" }]
+    })).filter(h => h.parts[0].text); // Filtrar mensajes vacíos
 
-  // 2. Mapeo de historial para Groq/OpenRouter (Formato OpenAI)
-  const openAiHistory = history.map(h => ({
-    role: h.role === "model" ? "assistant" : "user",
-    content: h.parts[0].text
-  }));
-  const openAiMessages = [
-    { role: "system", content: "Eres el asistente virtual de Edu.Control para el Complejo Educativo Thomas Jefferson. Responde breve y en español." },
-    ...openAiHistory,
-    { role: "user", content: message }
-  ];
+    // 2. Mapeo de historial para Groq/OpenRouter (Formato OpenAI)
+    const openAiHistory = history.map(h => ({
+      role: h.role === "model" ? "assistant" : "user",
+      content: h.parts?.[0]?.text || ""
+    })).filter(h => h.content); // Filtrar mensajes vacíos
 
-  // 3. Array de Motores Funcionales (Cascada)
-  const motores = [
-    {
-      nombre: "Gemini 1.5 Flash",
-      apiKey: process.env.GEMINI_API_KEY,
-      url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contents: [...geminiHistory, { role: "user", parts: [{ text: message }] }] }),
-      parse: (data) => data.candidates[0].content.parts[0].text
-    },
-    {
-      nombre: "Groq (Llama 3.3 70B)",
-      apiKey: process.env.GROQ_API_KEY,
-      url: "https://api.groq.com/openai/v1/chat/completions",
-      headers: { 
-        "Content-Type": "application/json", 
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}` 
+    const openAiMessages = [
+      { role: "system", content: "Eres el asistente virtual de Edu.Control para el Complejo Educativo Thomas Jefferson. Responde breve y en español." },
+      ...openAiHistory,
+      { role: "user", content: message }
+    ];
+
+    // 3. Array de Motores Funcionales (Cascada)
+    const motores = [
+      {
+        nombre: "Gemini 1.5 Flash",
+        apiKey: process.env.GEMINI_API_KEY,
+        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          contents: [...geminiHistory, { role: "user", parts: [{ text: message }] }],
+          generationConfig: {
+            maxOutputTokens: 500,
+            temperature: 0.7
+          }
+        }),
+        parse: (data) => {
+          if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
+            throw new Error("Respuesta inválida de Gemini");
+          }
+          return data.candidates[0].content.parts[0].text;
+        }
       },
-      body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: openAiMessages }),
-      parse: (data) => data.choices[0].message.content
-    },
-    {
-      nombre: "OpenRouter (DeepSeek R1)",
-      apiKey: process.env.OPENROUTER_API_KEY,
-      url: "https://openrouter.ai/api/v1/chat/completions",
-      headers: { 
-        "Content-Type": "application/json", 
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}` 
+      {
+        nombre: "Groq (Llama 3.3 70B)",
+        apiKey: process.env.GROQ_API_KEY,
+        url: "https://api.groq.com/openai/v1/chat/completions",
+        headers: { 
+          "Content-Type": "application/json", 
+          "Authorization": `Bearer ${process.env.GROQ_API_KEY}` 
+        },
+        body: JSON.stringify({ 
+          model: "llama-3.3-70b-versatile", 
+          messages: openAiMessages,
+          max_tokens: 500,
+          temperature: 0.7
+        }),
+        parse: (data) => {
+          if (!data.choices || !data.choices[0]?.message?.content) {
+            throw new Error("Respuesta inválida de Groq");
+          }
+          return data.choices[0].message.content;
+        }
       },
-      body: JSON.stringify({ model: "deepseek/deepseek-r1:free", messages: openAiMessages }),
-      parse: (data) => data.choices[0].message.content.replace(/<think>[\s\S]*?<\/think>\n?/g, "") // Limpia tags de pensamiento de Deepseek
+      {
+        nombre: "OpenRouter (DeepSeek R1)",
+        apiKey: process.env.OPENROUTER_API_KEY,
+        url: "https://openrouter.ai/api/v1/chat/completions",
+        headers: { 
+          "Content-Type": "application/json", 
+          "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          "HTTP-Referer": "https://sistemaescolar-beta.vercel.app",
+          "X-Title": "Edu.Control AI"
+        },
+        body: JSON.stringify({ 
+          model: "deepseek/deepseek-r1:free", 
+          messages: openAiMessages,
+          max_tokens: 500
+        }),
+        parse: (data) => {
+          if (!data.choices || !data.choices[0]?.message?.content) {
+            throw new Error("Respuesta inválida de OpenRouter");
+          }
+          return data.choices[0].message.content.replace(/<think>[\s\S]*?<\/think>\n?/g, "");
+        }
+      }
+    ];
+
+    // 4. Ejecución en Cascada (Falla uno -> Prueba el siguiente)
+    for (const motor of motores) {
+      if (!motor.apiKey) {
+        console.warn(`[API Skip] ${motor.nombre}: API key no configurada`);
+        continue; // Salta el motor si no agregaste la llave en Vercel
+      }
+
+      try {
+        console.log(`[API Intent] Probando ${motor.nombre}...`);
+        
+        const response = await fetch(motor.url, {
+          method: "POST",
+          headers: motor.headers,
+          body: motor.body
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text().catch(() => "Sin detalles");
+          throw new Error(`Status ${response.status}: ${errorText}`);
+        }
+        
+        const data = await response.json();
+        
+        // Validar que la respuesta tenga datos
+        if (!data || Object.keys(data).length === 0) {
+          throw new Error("Respuesta vacía de la API");
+        }
+        
+        const reply = motor.parse(data);
+        
+        if (!reply || reply.trim() === "") {
+          throw new Error("Respuesta vacía después del parseo");
+        }
+        
+        console.log(`[API Success] ${motor.nombre} respondió correctamente`);
+        
+        // Retorna inmediatamente en el primer motor que funcione
+        return res.status(200).json({ reply, motorUsado: motor.nombre });
+        
+      } catch (error) {
+        console.warn(`[API Falló] ${motor.nombre}:`, error.message);
+        // Continúa al siguiente ciclo iterativo
+      }
     }
-  ];
 
-  // 4. Ejecución en Cascada (Falla uno -> Prueba el siguiente)
-  for (const motor of motores) {
-    if (!motor.apiKey) continue; // Salta el motor si no agregaste la llave en Vercel
+    // 5. Si fallan todas las APIs, lanza error para que el frontend active la Base Local (Plan B)
+    console.error("[API Error] Todos los motores de IA fallaron");
+    return res.status(502).json({ error: "Todos los motores de IA están caídos." });
 
-    try {
-      const response = await fetch(motor.url, {
-        method: "POST",
-        headers: motor.headers,
-        body: motor.body
-      });
-
-      if (!response.ok) throw new Error(`Status ${response.status}`);
-      
-      const data = await response.json();
-      const reply = motor.parse(data);
-      
-      // Retorna inmediatamente en el primer motor que funcione
-      return res.status(200).json({ reply, motorUsado: motor.nombre });
-      
-    } catch (error) {
-      console.warn(`[API Falló] ${motor.nombre}:`, error.message);
-      // Continúa al siguiente ciclo iterativo
-    }
+  } catch (error) {
+    console.error("[API Critical Error]", error);
+    return res.status(500).json({ error: "Error interno del servidor: " + error.message });
   }
-
-  // 5. Si fallan todas las APIs, lanza error para que el frontend active la Base Local (Plan B)
-  return res.status(502).json({ error: "Todos los motores de IA están caídos." });
 }
