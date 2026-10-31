@@ -411,7 +411,7 @@ async function sendMessage(){
   const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos límite
 
   try {
-    const res = await fetch("/api/chat", {
+    const res = await fetch("https://sistemaescolar-beta.vercel.app/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
