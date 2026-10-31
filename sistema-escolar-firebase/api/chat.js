@@ -1,76 +1,91 @@
 export default async function handler(req, res) {
-  // Solo POST
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Método no permitido" });
-  }
+  // Configuración de CORS y método
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) {
-    return res.status(500).json({ error: "Falta configurar GEMINI_API_KEY en Vercel" });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: "Método no permitido" });
 
-  try {
-    const { message, history } = req.body || {};
-    if (!message || typeof message !== "string") {
-      return res.status(400).json({ error: "Falta el mensaje" });
-    }
+  const { message, history = [] } = req.body;
+  if (!message) return res.status(400).json({ error: "Mensaje vacío" });
 
-    // Evitar mensajes enormes
-    const texto = message.slice(0, 4000);
+  // 1. Mapeo de historial para Gemini
+  const geminiHistory = history.map(h => ({
+    role: h.role,
+    parts: [{ text: h.parts[0].text }]
+  }));
 
-    const systemText = `Eres el asistente de Edu.Control del Complejo Educativo Thomas Jefferson.
-Ayudas a docentes con: login, perfil, alumnos, asistencia, calificaciones y problemas frecuentes.
-Sitio del sistema: https://sistemaescolar-beta.vercel.app
-Responde en español, claro y en pasos cortos.
-Si el usuario pide ir a una sección, indica la página: index.html (login), dashboard.html, asistencia.html, calificaciones.html, alumnos.html, configurar-perfil.html, admin.html.`;
+  // 2. Mapeo de historial para Groq/OpenRouter (Formato OpenAI)
+  const openAiHistory = history.map(h => ({
+    role: h.role === "model" ? "assistant" : "user",
+    content: h.parts[0].text
+  }));
+  const openAiMessages = [
+    { role: "system", content: "Eres el asistente virtual de Edu.Control para el Complejo Educativo Thomas Jefferson. Responde breve y en español." },
+    ...openAiHistory,
+    { role: "user", content: message }
+  ];
 
-    const contents = [];
-    if (Array.isArray(history)) {
-      history.slice(-8).forEach((h) => {
-        if (h.role && h.text) {
-          contents.push({
-            role: h.role === "user" ? "user" : "model",
-            parts: [{ text: String(h.text).slice(0, 2000) }]
-          });
-        }
-      });
-    }
-    contents.push({ role: "user", parts: [{ text: texto }] });
-
-    const url =
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" +
-      encodeURIComponent(key);
-
-    const r = await fetch(url, {
-      method: "POST",
+  // 3. Array de Motores Funcionales (Cascada)
+  const motores = [
+    {
+      nombre: "Gemini 1.5 Flash",
+      apiKey: process.env.GEMINI_API_KEY,
+      url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemText }] },
-        contents,
-        generationConfig: {
-          temperature: 0.4,
-          maxOutputTokens: 1024
-        }
-      })
-    });
-
-    const data = await r.json();
-
-    if (!r.ok) {
-      console.error("Gemini error:", data);
-      return res.status(502).json({
-        error: "Error al consultar la IA",
-        detail: data.error?.message || "respuesta no válida"
-      });
+      body: JSON.stringify({ contents: [...geminiHistory, { role: "user", parts: [{ text: message }] }] }),
+      parse: (data) => data.candidates[0].content.parts[0].text
+    },
+    {
+      nombre: "Groq (Llama 3.3 70B)",
+      apiKey: process.env.GROQ_API_KEY,
+      url: "https://api.groq.com/openai/v1/chat/completions",
+      headers: { 
+        "Content-Type": "application/json", 
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}` 
+      },
+      body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: openAiMessages }),
+      parse: (data) => data.choices[0].message.content
+    },
+    {
+      nombre: "OpenRouter (DeepSeek R1)",
+      apiKey: process.env.OPENROUTER_API_KEY,
+      url: "https://openrouter.ai/api/v1/chat/completions",
+      headers: { 
+        "Content-Type": "application/json", 
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}` 
+      },
+      body: JSON.stringify({ model: "deepseek/deepseek-r1:free", messages: openAiMessages }),
+      parse: (data) => data.choices[0].message.content.replace(/<think>[\s\S]*?<\/think>\n?/g, "") // Limpia tags de pensamiento de Deepseek
     }
+  ];
 
-    const reply =
-      data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") ||
-      "No pude generar una respuesta. Intenta de nuevo.";
+  // 4. Ejecución en Cascada (Falla uno -> Prueba el siguiente)
+  for (const motor of motores) {
+    if (!motor.apiKey) continue; // Salta el motor si no agregaste la llave en Vercel
 
-    return res.status(200).json({ reply });
-  } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: "Error interno del servidor" });
+    try {
+      const response = await fetch(motor.url, {
+        method: "POST",
+        headers: motor.headers,
+        body: motor.body
+      });
+
+      if (!response.ok) throw new Error(`Status ${response.status}`);
+      
+      const data = await response.json();
+      const reply = motor.parse(data);
+      
+      // Retorna inmediatamente en el primer motor que funcione
+      return res.status(200).json({ reply, motorUsado: motor.nombre });
+      
+    } catch (error) {
+      console.warn(`[API Falló] ${motor.nombre}:`, error.message);
+      // Continúa al siguiente ciclo iterativo
+    }
   }
+
+  // 5. Si fallan todas las APIs, lanza error para que el frontend active la Base Local (Plan B)
+  return res.status(502).json({ error: "Todos los motores de IA están caídos." });
 }
