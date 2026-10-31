@@ -296,8 +296,7 @@ async function sendMessage(){
     // Mostrar respuesta procesando Markdown básico a HTML si es necesario
     // Reemplaza negritas Markdown a HTML
     let formattedReply = data.reply.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-    formattedReply = formattedReply.replace(/
-/g, "<br>");
+    formattedReply = formattedReply.replace(//g, "<br>");
 
     appendBot(formattedReply);
 
