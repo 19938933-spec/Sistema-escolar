@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -15,37 +15,38 @@ export default async function handler(req, res) {
       parts: [{ text: h.parts?.[0]?.text || "" }]
     })).filter(h => h.parts[0].text);
 
-    // MODELOS QUE SÍ FUNCIONAN PARA USUARIOS NUEVOS (Nov 2026)
+    const openAiHistory = history.map(h => ({
+      role: h.role === "model" ? "assistant" : "user",
+      content: h.parts?.[0]?.text || ""
+    })).filter(h => h.content);
+
+    // MODELOS DISPONIBLES (Nov 2026)
     const modelos = [
       {
         nombre: "Gemini 2.5 Flash Lite",
         apiKey: process.env.GEMINI_API_KEY,
         url: (key) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${key}`,
+        tipo: "gemini"
       },
       {
         nombre: "Gemini 2.0 Flash Lite",
         apiKey: process.env.GEMINI_API_KEY,
         url: (key) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${key}`,
+        tipo: "gemini"
       },
       {
-        nombre: "Gemini 1.5 Flash (API v1)",
+        nombre: "Gemini 1.5 Flash (v1)",
         apiKey: process.env.GEMINI_API_KEY,
         url: (key) => `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${key}`,
+        tipo: "gemini"
       },
-        body: (msgs) => JSON.stringify({ 
-          model: "llama-3.1-8b-instant", 
-          messages: [{ role: "system", content: "Eres el asistente virtual de Edu.Control para el Complejo Educativo Thomas Jefferson. Responde breve y en español." }, ...msgs],
-          max_tokens: 500,
-          temperature: 0.7
-        }),
-        isGroq: true,
+      {
+        nombre: "Groq Llama 3.1 8B",
+        apiKey: process.env.GROQ_API_KEY,
+        url: () => "https://api.groq.com/openai/v1/chat/completions",
+        tipo: "groq"
       }
     ];
-
-    const openAiHistory = history.map(h => ({
-      role: h.role === "model" ? "assistant" : "user",
-      content: h.parts?.[0]?.text || ""
-    })).filter(h => h.content);
 
     for (const modelo of modelos) {
       const apiKey = modelo.apiKey;
@@ -59,14 +60,22 @@ export default async function handler(req, res) {
 
         let fetchOptions;
         
-        if (modelo.isGroq) {
+        if (modelo.tipo === "groq") {
           fetchOptions = {
             method: "POST",
             headers: { 
               "Content-Type": "application/json", 
               "Authorization": `Bearer ${apiKey}` 
             },
-            body: modelo.body(openAiHistory)
+            body: JSON.stringify({ 
+              model: "llama-3.1-8b-instant", 
+              messages: [
+                { role: "system", content: "Eres el asistente virtual de Edu.Control para el Complejo Educativo Thomas Jefferson. Responde breve y en español." },
+                ...openAiHistory
+              ],
+              max_tokens: 500,
+              temperature: 0.7
+            })
           };
         } else {
           fetchOptions = {
@@ -79,7 +88,7 @@ export default async function handler(req, res) {
           };
         }
 
-        const url = modelo.isGroq ? modelo.url() : modelo.url(apiKey);
+        const url = modelo.tipo === "groq" ? modelo.url() : modelo.url(apiKey);
         
         const response = await fetch(url, fetchOptions);
 
@@ -92,7 +101,7 @@ export default async function handler(req, res) {
         const data = await response.json();
         let reply;
         
-        if (modelo.isGroq) {
+        if (modelo.tipo === "groq") {
           if (!data.choices?.[0]?.message?.content) {
             console.warn(`[Fallo] ${modelo.nombre}: respuesta vacía`);
             continue;
@@ -127,4 +136,4 @@ export default async function handler(req, res) {
     console.error("[Error crítico]", error);
     return res.status(500).json({ error: error.message });
   }
-}
+};
