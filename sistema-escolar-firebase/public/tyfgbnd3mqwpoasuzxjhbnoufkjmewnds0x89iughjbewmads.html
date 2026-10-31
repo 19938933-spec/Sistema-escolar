@@ -7,58 +7,60 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-
 :root{--bg:#0f172a;--card:#1e293b;--text:#f1f5f9;--muted:#94a3b8;--accent:#6366f1;--ok:#10b981;--border:#334155;--primary-dark:#002b49}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Inter,system-ui,sans-serif;background:linear-gradient(145deg,#0f172a,#1a1a2e);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
-#loader{position:fixed;inset:0;z-index:9999;background:#0f172a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .45s,visibility .45s}
+#loader{position:fixed;inset:0;z-index:9999;background:#0f172a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),visibility 0.6s}
 #loader.hide{opacity:0;visibility:hidden;pointer-events:none}
-#loader .logo-circle{width:96px;height:96px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;animation:pulse 1.4s ease-in-out infinite;box-shadow:0 0 0 6px rgba(99,102,241,.15)}
+#loader .logo-circle{width:96px;height:96px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;animation:pulse 1.6s ease-in-out infinite;box-shadow:0 0 0 6px rgba(99,102,241,.15)}
 #loader .logo-circle img{width:88px;height:88px;object-fit:contain}
 #loader .logo-circle i{font-size:2.8rem;color:var(--primary-dark)}
 #loader .bar{width:160px;height:4px;background:#1e293b;border-radius:4px;overflow:hidden}
-#loader .bar span{display:block;height:100%;width:40%;background:linear-gradient(90deg,#6366f1,#818cf8);border-radius:4px;animation:load 1.1s ease-in-out infinite}
+#loader .bar span{display:block;height:100%;width:40%;background:linear-gradient(90deg,#6366f1,#818cf8);border-radius:4px;animation:load 1.2s ease-in-out infinite}
 #loader p{color:#94a3b8;font-size:.9rem}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
 @keyframes load{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
 
-.topbar{background:rgba(30,41,59,.98);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:10}
+.topbar{background:rgba(30,41,59,.98);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:10;transition:all 0.3s ease}
 .brand{display:flex;align-items:center;gap:10px;font-weight:700}
-.brand-logo{width:42px;height:42px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.brand-logo{width:42px;height:42px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:transform 0.3s ease}
+.brand-logo:hover{transform:rotate(5deg) scale(1.05)}
 .brand-logo img{width:38px;height:38px;object-fit:contain}
 .brand-info{display:flex;flex-direction:column}
 .brand-info span{font-size:.75rem;color:var(--muted);font-weight:400}
 .btn-group-top{display:flex;gap:8px;flex-wrap:wrap}
-.btn-success-soft{font-size:.84rem;padding:6px 12px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;cursor:pointer;transition:all .2s;border:1px solid rgba(16,185,129,.35);background:rgba(16,185,129,.15);color:#a7f3d0}
-.btn-success-soft:hover{background:rgba(16,185,129,.3);color:#fff}
-.menu-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; }
+.btn-success-soft{font-size:.84rem;padding:6px 12px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;cursor:pointer;transition:all 0.3s cubic-bezier(0.16, 1, 0.3, 1);border:1px solid rgba(16,185,129,.35);background:rgba(16,185,129,.15);color:#a7f3d0}
+.btn-success-soft:hover{background:rgba(16,185,129,.3);color:#fff;transform:translateY(-2px)}
+.menu-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; transition: color 0.3s; }
+.menu-toggle:hover { color: var(--accent); }
 
 .layout{display:grid;grid-template-columns:1fr;flex:1;max-width:1400px;margin:0 auto;width:100%;padding:12px;gap:12px;height:calc(100vh - 65px)}
 @media(min-width:900px){.layout{grid-template-columns:280px 1fr}}
 
-.side{background:rgba(30,41,59,.95);border:1px solid var(--border);border-radius:14px;padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
+.side{background:rgba(30,41,59,.95);border:1px solid var(--border);border-radius:14px;padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;transition:all 0.3s ease}
 .side-section{display:flex;flex-direction:column;gap:8px}
 .side h2{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:0 0 4px 4px;font-weight:600}
 .quick{display:flex;flex-direction:column;gap:6px}
-.quick button{text-align:left;background:rgba(15,23,42,.65);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px 12px;font-size:.85rem;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all 0.2s}
-.quick button i { font-size: 1.1rem; color: var(--muted); transition: color 0.2s; }
-.quick button:hover{border-color:var(--accent);background:rgba(99,102,241,.15);transform:translateX(4px)}
+.quick button{text-align:left;background:rgba(15,23,42,.65);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:10px 12px;font-size:.85rem;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all 0.3s cubic-bezier(0.16, 1, 0.3, 1)}
+.quick button i { font-size: 1.1rem; color: var(--muted); transition: color 0.3s ease; }
+.quick button:hover{border-color:var(--accent);background:rgba(99,102,241,.15);transform:translateX(6px)}
 .quick button:hover i { color: var(--accent); }
 
 .chat-shell{background:rgba(30,41,59,.95);border:1px solid var(--border);border-radius:14px;display:flex;flex-direction:column;overflow:hidden;position:relative}
 .chat-head{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(15,23,42,0.5)}
 .chat-head-info{display:flex;align-items:center;gap:12px}
-.ai-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg, #4f46e5, #ec4899);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:white;box-shadow:0 0 10px rgba(99,102,241,0.4)}
+.ai-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg, #4f46e5, #ec4899);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:white;box-shadow:0 0 10px rgba(99,102,241,0.4);animation:float 3s ease-in-out infinite}
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
 .chat-head .title{font-weight:600;font-size:.95rem;color:#fff}
 .chat-head .meta{font-size:.78rem;color:var(--ok);display:flex;align-items:center;gap:4px}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 2px rgba(16,185,129,.2)}
 
 #messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px;scroll-behavior:smooth}
-.msg{max-width:85%;padding:12px 16px;border-radius:14px;font-size:.95rem;line-height:1.6;word-break:break-word;position:relative;animation:fadeIn 0.3s ease-out}
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.msg{max-width:85%;padding:12px 16px;border-radius:14px;font-size:.95rem;line-height:1.6;word-break:break-word;position:relative;animation:fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity:0; transform:translateY(15px)}
+@keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
 
-.msg.bot{align-self:flex-start;background:rgba(15,23,42,.8);border:1px solid var(--border);border-bottom-left-radius:4px;color:#e2e8f0;box-shadow:0 4px 6px rgba(0,0,0,0.1)}
-.msg.user{align-self:flex-end;background:linear-gradient(135deg,#4f46e5,#6366f1);border-bottom-right-radius:4px;color:white;box-shadow:0 4px 12px rgba(99,102,241,0.3);white-space:pre-wrap}
+.msg.bot{align-self:flex-start;background:rgba(15,23,42,.8);border:1px solid var(--border);border-bottom-left-radius:4px;color:#e2e8f0;box-shadow:0 4px 10px rgba(0,0,0,0.15)}
+.msg.user{align-self:flex-end;background:linear-gradient(135deg,#4f46e5,#6366f1);border-bottom-right-radius:4px;color:white;box-shadow:0 4px 15px rgba(99,102,241,0.35);white-space:pre-wrap}
 .msg strong{color:#fff;font-weight:600}
 .msg.error { background: rgba(220, 38, 38, 0.1); border-color: rgba(220, 38, 38, 0.3); color: #fca5a5; }
 
@@ -66,29 +68,27 @@ body{font-family:Inter,system-ui,sans-serif;background:linear-gradient(145deg,#0
 .msg-header i { font-size: 0.9rem; }
 
 .actions{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid rgba(255,255,255,.08);padding-top:12px}
-.actions button,.actions a{font-size:.85rem;padding:8px 14px;border-radius:8px;border:1px solid rgba(129,140,248,.3);background:rgba(99,102,241,.1);color:#c7d2fe;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s}
-.actions button:hover,.actions a:hover{background:var(--accent);color:#fff;border-color:var(--accent);transform:translateY(-1px)}
+.actions button,.actions a{font-size:.85rem;padding:8px 14px;border-radius:8px;border:1px solid rgba(129,140,248,.3);background:rgba(99,102,241,.1);color:#c7d2fe;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all 0.3s cubic-bezier(0.16, 1, 0.3, 1)}
+.actions button:hover,.actions a:hover{background:var(--accent);color:#fff;border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 10px rgba(99,102,241,0.3)}
 
-.typing-row{align-self:flex-start;display:none;align-items:center;gap:8px;padding:4px 0}
+.typing-row{align-self:flex-start;display:none;align-items:center;gap:8px;padding:4px 0;animation:fadeIn 0.3s ease-out forwards; opacity:0; transform:translateY(10px)}
 .typing-row.show{display:flex}
-.typing-bubble{display:inline-flex;gap:6px;align-items:center;padding:12px 16px;background:rgba(15,23,42,.8);border:1px solid var(--border);border-radius:14px;border-bottom-left-radius:4px}
-.typing-bubble i{width:6px;height:6px;border-radius:50%;background:#818cf8;display:block;animation:ty 1.2s infinite ease-in-out}
-.typing-bubble i:nth-child(2){animation-delay:.15s}
-.typing-bubble i:nth-child(3){animation-delay:.3s}
-@keyframes ty{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-6px);opacity:1}}
+.typing-bubble{display:inline-flex;gap:6px;align-items:center;padding:12px 16px;background:rgba(15,23,42,.8);border:1px solid var(--border);border-radius:14px;border-bottom-left-radius:4px;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
+.typing-bubble i{width:7px;height:7px;border-radius:50%;background:#818cf8;display:block;animation:ty 1.4s infinite cubic-bezier(0.4, 0, 0.2, 1)}
+.typing-bubble i:nth-child(2){animation-delay:.2s}
+.typing-bubble i:nth-child(3){animation-delay:.4s}
+@keyframes ty{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-5px);opacity:1}}
 
 .composer-wrapper { padding: 16px; background: rgba(15,23,42,0.8); border-top: 1px solid var(--border); }
-.composer{display:flex;gap:12px;align-items:flex-end;background: rgba(30,41,59,0.8); border: 1px solid var(--border); border-radius: 16px; padding: 6px; padding-left: 16px; transition: border-color 0.2s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1)}
-.composer:focus-within { border-color: rgba(99,102,241,0.5); box-shadow: 0 0 0 2px rgba(99,102,241,0.2), inset 0 2px 4px rgba(0,0,0,0.1); }
-.composer textarea{flex:1;resize:none;border:none;background:transparent;color:var(--text);padding:10px 0;font-size:1rem;min-height:44px;max-height:150px;font-family:inherit;line-height:1.5}
+.composer{display:flex;gap:12px;align-items:flex-end;background: rgba(30,41,59,0.8); border: 1px solid var(--border); border-radius: 16px; padding: 6px; padding-left: 16px; transition: all 0.3s ease; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1)}
+.composer:focus-within { border-color: rgba(99,102,241,0.6); box-shadow: 0 0 0 3px rgba(99,102,241,0.15), inset 0 2px 4px rgba(0,0,0,0.1); }
+.composer textarea{flex:1;resize:none;border:none;background:transparent;color:var(--text);padding:10px 0;font-size:1rem;min-height:44px;max-height:150px;font-family:inherit;line-height:1.5;transition:height 0.2s ease}
 .composer textarea:focus{outline:none}
 .composer textarea::placeholder { color: #64748b; }
 .composer .controls { display: flex; align-items: center; gap: 8px; padding-bottom: 4px; }
-.btn-icon { background: transparent; border: none; color: #94a3b8; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; transition: all 0.2s; }
-.btn-icon:hover { background: rgba(255,255,255,0.05); color: #e2e8f0; }
-.composer .send{background:var(--accent);border:none;color:#fff;width:40px;height:40px;border-radius:12px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
-.composer .send:hover:not(:disabled) { background: #4f46e5; transform: scale(1.05); }
-.composer .send:disabled{opacity:.5;cursor:not-allowed;background:var(--border)}
+.composer .send{background:var(--accent);border:none;color:#fff;width:40px;height:40px;border-radius:12px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s cubic-bezier(0.16, 1, 0.3, 1)}
+.composer .send:hover:not(:disabled) { background: #4f46e5; transform: scale(1.08) translateY(-2px); box-shadow:0 4px 10px rgba(99,102,241,0.4)}
+.composer .send:disabled{opacity:.5;cursor:not-allowed;background:var(--border);transform:none;box-shadow:none}
 
 .hint{font-size:.75rem;color:var(--muted);text-align:center;margin-top:8px}
 
@@ -96,22 +96,163 @@ body{font-family:Inter,system-ui,sans-serif;background:linear-gradient(145deg,#0
 @media(max-width:899px){
   .menu-toggle { display: block; }
   .layout { display: flex; flex-direction: column; height: calc(100vh - 65px); padding: 0; }
-  .side { position: fixed; inset: 0; top: 65px; z-index: 20; background: var(--bg); border: none; border-radius: 0; transform: translateX(-100%); transition: transform 0.3s ease; padding: 20px; }
+  .side { position: fixed; inset: 0; top: 65px; z-index: 20; background: var(--bg); border: none; border-radius: 0; transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); padding: 20px; }
   .side.open { transform: translateX(0); }
   .chat-shell { flex: 1; border: none; border-radius: 0; height: 100%; }
-  .msg { max-width: 90%; }
+  .msg { max-width: 92%; }
   .brand-info span { display: none; }
 }
-
 </style>
 </head>
 <body>
-<header class="topbar"></header>
-<main></main>
+<div id="loader">
+  <div class="logo-circle">
+    <img src="img/fondos/logo.png" alt="Logo TJ" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\'bi bi-robot\'></i>';">
+  </div>
+  <div class="bar"><span></span></div>
+  <p>Conectando con Edu.Control AI...</p>
+</div>
+
+<header class="topbar">
+  <div class="brand">
+    <button class="menu-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+    <div class="brand-logo">
+      <img src="img/fondos/logo.png" alt="Logo" onerror="this.parentElement.innerHTML='<i class=\'bi bi-robot\' style=\'color:#002b49; font-size: 1.5rem;\'></i>';">
+    </div>
+    <div class="brand-info">
+      <div>Edu.Control AI</div>
+      <span>Complejo Educativo Thomas Jefferson</span>
+    </div>
+  </div>
+  <div class="btn-group-top">
+    <a href="Manual_EduControl.pdf" target="_blank" class="btn-success-soft"><i class="bi bi-file-earmark-pdf"></i> Manual PDF</a>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="side" id="sidebar">
+    <div class="side-section">
+      <h2>IR AL SISTEMA</h2>
+      <div class="quick">
+        <button type="button" onclick="irA('index.html')"><i class="bi bi-box-arrow-in-right"></i> Inicio de sesión</button>
+        <button type="button" onclick="irA('dashboard.html')"><i class="bi bi-speedometer2"></i> Panel docente</button>
+        <button type="button" onclick="irA('asistencia.html')"><i class="bi bi-calendar-check"></i> Asistencia</button>
+        <button type="button" onclick="irA('calificaciones.html')"><i class="bi bi-journal-bookmark"></i> Calificaciones</button>
+        <button type="button" onclick="irA('alumnos.html')"><i class="bi bi-people"></i> Alumnos</button>
+        <button type="button" onclick="irA('configurar-perfil.html')"><i class="bi bi-person-gear"></i> Configurar perfil</button>
+        <button type="button" onclick="irA('admin.html')"><i class="bi bi-shield-lock"></i> Panel admin</button>
+      </div>
+    </div>
+    <div class="side-section">
+      <h2>PREGUNTAS RÁPIDAS</h2>
+      <div class="quick">
+        <button type="button" onclick="enviarSugerencia('¿Cómo ingreso al sistema?')"><i class="bi bi-door-open"></i> Cómo ingresar</button>
+        <button type="button" onclick="enviarSugerencia('¿Cómo paso asistencia a mis alumnos?')"><i class="bi bi-check2-square"></i> Pasar asistencia</button>
+        <button type="button" onclick="enviarSugerencia('Necesito registrar calificaciones')"><i class="bi bi-pencil-square"></i> Registrar notas</button>
+        <button type="button" onclick="enviarSugerencia('Mis alumnos no aparecen en la lista')"><i class="bi bi-exclamation-triangle"></i> No veo alumnos</button>
+        <button type="button" onclick="enviarSugerencia('Explícame qué es Edu.Control')"><i class="bi bi-info-circle"></i> Qué es Edu.Control</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="chat-shell">
+    <div class="chat-head">
+      <div class="chat-head-info">
+        <div class="ai-avatar"><i class="bi bi-robot"></i></div>
+        <div>
+          <div class="title">Asistente Inteligente Edu.Control</div>
+          <div class="meta"><div class="dot"></div> En línea y listo para ayudar</div>
+        </div>
+      </div>
+    </div>
+    <div id="messages">
+      <div class="msg bot">
+        <div class="msg-header"><i class="bi bi-robot"></i> Edu.Control AI</div>
+        ¡Hola, docente! 👋 Soy el asistente inteligente de <strong>Edu.Control</strong> para el Complejo Educativo Thomas Jefferson.<br><br>
+        Puedo guiarte paso a paso en el uso de la plataforma, resolver problemas comunes, o llevarte directamente a la sección que necesites. ¿En qué te ayudo hoy?
+        <div class="actions">
+          <button type="button" onclick="irA('index.html')"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</button>
+          <button type="button" onclick="enviarSugerencia('Muéstrame las funcionalidades principales')"><i class="bi bi-stars"></i> Ver funcionalidades</button>
+        </div>
+      </div>
+    </div>
+    <div class="typing-row" id="typingRow"><div class="typing-bubble"><i></i><i></i><i></i></div></div>
+    
+    <div class="composer-wrapper">
+      <div class="composer">
+        <textarea id="userInput" rows="1" placeholder="Ej: Llévame a asistencia, o ¿cómo registro notas?" onkeydown="handleKeyDown(event)"></textarea>
+        <div class="controls">
+          <button class="send" id="sendBtn" type="button" onclick="sendMessage()"><i class="bi bi-send-fill"></i></button>
+        </div>
+      </div>
+      <div class="hint">Escribe con naturalidad. Puedes pedir: "Abreme calificaciones" o "Quiero configurar mi perfil".</div>
+    </div>
+  </main>
+</div>
 
 <script>
+// VARIABLES GLOBALES Y UTILIDADES
+const URL_SISTEMA = "https://sistemaescolar-beta.vercel.app";
+
+function norm(t){ return String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[¿?¡!.,;:()\"']/g," ").replace(/\s+/g," ").trim(); }
+
+// BASE DE CONOCIMIENTO LOCAL (PLAN B)
+const CONOCIMIENTO = [
+  {id:"ingresar", keywords:["como ingreso","como entrar","como acceder","como inicio sesion","iniciar sesion","login","entrar al sistema","ingresar al sistema","url","enlace","link","direccion","pagina web","sitio web","donde entro","como abro el sistema","navegador","chrome","edge","firefox","vercel","sistemaescolar","pantalla de inicio"],
+   answer:()=>`<strong>Como ingresar a Edu.Control</strong><br><br>1. Abre tu navegador favorito (Google Chrome, Microsoft Edge, Firefox o Safari).<br>2. En la barra de direcciones escribe exactamente:<br><strong>${URL_SISTEMA}</strong><br>3. Presiona Enter. Se abrira la <strong>pantalla principal de inicio de sesion</strong>.<br>4. Ingresa tu correo institucional (ejemplo: usuario@clases.edu.sv) y tu contrasena.<br>5. Si es la primera vez, completa tu perfil (grado, seccion y materias).<br><br>Tambien puedes usar Google si tu correo ya esta autorizado.`,
+   actions:()=>[{label:'<i class="bi bi-box-arrow-in-right"></i> Ir al login',onClick:()=>irA('index.html')},{label:'<i class="bi bi-link-45deg"></i> Sitio oficial',href:URL_SISTEMA,blank:true}]},
+  {id:"registro", keywords:["registrarme","crear cuenta","como me registro","nuevo docente","codigo de seguridad","no tengo cuenta"],
+   answer:()=>`<strong>Registro de docente</strong><br><br>1. Entra a <strong>${URL_SISTEMA}</strong><br>2. Usa la opcion Registrarse.<br>3. Correo institucional (@clases.edu.sv) y codigo de seguridad de la escuela.<br>4. Crea tu contrasena, inicia sesion y configura grado, seccion y materias.`,
+   actions:()=>[{label:'<i class="bi bi-person-plus"></i> Ir a registro',onClick:()=>irA('registro.html')}]},
+  {id:"perfil", keywords:["configurar perfil","mi perfil","grado a cargo","materias","seccion","tutor","encargado","asignaciones","perfil docente"],
+   answer:()=>`<strong>Configurar perfil docente</strong><br><br>1. Inicia sesion y ve a Configurar perfil / Editar mi perfil.<br>2. Elige el <strong>grado y seccion oficiales</strong> (ej. 1° GENERAL SECCION A, 2° ITSI A).<br>3. Marca las materias que impartes y los grados donde las das.<br>4. Guarda.<br><br>Si no configuras grado y seccion, no veras alumnos en asistencia ni calificaciones.`,
+   actions:()=>[{label:'<i class="bi bi-person-gear"></i> Abrir perfil',onClick:()=>irA('configurar-perfil.html')}]},
+  {id:"asistencia", keywords:["asistencia","pasar lista","pasar asistencia","presente","ausente","tarde","control de asistencia","lista diaria","como paso lista"],
+   answer:()=>`<strong>Como pasar asistencia</strong><br><br>1. Inicia sesion.<br>2. Abre Control de Asistencia.<br>3. Selecciona grado/seccion (igual que en tu perfil).<br>4. Verifica la fecha (no sabados, domingos ni fechas futuras).<br>5. Marca Presente, Ausente o Tarde.<br>6. Puedes usar Todos presentes y ajustar.<br>7. Guarda asistencia.<br>8. Opcional: descarga PDF del dia o semana.`,
+   actions:()=>[{label:'<i class="bi bi-calendar-check"></i> Ir a asistencia',onClick:()=>irA('asistencia.html')}]},
+  {id:"calificaciones", keywords:["calificaciones","notas","calificacion","promedio","actividad","periodo","cerrar periodo","reabrir","como registro notas","registrar notas"],
+   answer:()=>`<strong>Como registrar calificaciones</strong><br><br>1. Abre Registro de Calificaciones.<br>2. Elige materia y grado/seccion.<br>3. Selecciona periodo (1 a 4).<br>4. Crea actividad si hace falta.<br>5. Ingresa notas y guarda.<br>6. Al terminar puedes cerrar el periodo.<br>7. Puedes descargar PDF.`,
+   actions:()=>[{label:'<i class="bi bi-journal-check"></i> Ir a calificaciones',onClick:()=>irA('calificaciones.html')}]},
+  {id:"alumnos", keywords:["alumnos","estudiantes","registrar alumno","agregar alumno","eliminar alumno","gestion de alumnos","lista de estudiantes","nie"],
+   answer:()=>`<strong>Gestion de alumnos</strong><br><br>1. Abre Gestion de Alumnos.<br>2. Selecciona grado/seccion asignado.<br>3. Registra nombre, sexo y NIE si aplica.<br>4. Edita o elimina segun necesites.<br>5. Esos alumnos saldran en asistencia y calificaciones.`,
+   actions:()=>[{label:'<i class="bi bi-people"></i> Ir a alumnos',onClick:()=>irA('alumnos.html')}]},
+  {id:"no_alumnos", keywords:["no veo alumnos","no aparecen alumnos","lista vacia","sin alumnos","no carga alumnos","alumnos no salen","no muestra estudiantes"],
+   answer:()=>`<strong>Si no ves alumnos</strong><br><br>1. En Configurar perfil guarda el grado con <strong>seccion</strong> (ej. 1° GENERAL SECCION A).<br>2. En Alumnos confirma que esten con ese mismo grado.<br>3. El nombre del grado debe coincidir.<br>4. Cierra sesion, entra de nuevo y prueba.<br>5. Si cambio el nombre oficial, pide reasignacion al admin.`,
+   actions:()=>[{label:'<i class="bi bi-person-gear"></i> Perfil',onClick:()=>irA('configurar-perfil.html')},{label:'<i class="bi bi-people"></i> Alumnos',onClick:()=>irA('alumnos.html')}]},
+  {id:"problemas", keywords:["problema","problemas frecuentes","error","falla","no guarda","no descarga","pdf","popup","ventana emergente","no inicia sesion","contrasena","password"],
+   answer:()=>`<strong>Problemas frecuentes</strong><br><br>• <strong>No veo alumnos:</strong> revisa grado/seccion en perfil.<br>• <strong>No guarda:</strong> internet y espera a que cargue.<br>• <strong>No descarga PDF:</strong> permite ventanas emergentes.<br>• <strong>No inicia sesion:</strong> correo/contrasena o cuenta desactivada (pide al admin).<br>• <strong>Google login:</strong> solo si el correo ya esta autorizado.`},
+  {id:"que_es", keywords:["que es edu","que es el sistema","arquitectura","tecnologias","para que sirve","firebase","vercel"],
+   answer:()=>`<strong>Que es Edu.Control?</strong><br><br>Sistema web de gestion academica del Complejo Educativo Thomas Jefferson: alumnos, asistencia, calificaciones, periodos y PDF.<br><br><strong>Tecnologias:</strong> HTML, CSS, JS, Bootstrap, Firebase Auth, Firestore, Vercel, jsPDF.<br><strong>Acceso:</strong> ${URL_SISTEMA}`},
+  {id:"admin", keywords:["administrador","panel admin","roles","activar cuenta","desactivar","reporte global"],
+   answer:()=>`<strong>Panel administrador</strong><br><br>Permite revisar docentes, activar/desactivar cuentas, estadisticas, reabrir periodos y PDF por grado. Solo rol admin.`,
+   actions:()=>[{label:'<i class="bi bi-shield-lock"></i> Admin',onClick:()=>irA('admin.html')}]},
+  {id:"saludo", keywords:["hola","buenos dias","buenas tardes","buenas noches","hey","saludos","buenas"],
+   answer:()=>`¡Hola! Puedo ayudarte a ingresar, pasar asistencia, registrar notas o abrir una seccion (ej. "abreme el login").`},
+  {id:"gracias", keywords:["gracias","muchas gracias","ok gracias"],
+   answer:()=>`Con gusto. Si necesitas otra cosa del sistema, preguntame o usa el panel izquierdo.`}
+];
+
+function buscarRespuesta(pregunta){
+  const q=norm(pregunta); let mejor=null, mejorScore=0;
+  for(const item of CONOCIMIENTO){
+    let score=0;
+    for(const kw of item.keywords){
+      const k=norm(kw); if(!k) continue;
+      if(q===k) score+=10;
+      else if(q.includes(k)) score+=3+Math.min(k.length/10,3);
+      else {
+        const tokens=k.split(" ").filter(t=>t.length>2);
+        const hits=tokens.filter(t=>q.includes(t)).length;
+        if(hits && hits===tokens.length) score+=2; else if(hits) score+=hits*0.5;
+      }
+    }
+    if(score>mejorScore){ mejorScore=score; mejor=item; }
+  }
+  return (mejor && mejorScore>=1.5) ? mejor : null;
+}
+
 // UI Control
-window.addEventListener("load", () => setTimeout(() => document.getElementById("loader").classList.add("hide"), 550));
+window.addEventListener("load", () => setTimeout(() => document.getElementById("loader").classList.add("hide"), 800));
 const userInput = document.getElementById("userInput");
 const messagesContainer = document.getElementById("messages");
 const typingRow = document.getElementById("typingRow");
@@ -154,7 +295,7 @@ function appendBot(html, isError = false){
   
   const header = document.createElement("div");
   header.className = "msg-header";
-  header.innerHTML = isError ? '<i class="bi bi-exclamation-triangle-fill"></i> Error de conexión' : '<i class="bi bi-robot"></i> Edu.Control AI';
+  header.innerHTML = isError ? '<i class="bi bi-exclamation-triangle-fill"></i> Conexión limitada' : '<i class="bi bi-robot"></i> Edu.Control AI';
   d.appendChild(header);
 
   const content = document.createElement("div");
@@ -193,7 +334,7 @@ function appendBotWithActions(html, acciones){
   scrollToBottom();
 }
 
-// Lógica de Redirección Automática (Reglas Locales Rápidas)
+// Lógica de Redirección Automática
 const mapRutas = {
   "index.html": { nombre: "Inicio de sesión", icon: "bi-box-arrow-in-right" },
   "dashboard.html": { nombre: "Panel Docente", icon: "bi-speedometer2" },
@@ -216,23 +357,23 @@ function irA(archivo){
     appendBotWithActions(`Abriendo <strong>${info.nombre}</strong>... Si tu navegador bloquea la redirección, haz clic en el botón.`,
       [{label: `<i class="bi ${info.icon}"></i> Abrir ahora`, onClick: () => { window.location.href = archivo; }}]);
     
-    setTimeout(()=>{ window.location.href = archivo; }, 1000);
+    setTimeout(()=>{ window.location.href = archivo; }, 800);
   }, 600);
 }
 
 function checkAutoRedirect(texto) {
-  const norm = texto.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
-  const quiereIr = /(abre|abrir|abrime|llevame|lleva me|lleve me|ir a|ve a|vaya a|entrar a|entra a|redirige|muestrame|quiero ir)/.test(norm);
+  const normTxt = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  const quiereIr = /(abre|abrir|abrime|llevame|lleva me|lleve me|ir a|ve a|vaya a|entrar a|entra a|redirige|muestrame|quiero ir)/.test(normTxt);
   
   if(!quiereIr) return null;
 
-  if (norm.includes("login") || norm.includes("inicio de sesion") || norm.includes("entrar")) return "index.html";
-  if (norm.includes("asistencia") || norm.includes("lista")) return "asistencia.html";
-  if (norm.includes("calificacion") || norm.includes("notas")) return "calificaciones.html";
-  if (norm.includes("alumno") || norm.includes("estudiante")) return "alumnos.html";
-  if (norm.includes("perfil") || norm.includes("configuracion")) return "configurar-perfil.html";
-  if (norm.includes("panel") || norm.includes("dashboard")) return "dashboard.html";
-  if (norm.includes("admin")) return "admin.html";
+  if (normTxt.includes("login") || normTxt.includes("inicio de sesion") || normTxt.includes("entrar")) return "index.html";
+  if (normTxt.includes("asistencia") || normTxt.includes("lista")) return "asistencia.html";
+  if (normTxt.includes("calificacion") || normTxt.includes("notas")) return "calificaciones.html";
+  if (normTxt.includes("alumno") || normTxt.includes("estudiante")) return "alumnos.html";
+  if (normTxt.includes("perfil") || normTxt.includes("configuracion")) return "configurar-perfil.html";
+  if (normTxt.includes("panel") || normTxt.includes("dashboard")) return "dashboard.html";
+  if (normTxt.includes("admin")) return "admin.html";
 
   return null;
 }
@@ -248,7 +389,7 @@ async function sendMessage(){
   userInput.style.height="44px"; 
   sendBtn.disabled=true; 
   
-  // 1. Verificar si el usuario pide ir a una pestaña específica
+  // 1. Redirección Inmediata UI
   const rutaRedireccion = checkAutoRedirect(text);
   if (rutaRedireccion) {
       const info = mapRutas[rutaRedireccion];
@@ -263,8 +404,12 @@ async function sendMessage(){
       return;
   }
 
-  // 2. Si no es redirección, consultar al backend (Gemini)
   showTyping(true);
+
+  // 2. PLAN A: Usar IA Gemini con Timeout de 30 segundos
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos límite
+
   try {
     const res = await fetch("/api/chat", {
       method: "POST",
@@ -272,39 +417,45 @@ async function sendMessage(){
       body: JSON.stringify({
         message: text,
         history: chatHistory
-      })
+      }),
+      signal: controller.signal
     });
 
-    showTyping(false);
-    sendBtn.disabled=false;
+    clearTimeout(timeoutId); // Si responde a tiempo, limpiamos el cronómetro
 
     if (!res.ok) {
-        if(res.status === 405) {
-            throw new Error("El endpoint /api/chat existe pero devolvió 405. Verifica que el método sea POST en tu backend.");
-        } else if (res.status === 404) {
-            throw new Error("No se encontró el backend (/api/chat). Verifica que Vercel esté desplegado correctamente.");
-        }
         throw new Error("Error del servidor: " + res.status);
     }
 
     const data = await res.json();
     
-    // Actualizar historial local
+    showTyping(false);
+    sendBtn.disabled=false;
+
+    // Actualizar historial local de Gemini
     chatHistory.push({ role: "user", parts: [{ text: text }] });
     chatHistory.push({ role: "model", parts: [{ text: data.reply }] });
     
-    // Mostrar respuesta procesando Markdown básico a HTML si es necesario
-    // Reemplaza negritas Markdown a HTML
     let formattedReply = data.reply.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-    formattedReply = formattedReply.replace(//g, "<br>");
+    formattedReply = formattedReply.replace(/\n/g, "<br>");
 
     appendBot(formattedReply);
 
   } catch (error) {
+    clearTimeout(timeoutId);
     showTyping(false);
     sendBtn.disabled=false;
-    console.error(error);
-    appendBot("Hubo un problema al conectar con mi cerebro (backend).<br><small>" + error.message + "</small><br><br>Mientras lo resolvemos, puedes usar los botones del menú lateral.", true);
+    
+    console.warn("La IA tardó mucho o falló, activando Plan B (Base local). Error: ", error.message);
+    
+    // 3. PLAN B: Si falla la red o pasa el tiempo, usamos la base local
+    const hit = buscarRespuesta(text);
+    
+    if (hit) {
+        appendBotWithActions(hit.answer(), typeof hit.actions === "function" ? hit.actions() : null);
+    } else {
+        appendBot("La conexión con mi red principal es inestable en este momento, pero puedo ayudarte con:<br>• Ingresar o configurar tu perfil<br>• Asistencia, notas y alumnos<br>• Problemas frecuentes<br><br><i>Intenta usar los botones del menú lateral.</i>", true);
+    }
   }
 }
 </script>
