@@ -1,137 +1,99 @@
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: "Método no permitido" });
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Método no permitido" });
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    console.error("Falta GEMINI_API_KEY en Vercel");
+    return res.status(500).json({
+      error: "Falta GEMINI_API_KEY. Configurala en Vercel y haz Redeploy."
+    });
+  }
 
   try {
-    const { message, history = [] } = req.body;
-    if (!message) return res.status(400).json({ error: "Mensaje vacío" });
+    const { message, history = [] } = req.body || {};
+    if (!message || typeof message !== "string") {
+      return res.status(400).json({ error: "Mensaje vacío" });
+    }
 
-    const geminiHistory = history.map(h => ({
-      role: h.role,
-      parts: [{ text: h.parts?.[0]?.text || "" }]
-    })).filter(h => h.parts[0].text);
+    const geminiHistory = (history || [])
+      .map((h) => ({
+        role: h.role === "model" ? "model" : "user",
+        parts: [{ text: h.parts?.[0]?.text || h.text || "" }]
+      }))
+      .filter((h) => h.parts[0].text);
 
-    const openAiHistory = history.map(h => ({
-      role: h.role === "model" ? "assistant" : "user",
-      content: h.parts?.[0]?.text || ""
-    })).filter(h => h.content);
+    const systemText =
+      "Eres el asistente de Edu.Control del Complejo Educativo Thomas Jefferson. " +
+      "Ayudas a docentes con login, perfil, alumnos, asistencia, calificaciones y fallas comunes. " +
+      "Sitio: https://sistemaescolar-beta.vercel.app. Responde en español, claro y en pasos cortos.";
 
-    // MODELOS DISPONIBLES (Nov 2026)
     const modelos = [
-      {
-        nombre: "Gemini 2.5 Flash Lite",
-        apiKey: process.env.GEMINI_API_KEY,
-        url: (key) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${key}`,
-        tipo: "gemini"
-      },
-      {
-        nombre: "Gemini 2.0 Flash Lite",
-        apiKey: process.env.GEMINI_API_KEY,
-        url: (key) => `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${key}`,
-        tipo: "gemini"
-      },
-      {
-        nombre: "Gemini 1.5 Flash (v1)",
-        apiKey: process.env.GEMINI_API_KEY,
-        url: (key) => `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${key}`,
-        tipo: "gemini"
-      },
-      {
-        nombre: "Groq Llama 3.1 8B",
-        apiKey: process.env.GROQ_API_KEY,
-        url: () => "https://api.groq.com/openai/v1/chat/completions",
-        tipo: "groq"
-      }
+      "gemini-2.0-flash",
+      "gemini-2.5-flash-lite",
+      "gemini-2.0-flash-lite"
     ];
 
-    for (const modelo of modelos) {
-      const apiKey = modelo.apiKey;
-      if (!apiKey) {
-        console.warn(`[Skip] ${modelo.nombre}: sin API key`);
-        continue;
-      }
+    let lastError = "";
 
+    for (const model of modelos) {
       try {
-        console.log(`[Intent] Probando ${modelo.nombre}...`);
+        const url =
+          "https://generativelanguage.googleapis.com/v1beta/models/" +
+          model +
+          ":generateContent?key=" +
+          encodeURIComponent(apiKey);
 
-        let fetchOptions;
-        
-        if (modelo.tipo === "groq") {
-          fetchOptions = {
-            method: "POST",
-            headers: { 
-              "Content-Type": "application/json", 
-              "Authorization": `Bearer ${apiKey}` 
-            },
-            body: JSON.stringify({ 
-              model: "llama-3.1-8b-instant", 
-              messages: [
-                { role: "system", content: "Eres el asistente virtual de Edu.Control para el Complejo Educativo Thomas Jefferson. Responde breve y en español." },
-                ...openAiHistory
-              ],
-              max_tokens: 500,
-              temperature: 0.7
-            })
-          };
-        } else {
-          fetchOptions = {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-              contents: [...geminiHistory, { role: "user", parts: [{ text: message }] }],
-              generationConfig: { maxOutputTokens: 500, temperature: 0.7 }
-            })
-          };
-        }
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: systemText }] },
+            contents: [
+              ...geminiHistory,
+              { role: "user", parts: [{ text: message.slice(0, 4000) }] }
+            ],
+            generationConfig: {
+              maxOutputTokens: 1024,
+              temperature: 0.5
+            }
+          })
+        });
 
-        const url = modelo.tipo === "groq" ? modelo.url() : modelo.url(apiKey);
-        
-        const response = await fetch(url, fetchOptions);
+        const data = await response.json();
 
         if (!response.ok) {
-          const errorText = await response.text().catch(() => "");
-          console.warn(`[Fallo] ${modelo.nombre}: ${response.status} - ${errorText.substring(0, 200)}`);
+          lastError = data?.error?.message || response.statusText;
+          console.warn(`[Fallo] ${model}:`, lastError);
           continue;
         }
-        
-        const data = await response.json();
-        let reply;
-        
-        if (modelo.tipo === "groq") {
-          if (!data.choices?.[0]?.message?.content) {
-            console.warn(`[Fallo] ${modelo.nombre}: respuesta vacía`);
-            continue;
-          }
-          reply = data.choices[0].message.content;
-        } else {
-          if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
-            console.warn(`[Fallo] ${modelo.nombre}: respuesta vacía`);
-            continue;
-          }
-          reply = data.candidates[0].content.parts[0].text;
-        }
-        
-        if (!reply || reply.trim() === "") {
-          console.warn(`[Fallo] ${modelo.nombre}: texto vacío`);
+
+        const reply = data?.candidates?.[0]?.content?.parts
+          ?.map((p) => p.text)
+          .join("");
+
+        if (!reply || !reply.trim()) {
+          lastError = "respuesta vacía";
           continue;
         }
-        
-        console.log(`[ÉXITO] ${modelo.nombre} funcionó!`);
-        return res.status(200).json({ reply, motorUsado: modelo.nombre });
-        
-      } catch (error) {
-        console.warn(`[Error] ${modelo.nombre}:`, error.message);
-        continue;
+
+        return res.status(200).json({ reply, motorUsado: model });
+      } catch (err) {
+        lastError = err.message;
+        console.warn(`[Error] ${model}:`, err.message);
       }
     }
 
-    console.error("[Error] Todos los modelos fallaron");
-    return res.status(502).json({ error: "Todos los modelos fallaron" });
-
+    return res.status(502).json({
+      error: "No se pudo obtener respuesta de Gemini",
+      detail: lastError
+    });
   } catch (error) {
     console.error("[Error crítico]", error);
     return res.status(500).json({ error: error.message });
