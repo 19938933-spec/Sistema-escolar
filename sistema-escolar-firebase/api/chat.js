@@ -8,24 +8,32 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: "Método no permitido" });
   }
 
-  const apiKey = process.env.GEMINI_API_CLAVE;
+  const apiKey = (process.env.GEMINI_API_CLAVE || process.env.GEMINI_API_KEY || "").trim();
   if (!apiKey) {
-    console.error("Falta GEMINI_API_CLAVE en Vercel");
     return res.status(500).json({
-      error: "Falta GEMINI_API_CLAVE. Configurala en Vercel y haz Redeploy."
+      error: "Falta API key en Vercel",
+      hint: "Crea GEMINI_API_CLAVE o GEMINI_API_KEY, luego Redeploy"
     });
   }
 
   try {
-    const { message, history = [] } = req.body || {};
+    let body = req.body;
+    if (typeof body === "string") {
+      try { body = JSON.parse(body); } catch (e) { body = {}; }
+    }
+    body = body || {};
+
+    const message = body.message;
+    const history = body.history || [];
+
     if (!message || typeof message !== "string") {
       return res.status(400).json({ error: "Mensaje vacío" });
     }
 
-    const geminiHistory = (history || [])
+    const geminiHistory = history
       .map((h) => ({
         role: h.role === "model" ? "model" : "user",
-        parts: [{ text: h.parts?.[0]?.text || h.text || "" }]
+        parts: [{ text: (h.parts && h.parts[0] && h.parts[0].text) || h.text || "" }]
       }))
       .filter((h) => h.parts[0].text);
 
@@ -34,12 +42,7 @@ module.exports = async function handler(req, res) {
       "Ayudas a docentes con login, perfil, alumnos, asistencia, calificaciones y fallas comunes. " +
       "Sitio: https://sistemaescolar-beta.vercel.app. Responde en español, claro y en pasos cortos.";
 
-    const modelos = [
-      "gemini-2.0-flash",
-      "gemini-2.5-flash-lite",
-      "gemini-2.0-flash-lite"
-    ];
-
+    const modelos = ["gemini-2.0-flash", "gemini-2.5-flash-lite", "gemini-1.5-flash"];
     let lastError = "";
 
     for (const model of modelos) {
@@ -59,34 +62,30 @@ module.exports = async function handler(req, res) {
               ...geminiHistory,
               { role: "user", parts: [{ text: message.slice(0, 4000) }] }
             ],
-            generationConfig: {
-              maxOutputTokens: 1024,
-              temperature: 0.5
-            }
+            generationConfig: { maxOutputTokens: 1024, temperature: 0.5 }
           })
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-          lastError = data?.error?.message || response.statusText;
-          console.warn(`[Fallo] ${model}:`, lastError);
+          lastError = (data.error && data.error.message) || response.statusText;
+          console.warn("[Fallo]", model, lastError);
           continue;
         }
 
-        const reply = data?.candidates?.[0]?.content?.parts
-          ?.map((p) => p.text)
-          .join("");
+        const parts = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
+        const reply = parts ? parts.map((p) => p.text || "").join("") : "";
 
-        if (!reply || !reply.trim()) {
-          lastError = "respuesta vacía";
+        if (!reply.trim()) {
+          lastError = "respuesta vacía de " + model;
           continue;
         }
 
-        return res.status(200).json({ reply, motorUsado: model });
+        return res.status(200).json({ reply: reply, motorUsado: model });
       } catch (err) {
         lastError = err.message;
-        console.warn(`[Error] ${model}:`, err.message);
+        console.warn("[Error]", model, err.message);
       }
     }
 
@@ -96,6 +95,6 @@ module.exports = async function handler(req, res) {
     });
   } catch (error) {
     console.error("[Error crítico]", error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message || "Error interno" });
   }
 };
