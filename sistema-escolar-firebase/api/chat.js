@@ -8,11 +8,11 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: "Método no permitido" });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GEMINI_API_CLAVE;
   if (!apiKey) {
-    console.error("Falta GEMINI_API_KEY en Vercel");
+    console.error("Falta GEMINI_API_CLAVE en Vercel");
     return res.status(500).json({
-      error: "Falta GEMINI_API_KEY. Configurala en Vercel y haz Redeploy."
+      error: "Falta GEMINI_API_CLAVE. Configurala en Vercel y haz Redeploy."
     });
   }
 
