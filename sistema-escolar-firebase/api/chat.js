@@ -12,7 +12,7 @@ module.exports = async function handler(req, res) {
   if (!apiKey) {
     return res.status(500).json({
       error: "Falta API key en Vercel",
-      hint: "Crea GEMINI_API_CLAVE o GEMINI_API_KEY, luego Redeploy"
+      hint: "Configura GEMINI_API_CLAVE o GEMINI_API_KEY y haz Redeploy"
     });
   }
 
@@ -42,8 +42,16 @@ module.exports = async function handler(req, res) {
       "Ayudas a docentes con login, perfil, alumnos, asistencia, calificaciones y fallas comunes. " +
       "Sitio: https://sistemaescolar-beta.vercel.app. Responde en español, claro y en pasos cortos.";
 
-    const modelos = ["gemini-2.0-flash", "gemini-2.5-flash-lite", "gemini-1.5-flash"];
-    let lastError = "";
+    // Modelos actuales (evitar gemini-1.5-flash: ya no existe en muchas cuentas)
+    const modelos = [
+      "gemini-2.0-flash",
+      "gemini-2.0-flash-001",
+      "gemini-2.5-flash",
+      "gemini-2.5-flash-lite",
+      "gemini-flash-latest"
+    ];
+
+    const fallos = [];
 
     for (const model of modelos) {
       try {
@@ -69,29 +77,51 @@ module.exports = async function handler(req, res) {
         const data = await response.json();
 
         if (!response.ok) {
-          lastError = (data.error && data.error.message) || response.statusText;
-          console.warn("[Fallo]", model, lastError);
+          const msg = (data.error && data.error.message) || response.statusText;
+          fallos.push(model + ": " + msg);
+          console.warn("[Fallo]", model, msg);
           continue;
         }
 
-        const parts = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
+        const parts =
+          data.candidates &&
+          data.candidates[0] &&
+          data.candidates[0].content &&
+          data.candidates[0].content.parts;
         const reply = parts ? parts.map((p) => p.text || "").join("") : "";
 
         if (!reply.trim()) {
-          lastError = "respuesta vacía de " + model;
+          fallos.push(model + ": respuesta vacía");
           continue;
         }
 
         return res.status(200).json({ reply: reply, motorUsado: model });
       } catch (err) {
-        lastError = err.message;
+        fallos.push(model + ": " + err.message);
         console.warn("[Error]", model, err.message);
       }
     }
 
+    // Si todos fallan, listar modelos disponibles para diagnosticar
+    let disponibles = [];
+    try {
+      const listUrl =
+        "https://generativelanguage.googleapis.com/v1beta/models?key=" +
+        encodeURIComponent(apiKey);
+      const listRes = await fetch(listUrl);
+      const listData = await listRes.json();
+      disponibles = (listData.models || [])
+        .map((m) => (m.name || "").replace("models/", ""))
+        .filter((n) => n.indexOf("gemini") !== -1)
+        .slice(0, 20);
+    } catch (e) {
+      disponibles = ["no se pudo listar: " + e.message];
+    }
+
     return res.status(502).json({
       error: "No se pudo obtener respuesta de Gemini",
-      detail: lastError
+      fallos: fallos,
+      modelosDisponibles: disponibles
     });
   } catch (error) {
     console.error("[Error crítico]", error);
