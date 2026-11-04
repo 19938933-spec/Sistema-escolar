@@ -42,13 +42,15 @@ module.exports = async function handler(req, res) {
       "Ayudas a docentes con login, perfil, alumnos, asistencia, calificaciones y fallas comunes. " +
       "Sitio: https://sistemaescolar-beta.vercel.app. Responde en español, claro y en pasos cortos.";
 
-    // Modelos actuales (evitar gemini-1.5-flash: ya no existe en muchas cuentas)
+    // Modelos vigentes según respuesta de la API (nov 2026)
     const modelos = [
-      "gemini-2.0-flash",
-      "gemini-2.0-flash-001",
-      "gemini-2.5-flash",
-      "gemini-2.5-flash-lite",
-      "gemini-flash-latest"
+      "gemini-3.1-flash-lite",
+      "gemini-3-flash-preview",
+      "gemini-flash-lite-latest",
+      "gemini-flash-latest",
+      "gemini-3.8-flash",
+      "gemini-3.5-flash-lite",
+      "gemini-pro-latest"
     ];
 
     const fallos = [];
@@ -102,7 +104,6 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    // Si todos fallan, listar modelos disponibles para diagnosticar
     let disponibles = [];
     try {
       const listUrl =
@@ -113,7 +114,7 @@ module.exports = async function handler(req, res) {
       disponibles = (listData.models || [])
         .map((m) => (m.name || "").replace("models/", ""))
         .filter((n) => n.indexOf("gemini") !== -1)
-        .slice(0, 20);
+        .slice(0, 25);
     } catch (e) {
       disponibles = ["no se pudo listar: " + e.message];
     }
