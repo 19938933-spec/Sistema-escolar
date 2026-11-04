@@ -25,6 +25,7 @@ module.exports = async function handler(req, res) {
 
     const message = body.message;
     const history = body.history || [];
+    const systemKnowledge = body.systemKnowledge || "";
 
     if (!message || typeof message !== "string") {
       return res.status(400).json({ error: "Mensaje vacío" });
@@ -40,9 +41,9 @@ module.exports = async function handler(req, res) {
     const systemText =
       "Eres el asistente de Edu.Control del Complejo Educativo Thomas Jefferson. " +
       "Ayudas a docentes con login, perfil, alumnos, asistencia, calificaciones y fallas comunes. " +
-      "Sitio: https://sistemaescolar-beta.vercel.app. Responde en español, claro y en pasos cortos.";
+      "Sitio: https://sistemaescolar-beta.vercel.app. Responde en español, claro y en pasos cortos. " +
+      "USA SOLO ESTA INFORMACIÓN REAL DEL SISTEMA:\n" + systemKnowledge;
 
-    // Modelos vigentes según respuesta de la API (nov 2026)
     const modelos = [
       "gemini-3.1-flash-lite",
       "gemini-3-flash-preview",
