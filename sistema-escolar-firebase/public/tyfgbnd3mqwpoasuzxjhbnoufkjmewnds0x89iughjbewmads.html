@@ -9,9 +9,7 @@
 <style>
 :root{--bg:#0f172a;--sidebar:#1e293b;--card:#1e293b;--text:#f1f5f9;--muted:#94a3b8;--accent:#6366f1;--accent-hover:#4f46e5;--ok:#10b981;--border:#334155;--primary-dark:#002b49;--hover:#334155}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;overflow:hidden}
-
-/* LOADER */
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
 #loader{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),visibility 0.6s}
 #loader.hide{opacity:0;visibility:hidden;pointer-events:none}
 #loader .logo-circle{width:96px;height:96px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;animation:pulse 1.6s ease-in-out infinite;box-shadow:0 0 0 6px rgba(99,102,241,.15)}
@@ -20,8 +18,6 @@ body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tex
 #loader .bar span{display:block;height:100%;width:40%;background:linear-gradient(90deg,var(--accent),#818cf8);border-radius:4px;animation:load 1.2s ease-in-out infinite}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
 @keyframes load{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
-
-/* HEADER */
 .header{background:var(--sidebar);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;z-index:100;flex-shrink:0}
 .header-left{display:flex;align-items:center;gap:16px}
 .menu-toggle{display:none;background:none;border:none;color:var(--text);font-size:1.5rem;cursor:pointer;padding:4px}
@@ -31,17 +27,13 @@ body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tex
 .brand-text h1{font-size:1rem;font-weight:600;color:var(--text)}
 .brand-text p{font-size:0.75rem;color:var(--muted)}
 .user-section{display:flex;align-items:center;gap:12px}
-.user-info{text-align:right;display:none}
+.user-info{text-align:right}
 .user-info .name{font-size:0.85rem;font-weight:500;color:var(--text)}
 .user-info .email{font-size:0.75rem;color:var(--muted)}
-.user-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#818cf8);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0;border:2px solid var(--border)}
+.user-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#818cf8);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;border:2px solid var(--border)}
 .user-avatar img{width:100%;height:100%;object-fit:cover}
 .user-avatar i{font-size:1.2rem;color:#fff}
-
-/* LAYOUT PRINCIPAL */
 .layout{display:flex;flex:1;overflow:hidden;position:relative}
-
-/* SIDEBAR */
 .sidebar{width:280px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;transition:transform 0.3s ease;z-index:50}
 .sidebar-header{padding:16px;border-bottom:1px solid var(--border)}
 .new-chat-btn{width:100%;padding:10px 14px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:0.9rem;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background 0.2s}
@@ -59,16 +51,12 @@ body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tex
 .sidebar-footer{padding:12px;border-top:1px solid var(--border)}
 .sidebar-btn{width:100%;padding:8px 12px;background:transparent;border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.2s;margin-bottom:8px}
 .sidebar-btn:hover{background:var(--hover);border-color:var(--accent)}
-
-/* MAIN CHAT AREA */
-.main-chat{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg)}
+.main-chat{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
 .messages-container{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:20px;scroll-behavior:smooth}
 .messages-container::-webkit-scrollbar{width:8px}
 .messages-container::-webkit-scrollbar-track{background:transparent}
 .messages-container::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 .messages-container::-webkit-scrollbar-thumb:hover{background:var(--muted)}
-
-/* MENSAJES */
 .message{display:flex;gap:12px;max-width:900px;margin:0 auto;width:100%;animation:fadeIn 0.3s ease-out}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .message.user{flex-direction:row-reverse}
@@ -90,8 +78,6 @@ body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tex
 .message-text p{margin:8px 0}
 .message-text p:first-child{margin-top:0}
 .message-text p:last-child{margin-bottom:0}
-
-/* COMPOSER */
 .composer-section{padding:20px 24px;background:var(--bg);border-top:1px solid var(--border);flex-shrink:0}
 .composer-wrapper{max-width:900px;margin:0 auto}
 .composer{display:flex;align-items:flex-end;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:12px 16px;transition:all 0.2s}
@@ -103,9 +89,7 @@ body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tex
 .send-btn{width:40px;height:40px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0}
 .send-btn:hover:not(:disabled){background:var(--accent-hover);transform:scale(1.05)}
 .send-btn:disabled{opacity:0.5;cursor:not-allowed}
-
-/* TYPING INDICATOR */
-.typing-indicator{display:none;align-items:center;gap:12px;max-width:900px;margin:0 auto;width:100%;animation:fadeIn 0.3s}
+.typing-indicator{display:none;align-items:center;gap:12px;max-width:900px;margin:0 auto;width:100%;animation:fadeIn 0.3s;padding:0 24px 20px 24px}
 .typing-indicator.show{display:flex}
 .typing-indicator .message-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#10b981,#34d399);display:flex;align-items:center;justify-content:center}
 .typing-bubble{background:var(--card);padding:14px 18px;border-radius:12px;display:flex;gap:6px;align-items:center}
@@ -113,18 +97,14 @@ body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tex
 .typing-bubble span:nth-child(2){animation-delay:0.2s}
 .typing-bubble span:nth-child(3){animation-delay:0.4s}
 @keyframes typing{0%,100%{transform:translateY(0);opacity:0.4}50%{transform:translateY(-5px);opacity:1}}
-
-/* EMPTY STATE */
-.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text:center}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center}
 .empty-state-icon{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#818cf8);display:flex;align-items:center;justify-content:center;margin-bottom:24px}
 .empty-state-icon i{font-size:2.5rem;color:#fff}
 .empty-state h2{font-size:1.5rem;margin-bottom:12px;color:var(--text)}
 .empty-state p{color:var(--muted);max-width:400px;line-height:1.6;margin-bottom:24px}
 .suggestions{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:600px}
-.suggestion-chip{padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:20px;font-size:0.85rem;cursor:pointer;transition:all 0.2s;color:var(--text)}
+.suggestion-chip{padding:10px 16px;background:var(--card);border:1px solid var(--border);border-radius:20px;font-size:0.85rem;cursor:pointer;transition:all 0.2s;color:var(--text);display:flex;align-items:center;gap:8px}
 .suggestion-chip:hover{background:var(--hover);border-color:var(--accent);transform:translateY(-2px)}
-
-/* RESPONSIVE */
 @media(max-width:900px){
   .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:200;transform:translateX(-100%)}
   .sidebar.open{transform:translateX(0)}
@@ -135,7 +115,6 @@ body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tex
   .message{max-width:100%}
   .composer-section{padding:16px}
 }
-
 @media(max-width:600px){
   .header{padding:12px 16px}
   .brand-text h1{font-size:0.9rem}
@@ -143,8 +122,6 @@ body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tex
   .messages-container{padding:16px;gap:16px}
   .message-text{padding:12px 14px;font-size:0.9rem}
 }
-
-/* UTILIDADES */
 .hidden{display:none!important}
 .link{text-decoration:underline;color:#93c5fd;font-weight:500;cursor:pointer}
 .link:hover{color:#fff}
@@ -152,7 +129,6 @@ body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tex
 </head>
 <body>
 
-<!-- LOADER -->
 <div id="loader">
   <div class="logo-circle">
     <img src="img/fondos/logo.png" alt="Logo TJ" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\'bi bi-robot\' style=\'color:var(--primary-dark);font-size:2.5rem\'></i>'">
@@ -161,7 +137,6 @@ body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tex
   <p>Conectando con Edu.Control AI...</p>
 </div>
 
-<!-- HEADER -->
 <header class="header">
   <div class="header-left">
     <button class="menu-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
@@ -180,18 +155,15 @@ body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tex
       <div class="name" id="userName">Cargando...</div>
       <div class="email" id="userEmail">usuario@clases.edu.sv</div>
     </div>
-    <div class="user-avatar" id="userAvatar" onclick="irA('configurar-perfil.html')">
+    <div class="user-avatar" id="userAvatar">
       <i class="bi bi-person"></i>
     </div>
   </div>
 </header>
 
-<!-- LAYOUT PRINCIPAL -->
 <div class="layout">
-  <!-- OVERLAY PARA MÓVIL -->
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
   
-  <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <button class="new-chat-btn" onclick="newChat()">
@@ -200,8 +172,7 @@ body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tex
       </button>
     </div>
     <div class="chat-history" id="chatHistory">
-      <div class="chat-history-title">Chats Anteriores</div>
-      <!-- Los chats se cargarán aquí -->
+      <div class="chat-history-title">CHATS ANTERIORES</div>
     </div>
     <div class="sidebar-footer">
       <button class="sidebar-btn" onclick="irA('index.html')">
@@ -215,10 +186,8 @@ body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tex
     </div>
   </aside>
 
-  <!-- MAIN CHAT -->
   <main class="main-chat">
     <div class="messages-container" id="messagesContainer">
-      <!-- ESTADO VACÍO (se muestra al inicio) -->
       <div class="empty-state" id="emptyState">
         <div class="empty-state-icon">
           <i class="bi bi-robot"></i>
@@ -242,7 +211,6 @@ body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tex
       </div>
     </div>
 
-    <!-- INDICADOR DE ESCRIBIENDO -->
     <div class="typing-indicator" id="typingIndicator">
       <div class="message-avatar">
         <i class="bi bi-robot"></i>
@@ -254,7 +222,6 @@ body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tex
       </div>
     </div>
 
-    <!-- COMPOSER -->
     <div class="composer-section">
       <div class="composer-wrapper">
         <div class="composer">
@@ -270,15 +237,13 @@ body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tex
   </main>
 </div>
 
-<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, deleteDoc, doc, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, deleteDoc, doc, where, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// CONFIGURACIÓN FIREBASE (REEMPLAZA CON TUS DATOS)
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
+  apiKey: "TU_API_KEY_AQUI",
   authDomain: "sistema-escolar.firebaseapp.com",
   projectId: "sistema-escolar",
   storageBucket: "sistema-escolar.appspot.com",
@@ -286,17 +251,15 @@ const firebaseConfig = {
   appId: "1:123456789:web:abc123"
 };
 
-// Inicializar Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Variables globales
 window.currentUser = null;
 window.currentChatId = null;
 window.chatHistory = [];
+window.unsubscribeMessages = null;
 
-// Escuchar cambios de autenticación
 onAuthStateChanged(auth, (user) => {
   if (user) {
     window.currentUser = user;
@@ -304,16 +267,18 @@ onAuthStateChanged(auth, (user) => {
     document.getElementById('userEmail').textContent = user.email;
     if (user.photoURL) {
       document.getElementById('userAvatar').innerHTML = `<img src="${user.photoURL}" alt="Perfil">`;
+    } else {
+      const initial = (user.displayName || user.email || 'D').charAt(0).toUpperCase();
+      document.getElementById('userAvatar').innerHTML = `<span style="font-size:1.2rem;font-weight:600;color:#fff">${initial}</span>`;
     }
     loadChatHistory();
   } else {
     window.currentUser = null;
     document.getElementById('userName').textContent = 'Invitado';
-    document.getElementById('userEmail').textContent = 'No autenticado';
+    document.getElementById('userEmail').textContent = '';
   }
 });
 
-// Cargar historial de chats
 window.loadChatHistory = function() {
   if (!window.currentUser) return;
   
@@ -327,7 +292,11 @@ window.loadChatHistory = function() {
   
   onSnapshot(q, (snapshot) => {
     const container = document.getElementById('chatHistory');
-    container.innerHTML = '<div class="chat-history-title">Chats Anteriores</div>';
+    container.innerHTML = '<div class="chat-history-title">CHATS ANTERIORES</div>';
+    
+    if (snapshot.empty) {
+      container.innerHTML += '<div style="padding:20px;text-align:center;color:var(--muted);font-size:0.85rem">No hay chats guardados</div>';
+    }
     
     snapshot.forEach((docSnap) => {
       const chat = docSnap.data();
@@ -348,11 +317,16 @@ window.loadChatHistory = function() {
   });
 };
 
-// Crear nuevo chat
 window.newChat = function() {
   window.currentChatId = null;
   window.chatHistory = [];
-  document.getElementById('messagesContainer').innerHTML = `
+  if (window.unsubscribeMessages) {
+    window.unsubscribeMessages();
+    window.unsubscribeMessages = null;
+  }
+  
+  const container = document.getElementById('messagesContainer');
+  container.innerHTML = `
     <div class="empty-state" id="emptyState">
       <div class="empty-state-icon"><i class="bi bi-robot"></i></div>
       <h2>¿En qué puedo ayudarte hoy?</h2>
@@ -369,19 +343,21 @@ window.newChat = function() {
   loadChatHistory();
 };
 
-// Cargar chat específico
 window.loadChat = async function(chatId) {
   window.currentChatId = chatId;
   window.chatHistory = [];
   
-  // Obtener mensajes del chat
+  if (window.unsubscribeMessages) {
+    window.unsubscribeMessages();
+  }
+  
   const messagesRef = collection(db, 'chats', chatId, 'messages');
   const q = query(messagesRef, orderBy('timestamp', 'asc'));
   
   const container = document.getElementById('messagesContainer');
   container.innerHTML = '';
   
-  onSnapshot(q, (snapshot) => {
+  window.unsubscribeMessages = onSnapshot(q, (snapshot) => {
     container.innerHTML = '';
     snapshot.forEach((docSnap) => {
       const msg = docSnap.data();
@@ -394,7 +370,6 @@ window.loadChat = async function(chatId) {
   if (window.innerWidth <= 900) toggleSidebar();
 };
 
-// Eliminar chat
 window.deleteChat = async function(chatId, event) {
   event.stopPropagation();
   if (confirm('¿Eliminar este chat?')) {
@@ -405,7 +380,6 @@ window.deleteChat = async function(chatId, event) {
   }
 };
 
-// Guardar mensaje en Firebase
 window.saveMessage = async function(role, text) {
   if (!window.currentUser || !window.currentChatId) return;
   
@@ -417,12 +391,12 @@ window.saveMessage = async function(role, text) {
     userId: window.currentUser.uid
   });
   
-  // Actualizar título y fecha del chat
   const chatRef = doc(db, 'chats', window.currentChatId);
-  // Actualizar updatedAt se hace automáticamente
+  await updateDoc(chatRef, {
+    updatedAt: new Date()
+  });
 };
 
-// Crear nuevo chat en Firebase
 window.createChatInFirebase = async function(firstMessage) {
   if (!window.currentUser) return null;
   
@@ -435,53 +409,27 @@ window.createChatInFirebase = async function(firstMessage) {
   });
   
   window.currentChatId = docRef.id;
+  loadChatHistory();
   return docRef.id;
 };
 
-// Exportar para uso global
 window.firebaseApp = app;
 window.firebaseDb = db;
 window.firebaseAuth = auth;
 </script>
 
-<!-- JAVASCRIPT PRINCIPAL -->
 <script>
-// URL DEL SISTEMA
 const URL_SISTEMA = "https://sistemaescolar-beta.vercel.app";
 
-// CONOCIMIENTO ESPECÍFICO DEL SISTEMA (para no inventar)
 const SYSTEM_KNOWLEDGE = `
 CONOCIMIENTO REAL DEL SISTEMA EDU.CONTROL:
-
 URL OFICIAL: https://sistemaescolar-beta.vercel.app
-
-PÁGINAS EXISTENTES:
-- index.html (Login/Inicio de sesión)
-- dashboard.html (Panel docente principal)
-- asistencia.html (Control de asistencia)
-- calificaciones.html (Registro de calificaciones)
-- alumnos.html (Gestión de alumnos)
-- configurar-perfil.html (Configuración de perfil docente)
-- admin.html (Panel administrativo)
-- registro.html (Registro de nuevos docentes)
-
-FUNCIONALIDADES REALES:
-1. LOGIN: Solo con correo institucional (@clases.edu.sv) y contraseña. También Google si está autorizado.
-2. PERFIL: Docente DEBE configurar grado, sección y materias ANTES de usar el sistema.
-3. ASISTENCIA: Se pasa por grado/sección, solo días hábiles. Estados: Presente, Ausente, Tarde.
-4. CALIFICACIONES: Por materia, grado, período (1-4). Se pueden crear actividades y descargar PDF.
-5. ALUMNOS: Se registran con nombre, sexo y NIE. Deben coincidir con el grado del perfil del docente.
-6. PDF: Se generan con jsPDF. Requiere permitir ventanas emergentes.
-
-PROBLEMAS COMUNES REALES:
-- "No veo alumnos": Es porque el grado/sección del perfil NO coincide con el grado de los alumnos.
-- "No guarda": Verificar conexión a internet.
-- "No descarga PDF": El navegador bloquea popups. Permitir ventanas emergentes.
-
-IMPORTANTE: NO inventes funcionalidades que no existen. Si no sabes algo, di que consultes el manual o contactes al admin.
+PÁGINAS EXISTENTES: index.html (Login), dashboard.html (Panel), asistencia.html, calificaciones.html, alumnos.html, configurar-perfil.html, admin.html, registro.html.
+FUNCIONALIDADES: Login con correo institucional. Perfil debe configurarse con grado y sección antes de usar. Asistencia por días hábiles. Calificaciones por período (1-4). Alumnos deben coincidir con el grado del perfil.
+PROBLEMAS COMUNES: "No veo alumnos" (revisar grado/sección en perfil). "No descarga PDF" (permitir ventanas emergentes).
+IMPORTANTE: NO inventes funcionalidades. Si no sabes algo, indica consultar el manual o al admin.
 `;
 
-// UTILIDADES
 function norm(t){ return String(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[¿?¡!.,;:()\"']/g," ").replace(/\s+/g," ").trim(); }
 
 function autoResize(textarea){
@@ -543,27 +491,21 @@ function appendMessage(role, text, save = true){
   container.appendChild(msgDiv);
   
   if(save && window.currentChatId){
-    saveMessage(role, text);
+    window.saveMessage(role, text);
   }
   
   scrollToBottom();
 }
 
 function formatText(text){
-  // Convertir markdown a HTML
   let formatted = text
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
     .replace(/`(.*?)`/g, '<code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-size:0.9em">$1</code>')
     .replace(/\n/g, '<br>');
   
-  // Detectar URLs y hacerlas clickeables
-  formatted = formatted.replace(
-    /(https?:\/\/[^\s<]+)/g,
-    '<a href="$1" target="_blank" rel="noopener">$1</a>'
-  );
+  formatted = formatted.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
   
-  // Detectar nombres de páginas y crear links
   const pages = {
     'index.html': 'login',
     'dashboard.html': 'panel docente',
@@ -576,10 +518,7 @@ function formatText(text){
   
   Object.entries(pages).forEach(([file, name]) => {
     const regex = new RegExp(`\\b(${name})\\b`, 'gi');
-    formatted = formatted.replace(
-      regex,
-      `<a href="${file}" onclick="irA('${file}'); return false;" class="link">$1</a>`
-    );
+    formatted = formatted.replace(regex, `<a href="${file}" onclick="irA('${file}'); return false;" class="link">$1</a>`);
   });
   
   return formatted;
@@ -604,14 +543,12 @@ function irA(archivo){
   window.location.href = archivo;
 }
 
-// CREAR/ACTUALIZAR CHAT EN FIREBASE
 async function ensureChatExists(firstMessage){
   if(!window.currentChatId && window.currentUser){
     await window.createChatInFirebase(firstMessage);
   }
 }
 
-// ENVIAR MENSAJE
 async function sendMessage(){
   const input = document.getElementById('userInput');
   const sendBtn = document.getElementById('sendBtn');
@@ -619,18 +556,19 @@ async function sendMessage(){
   
   if(!text) return;
   
-  // Agregar mensaje de usuario
   appendMessage('user', text);
   input.value = '';
   input.style.height = 'auto';
   sendBtn.disabled = true;
   
-  // Asegurar que existe un chat
   await ensureChatExists(text);
+  
+  if(!window.currentChatId) {
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
   
   showTyping(true);
   
-  // PLAN A: API Gemini
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 30000);
   
@@ -653,7 +591,6 @@ async function sendMessage(){
     const data = await res.json();
     showTyping(false);
     
-    // Formatear y mostrar respuesta
     window.chatHistory.push({ role: 'user', parts: [{ text }] });
     window.chatHistory.push({ role: 'model', parts: [{ text: data.reply }] });
     
@@ -662,9 +599,7 @@ async function sendMessage(){
   } catch(error){
     clearTimeout(timeoutId);
     showTyping(false);
-    console.warn('API falló, usando Plan B:', error.message);
     
-    // PLAN B: Respuestas locales
     const response = getLocalResponse(text);
     appendMessage('bot', response);
   }
@@ -673,7 +608,6 @@ async function sendMessage(){
   input.focus();
 }
 
-// RESPUESTAS LOCALES (Plan B)
 function getLocalResponse(text){
   const t = norm(text);
   
@@ -696,12 +630,10 @@ function getLocalResponse(text){
   return `Puedo ayudarte con:\n• <a href="index.html" onclick="irA('index.html');return false;" class="link">Iniciar sesión</a>\n• <a href="asistencia.html" onclick="irA('asistencia.html');return false;" class="link">Pasar asistencia</a>\n• <a href="calificaciones.html" onclick="irA('calificaciones.html');return false;" class="link">Registrar notas</a>\n• <a href="configurar-perfil.html" onclick="irA('configurar-perfil.html');return false;" class="link">Configurar perfil</a>\n\n¿Qué necesitas?`;
 }
 
-// INPUT LISTENER
 document.getElementById('userInput').addEventListener('input', function(){
   document.getElementById('sendBtn').disabled = !this.value.trim();
 });
 
-// CARGAR AL INICIAR
 window.addEventListener('load', () => {
   setTimeout(() => {
     document.getElementById('loader').classList.add('hide');
